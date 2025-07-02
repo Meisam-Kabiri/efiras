@@ -294,6 +294,3 @@ class UnstructuredProcessor(DocumentProcessor):
             logger.error(f"Unstructured extraction failed: {e}")
             raise
 
-processor  = PyMuPDFProcessor(ProcessorConfig())
-result = processor.extract_text("data/regulatory_documents/lu/Lux_cssf18_698eng.pdf")
-print(result['text'][:5000])  # Print first 500 characters of extracted text
