@@ -149,8 +149,11 @@ class RegulatoryChunker:
         current_pages = []
         
         for i, section in enumerate(sections):
-            if not section.strip():
+            
+                    # This is the correct fix:
+            if section is None or not section.strip():
                 continue
+          
             
             # Check if this is a section header
             is_header = any(re.match(pattern, section.strip(), re.IGNORECASE) 
@@ -320,3 +323,159 @@ class RegulatoryChunker:
     def _extract_keywords(self, text: str) -> Dict[str, List[str]]:
         """Extract financial/regulatory keywords by category"""
         text_lower = text.lower()
+        
+        found_keywords = {}
+        
+        for category, keywords in self.financial_keywords.items():
+            found_in_category = []
+            for keyword in keywords:
+                if keyword.lower() in text_lower:
+                    found_in_category.append(keyword)
+            
+            if found_in_category:
+                found_keywords[category] = found_in_category
+        
+        return found_keywords
+    
+    def _detect_jurisdiction(self, text: str) -> Optional[str]:
+        """Detect jurisdiction from text content"""
+        text_lower = text.lower()
+        
+        jurisdiction_patterns = {
+            'EU': r'(european\s+union|eu\b|european\s+commission|esma|eba|eiopa)',
+            'Luxembourg': r'(luxembourg|cssf|bcl)',
+            'Germany': r'(germany|bafin|bundesbank)',
+            'France': r'(france|acpr|banque\s+de\s+france)',
+            'UK': r'(united\s+kingdom|uk\b|fca|pra|bank\s+of\s+england)',
+            'US': r'(united\s+states|usa?\b|sec\b|cftc|fed\b)',
+            'Switzerland': r'(switzerland|finma)',
+            'Netherlands': r'(netherlands|dnb\b|afm)'
+        }
+        
+        for jurisdiction, pattern in jurisdiction_patterns.items():
+            if re.search(pattern, text_lower, re.IGNORECASE):
+                return jurisdiction
+        
+        return None
+    
+    def _extract_dates(self, text: str) -> List[str]:
+        """Extract dates from regulatory text"""
+        date_patterns = [
+            r'\b\d{1,2}[/.]\d{1,2}[/.]\d{4}\b',  # DD/MM/YYYY or MM/DD/YYYY
+            r'\b\d{4}[/-]\d{1,2}[/-]\d{1,2}\b',  # YYYY-MM-DD
+            r'\b\d{1,2}\s+(January|February|March|April|May|June|July|August|September|October|November|December)\s+\d{4}\b',
+            r'\b(January|February|March|April|May|June|July|August|September|October|November|December)\s+\d{1,2},?\s+\d{4}\b'
+        ]
+        
+        dates = []
+        for pattern in date_patterns:
+            matches = re.findall(pattern, text, re.IGNORECASE)
+            dates.extend(matches)
+        
+        return list(set(dates))  # Remove duplicates
+    
+    def _calculate_confidence_score(self, chunk_data: Dict[str, Any], extracted_data: Dict[str, Any]) -> float:
+        """Calculate confidence score for the chunk"""
+        score = 0.8  # Base score
+        
+        # Boost score if we have section structure
+        if chunk_data.get('section_title'):
+            score += 0.1
+        
+        # Boost score based on extraction quality
+        extraction_quality = extracted_data.get('quality_score', 0.5)
+        score = score * extraction_quality
+        
+        # Penalize very short chunks
+        content_length = len(chunk_data.get('content', ''))
+        if content_length < 100:
+            score *= 0.7
+        elif content_length < 50:
+            score *= 0.5
+        
+        return min(1.0, max(0.1, score))
+
+
+class ChunkValidator:
+    """Validates chunk quality and completeness"""
+    
+    @staticmethod
+    def validate_chunk(chunk: DocumentChunk) -> Dict[str, Any]:
+        """Validate a single chunk and return quality metrics"""
+        
+        issues = []
+        warnings = []
+        
+        # Check content length
+        if len(chunk.content) < 50:
+            issues.append("Content too short (< 50 characters)")
+        elif len(chunk.content) < 100:
+            warnings.append("Content quite short (< 100 characters)")
+        
+        if len(chunk.content) > 5000:
+            warnings.append("Content very long (> 5000 characters)")
+        
+        # Check for meaningless content
+        words = chunk.content.split()
+        if len(words) < 10:
+            issues.append("Too few words (< 10)")
+        
+        # Check for too much repetition
+        unique_words = set(word.lower() for word in words)
+        if len(words) > 20 and len(unique_words) / len(words) < 0.3:
+            warnings.append("High repetition ratio")
+        
+        # Check for proper sentence structure
+        sentences = re.split(r'[.!?]+', chunk.content)
+        if len([s for s in sentences if len(s.strip()) > 10]) < 2:
+            warnings.append("Few complete sentences")
+        
+        return {
+            'is_valid': len(issues) == 0,
+            'issues': issues,
+            'warnings': warnings,
+            'word_count': len(words),
+            'unique_word_ratio': len(unique_words) / len(words) if words else 0,
+            'sentence_count': len(sentences)
+        }
+    
+    @staticmethod
+    def validate_chunk_set(chunks: List[DocumentChunk]) -> Dict[str, Any]:
+        """Validate a set of chunks for consistency and coverage"""
+        
+        if not chunks:
+            return {'is_valid': False, 'error': 'No chunks provided'}
+        
+        total_chars = sum(len(chunk.content) for chunk in chunks)
+        avg_chunk_size = total_chars / len(chunks)
+        
+        # Check for size consistency
+        size_variance = sum((len(chunk.content) - avg_chunk_size) ** 2 for chunk in chunks) / len(chunks)
+        size_std = size_variance ** 0.5
+        
+        # Validate individual chunks
+        chunk_validations = [ChunkValidator.validate_chunk(chunk) for chunk in chunks]
+        valid_chunks = sum(1 for v in chunk_validations if v['is_valid'])
+        
+        # Check for gaps in page coverage
+        all_pages = set()
+        for chunk in chunks:
+            all_pages.update(chunk.page_numbers)
+        
+        page_gaps = []
+        if all_pages:
+            sorted_pages = sorted(all_pages)
+            for i in range(len(sorted_pages) - 1):
+                if sorted_pages[i+1] - sorted_pages[i] > 1:
+                    page_gaps.append((sorted_pages[i], sorted_pages[i+1]))
+        
+        return {
+            'total_chunks': len(chunks),
+            'valid_chunks': valid_chunks,
+            'avg_chunk_size': avg_chunk_size,
+            'size_std_dev': size_std,
+            'page_coverage': sorted(all_pages) if all_pages else [],
+            'page_gaps': page_gaps,
+            'chunk_validations': chunk_validations,
+            'overall_valid': valid_chunks / len(chunks) > 0.8  # 80% threshold
+        }

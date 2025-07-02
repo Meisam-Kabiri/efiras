@@ -7,9 +7,9 @@ from src.efiras_processor.core.manager import *
 
 
 
-processor  = PyMuPDFProcessor(ProcessorConfig())
-result = processor.extract_text("data/regulatory_documents/lu/Lux_cssf18_698eng.pdf")
-print(result['text'][:5000])  # Print first 500 characters of extracted text
+# processor  = PyMuPDFProcessor(ProcessorConfig())
+# result = processor.extract_text("data/regulatory_documents/lu/Lux_cssf18_698eng.pdf")
+# print(result['text'][:5000])  # Print first 500 characters of extracted text
 
 
 config = ProcessorConfig(
@@ -27,7 +27,6 @@ manager = DocumentProcessorManager(config)
 print(f"Available processors: {[p.value for p in manager.get_available_processors()]}")
 
 # Process a document
-# try:
 result = manager.process_document(
     "data/regulatory_documents/lu/Lux_cssf18_698eng.pdf",
     preferred_processor=ProcessorType.AUTO,
@@ -44,7 +43,5 @@ chunks = manager.chunk_document(result, "sample_regulation.pdf")
 print(f"Created {len(chunks)} chunks")
 
     
-# except Exception as e:
-#     print(f"Processing failed: {e}")
 
 

@@ -1,4 +1,6 @@
-from efiras_processor.processors.base import *
+from efiras_processor.processors.base import DocumentProcessor, ProcessorConfig, ProcessorType
+from typing import Dict, Any, List, Optional, Union
+from pathlib import Path
 
 class UnstructuredProcessor(DocumentProcessor):
     """Multi-format processor using unstructured.io"""
