@@ -35,6 +35,7 @@ class RegulatoryChunker:
             r'(Article\s+\d+[a-z]?)',
             r'(Section\s+\d+(?:\.\d+)?)',
             r'(Chapter\s+\d+)',
+            r'(\d{1,3}\.\s+)', # Add this for "123.", "124.", etc.
             r'(Part\s+[IVXLC]+)',
             r'(Regulation\s+\d+)',
             r'(Directive\s+\d+)',
@@ -50,6 +51,7 @@ class RegulatoryChunker:
             'banking': ['bank', 'credit', 'loan', 'deposit', 'basel'],
             'insurance': ['insurance', 'solvency', 'premium', 'underwriting'],
             'funds': ['fund', 'portfolio', 'asset management', 'ucits', 'aifmd']
+            
         }
         
         # Regulation type patterns

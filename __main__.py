@@ -3,6 +3,9 @@ import os, sys
 sys.path.append(os.path.abspath("src"))
 
 from src.efiras_processor.core.manager import *
+from src.chunking.chunker import *
+from src.cleaning.text_cleaner import RegulationCleaner
+import json
 
 
 
@@ -38,9 +41,22 @@ print(f"Quality score: {result['quality_score']:.2f}")
 print(f"Text length: {len(result['text'])} characters")
 print(f"Pages: {result['metadata']['page_count']}")
 
-# Chunk the document
-chunks = manager.chunk_document(result, "sample_regulation.pdf")
+cleaner = RegulationCleaner(result['text'])
+cleaned_text = cleaner.clean()
+chunker = RegulationChunker(cleaned_text)
+chunks = chunker.chunk()
 print(f"Created {len(chunks)} chunks")
+print(f"First chunk: {chunks[0]['heading']} - {chunks[0]['content'][:1000]}...")
+# save the chunk in a File
+# create the folder and file first if does not exist
+os.makedirs("data/chunks", exist_ok=True)
+# Save chunks to a JSON file
+with open("data/chunks/lux_cssf18_698eng_chunks.json", "w") as f:
+    json.dump(chunks, f, indent=2)
+
+# Chunk the document
+# chunks = manager.chunk_document(result, "sample_regulation.pdf")
+# print(f"Created {len(chunks)} chunks")
 
     
 
