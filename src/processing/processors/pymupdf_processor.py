@@ -1,4 +1,4 @@
-from efiras_processor.processors.base import DocumentProcessor, ProcessorConfig, ProcessorType
+from processing.processors.base import DocumentProcessor, ProcessorConfig, ProcessorType
 from typing import Dict, Any, List, Optional, Union
 from pathlib import Path
 

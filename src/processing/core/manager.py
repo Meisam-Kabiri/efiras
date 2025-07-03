@@ -1,8 +1,8 @@
-from efiras_processor.processors.base import *
-from efiras_processor.processors.pymupdf_processor import PyMuPDFProcessor
-from efiras_processor.processors.pdfminer_processor import PDFMinerProcessor
-from efiras_processor.processors.azure_processor import AzureDocumentProcessor
-from efiras_processor.processors.unstructured_processor import UnstructuredProcessor
+from processing.processors.base import *
+from processing.processors.pymupdf_processor import PyMuPDFProcessor
+from processing.processors.pdfminer_processor import PDFMinerProcessor
+from processing.processors.azure_processor import AzureDocumentProcessor
+from processing.processors.unstructured_processor import UnstructuredProcessor
 
 class DocumentProcessorManager:
     """Main manager class that orchestrates all processors"""

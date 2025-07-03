@@ -2,7 +2,7 @@
 import os, sys 
 sys.path.append(os.path.abspath("src"))
 
-from src.efiras_processor.core.manager import *
+from src.processing.core.manager import *
 from src.chunking.chunker import *
 from src.cleaning.text_cleaner import RegulationCleaner
 import json
