@@ -3,9 +3,12 @@ import os, sys
 sys.path.append(os.path.abspath("src"))
 
 from src.processing.core.manager import *
-from src.chunking.chunker import *
+# from chunking.chunker_simple import RegulationChunker
+from chunking.chunker import RegulationChunker
 from src.cleaning.text_cleaner import RegulationCleaner
+from chunking.hybrid_chunker import RegulatoryChunkingSystem
 import json
+from src.utils.useful_functions import convert_numpy_types
 
 
 
@@ -44,8 +47,12 @@ print(f"Pages: {result['metadata']['page_count']}")
 
 cleaner = RegulationCleaner(result['text'])
 cleaned_text = cleaner.clean()
-chunker = RegulationChunker(cleaned_text)
-chunks = chunker.chunk()
+
+# chunker = RegulationChunker(cleaned_text)
+# chunks = chunker.chunk()
+
+chunker = RegulatoryChunkingSystem()
+chunks = chunker.process_document(cleaned_text)
 print(f"Created {len(chunks)} chunks")
 # print(f"First chunk: {chunks[0]['heading']} - {chunks[0]['content'][:1000]}...")
 
@@ -71,6 +78,10 @@ from src.rag.langgraph_rag import LangGraphRAG
 # print(result['answer'])
 
 question = "What are the key components that an Investment Fund Manager (IFM) should include in their due diligence and ongoing monitoring process when delegating portfolio management, according to Circular CSSF 18/698?"
+question = """
+A Luxembourg UCITS management company wants to delegate its risk management function to a UK-based entity that is authorized as both an investment firm and an AIFM. The UK entity proposes to use its proprietary risk management system, which has been approved by the UK FCA but not specifically validated by any EU authority. The Luxembourg management company also wants to delegate portfolio management for 30% of one UCITS fund to the same UK entity, while keeping the remaining 70% in-house. The UK entity would make investment decisions for its allocated portion but all trade execution would remain with the Luxembourg entity.
+Is this dual delegation arrangement (risk management + partial portfolio management) to the same entity permissible under the CSSF framework?
+"""
 langgraph_rag = LangGraphRAG()  # Use LangRag for local RAG
 langgraph_rag.embed_documents(chunks)
 result = langgraph_rag.generate_answer(question)
@@ -91,8 +102,10 @@ print(result)
 # create the folder and file first if does not exist
 os.makedirs("data/chunks", exist_ok=True)
 # Save chunks to a JSON file
+clean_chunks = convert_numpy_types(chunks)
+
 with open("data/chunks/lux_cssf18_698eng_chunks.json", "w") as f:
-    json.dump(chunks, f, indent=2)
+    json.dump(clean_chunks, f, indent=2)
 
 
 

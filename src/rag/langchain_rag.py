@@ -1,12 +1,14 @@
 from sentence_transformers import SentenceTransformer
 import faiss
 import numpy as np
-from langchain.vectorstores import FAISS
-from langchain.embeddings import HuggingFaceEmbeddings
+# from langchain.vectorstores import FAISS
+from langchain_community.vectorstores import FAISS
+from langchain_huggingface.embeddings import HuggingFaceEmbeddings
+# OR from langchain.embeddings import HuggingFaceEmbeddings (if you had an older version)
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain.chains import RetrievalQA
 from langchain.prompts import PromptTemplate
-from langchain.llms import OpenAI
+from langchain_openai import OpenAI
 from langchain.schema import Document
 from src.rag.rag_base import BaseRAG
 from typing import List, Dict, Any
@@ -15,7 +17,6 @@ import os
 
 load_dotenv()  # Load environment variables from .env file
 openai_api_key = os.getenv("GPT_API_KEY")
-print(openai_api_key)
 
 class LangChainRAG(BaseRAG):
     def __init__(self):

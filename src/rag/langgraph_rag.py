@@ -1,10 +1,10 @@
 from sentence_transformers import SentenceTransformer
 import faiss
 import numpy as np
-from langchain.vectorstores import FAISS
-from langchain.embeddings import HuggingFaceEmbeddings
+from langchain_community.vectorstores import FAISS
+from langchain_huggingface.embeddings import HuggingFaceEmbeddings
 from langchain.prompts import PromptTemplate
-from langchain.llms import OpenAI
+from langchain_openai import OpenAI
 from langchain.schema import Document
 from langgraph.graph import StateGraph, END
 from typing import List, Dict, Any, TypedDict
@@ -14,7 +14,7 @@ import os
 
 load_dotenv()  # Load environment variables from .env file
 openai_api_key = os.getenv("GPT_API_KEY")
-print(openai_api_key)
+
 
 class RAGState(TypedDict):
     """State for the RAG workflow"""
@@ -116,7 +116,7 @@ class LangGraphRAG(BaseRAG):
             context=state["context"],
             query=state["query"]
         )
-        answer = self.llm(prompt)
+        answer = self.llm.invoke(prompt)
         state["answer"] = answer.strip()
         return state
 

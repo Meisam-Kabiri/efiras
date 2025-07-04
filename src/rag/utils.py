@@ -5,7 +5,6 @@ from dotenv import load_dotenv
 
 load_dotenv()  # Load environment variables from .env file
 openai_api_key = os.getenv("GPT_API_KEY")
-print(openai_api_key)
 
 
 
