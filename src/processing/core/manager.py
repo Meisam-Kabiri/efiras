@@ -110,13 +110,4 @@ class DocumentProcessorManager:
         else:
             return self.fallback_order
     
-    def chunk_document(self, extracted_data: Dict[str, Any], file_path: Union[str, Path]) -> List[DocumentChunk]:
-        """Convert extracted text into standardized chunks"""
-        from ...chunking.regulatory_chunker import RegulatoryChunker  # Assume we have a separate chunker module
-        
-        chunker = RegulatoryChunker(
-            chunk_size=self.config.chunk_size,
-            overlap=self.config.overlap
-        )
-        
-        return chunker.chunk_document(extracted_data, file_path)
+ 

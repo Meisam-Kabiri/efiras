@@ -1,6 +1,14 @@
-from processing.processors.base import DocumentProcessor, ProcessorConfig, ProcessorType
+# from processing.processors.base import DocumentProcessor, ProcessorConfig, ProcessorType
 from typing import Dict, Any, List, Optional, Union
 from pathlib import Path
+import json
+import logging
+import re
+
+from base import DocumentProcessor, ProcessorConfig, ProcessorType
+
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 class PyMuPDFProcessor(DocumentProcessor):
     """Fast processor for text-based PDFs"""
@@ -40,13 +48,139 @@ class PyMuPDFProcessor(DocumentProcessor):
             
             doc.close()
             
-            return {
+            result = {
                 'text': text,
                 'page_texts': page_texts,
                 'metadata': metadata,
                 'extraction_method': 'text_layer'
-            }
+                }
+            
+            file_path = Path('src/cleaning/output_processed_text_pymupdf.json')
+
+            # 1. Create the parent directory if it doesn't exist
+            # file_path.parent gives you the directory part of the path ('src/')
+            # mkdir(parents=True) creates any missing parent directories (e.g., if 'src' itself didn't exist)
+            # exist_ok=True prevents an error if the directory already exists
+            file_path.parent.mkdir(parents=True, exist_ok=True)
+
+            with open(file_path, 'w', encoding='utf-8') as f:
+                json.dump(result, f, indent=4, ensure_ascii=False)
+
+            print(f"Data saved to {file_path}")
+
+            return result
             
         except Exception as e:
             logger.error(f"PyMuPDF extraction failed: {e}")
             raise
+
+    def extract_blocks(self, file_path: Union[str, Path]) -> List[Dict[str, Any]]:
+            """Extract text blocks from the PDF."""
+            try:
+                import fitz
+                
+                doc = fitz.open(str(file_path))
+                page1 = doc[0]
+                width = page1.rect.width
+                height = page1.rect.height
+                print (f"Page size: {width} x {height}")
+                blocks = []
+                
+                for page_num in range(doc.page_count):
+                    page = doc[page_num]
+                    block_list = page.get_text("blocks")
+                    
+                    for block in block_list:
+                        blocks.append({
+                            'page': page_num + 1,
+                            'bbox': block[:4],
+                            'text': block[4]
+                        })
+                
+                doc.close()
+                for i, block in enumerate(blocks):
+
+                    if self.identify_header_footer_blocks(height, block):
+                        del blocks[i]
+                        continue 
+                    
+                    # Regex to match "Section/Chapter/Part" followed by numbers and optional text on the same line.
+                    # The 'r"^\s*"' at the beginning allows for optional leading whitespace.
+                    # The outer parentheses ( ) around the whole pattern make it a capturing group.
+
+
+        
+
+                    pattern = re.compile(
+                        r"^\s*(Part|Chapter|Sub-chapter|Section)\s+"  # Prefix (e.g., "Part", "Chapter")
+                        r"([IVXLCDM]+|\d+(?:\.\d+)*)"  # Roman numerals (IV) or digits (4.2.2)
+                        r"(?:\.?)"  # Optional dot (e.g., "Chapter 1.")
+                        r"\s*"  # Optional space
+                        r"([^\n]*?(?=\s*\.{2,}\s*\d*|$))",  # Text until filler dots or end
+                        re.IGNORECASE | re.MULTILINE
+                    )   
+
+                    match = pattern.match(block['text']) # No need to strip() here if using ^\s* in pattern
+
+                    if match:
+                        matched_string = match.group(0).strip() # .group(0) is the entire matched string
+                        print(f"Block starts with: '{matched_string}'")
+
+
+                    if block['text'].endswith(": \n"):
+                        blocks[i]['text'] +=  "\n" + blocks[i + 1]['text']
+                        del blocks[i + 1] 
+
+                for i in range(200):
+                    # Clean up text in each block
+                    block = blocks[i]
+                    # print(block['text'])
+                    # print("\n-------------------------------------------------------------------\n")
+                
+
+                file_path = Path('src/cleaning/output_processed_text_pymupdf.json')
+
+                # 1. Create the parent directory if it doesn't exist
+                # file_path.parent gives you the directory part of the path ('src/')
+                # mkdir(parents=True) creates any missing parent directories (e.g., if 'src' itself didn't exist)
+                # exist_ok=True prevents an error if the directory already exists
+                file_path.parent.mkdir(parents=True, exist_ok=True)
+
+                with open(file_path, 'w', encoding='utf-8') as f:
+                    json.dump(blocks, f, indent=4, ensure_ascii=False)
+
+                print(f"Data saved to {file_path}")
+                return blocks
+            
+            except Exception as e:
+                logger.error(f"PyMuPDF block extraction failed: {e}")
+                raise
+        
+    def identify_header_footer_blocks(self, height, block: Dict[str, Any]) -> bool:
+            """Remove header and footer blocks based on their position."""
+            bbox = block['bbox']
+            y1 = bbox[1]  # Top y-coordinate of the block
+            y2 = bbox[3]
+            # Check if the block is in the header or footer region
+            if y1 < height * 0.08 or (y2 > height * 0.92 and y2-y1 < height * 0.1):
+                return True
+ 
+        
+if __name__ == "__main__":
+    config = ProcessorConfig(
+        chunk_size=1000,
+        overlap=200,
+        extract_tables=True,
+        ocr_fallback=True
+    )
+    
+    processor = PyMuPDFProcessor(config)
+    
+    if processor.is_available():
+        result = processor.extract_text("data/regulatory_documents/lu/Lux_cssf18_698eng.pdf")
+        result = processor.extract_blocks("data/regulatory_documents/lu/Lux_cssf18_698eng.pdf")
+        # print(f"Extraction successful with {processor.processor_type.value}")
+        # print(f"Text length: {len(result['text'])} characters")
+        # print(f"Pages: {result['metadata']['page_count']}")
+    else:
+        print("PyMuPDF is not available. Please install the required library.")

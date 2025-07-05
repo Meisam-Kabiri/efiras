@@ -11,9 +11,9 @@ class BaseRAG(ABC):
     def embed_documents(self, texts: List[str]) -> None:
         pass
 
-    @abstractmethod
-    def retrieve(self, query: str) -> List[str]:
-        pass
+    # @abstractmethod
+    # def retrieve(self, query: str) -> List[str]:
+    #     pass
 
     @abstractmethod
     def generate_answer(self, query: str) -> str:
