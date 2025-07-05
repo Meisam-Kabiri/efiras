@@ -98,11 +98,10 @@ class PyMuPDFProcessor(DocumentProcessor):
                         })
                 
                 doc.close()
+                blocks = [block for block in blocks 
+                        if not (self.identify_header_footer_blocks(height, block) or len(block["text"]) < 5)
+                        ]
                 for i, block in enumerate(blocks):
-
-                    if self.identify_header_footer_blocks(height, block):
-                        del blocks[i]
-                        continue 
                     
                     # Regex to match "Section/Chapter/Part" followed by numbers and optional text on the same line.
                     # The 'r"^\s*"' at the beginning allows for optional leading whitespace.
