@@ -98,6 +98,8 @@ class PyMuPDFProcessor(DocumentProcessor):
                         })
                 
                 doc.close()
+                toc = self.extract_toc(blocks)  # Extract TOC if needed
+                [print (f"TOC entry: {title} - Page {info['page']} (Level {info['level']})") for title, info in toc.items()]
                 blocks = self.extract_headers(blocks)
                 blocks = [block for block in blocks 
                         if not (self.identify_header_footer_blocks(height, block) or len(block["text"]) < 5)
@@ -124,7 +126,7 @@ class PyMuPDFProcessor(DocumentProcessor):
 
                     if match:
                         matched_string = match.group(0).strip() # .group(0) is the entire matched string
-                        print(f"Block starts with: '{matched_string}'")
+                        # print(f"Block starts with: '{matched_string}'")
 
 
                     if block['text'].endswith(": \n"):
@@ -194,7 +196,46 @@ class PyMuPDFProcessor(DocumentProcessor):
             block['headers'] = ', '.join(current_headers.values())
         
         return blocks
+    
+    def extract_toc(self, blocks):
+        toc = {}
+        in_toc = False
         
+        for block in blocks:
+            text = block['text'].strip()
+            
+            # Detect TOC start (only happens once)
+            if not in_toc and 'table of contents' in text.lower():
+                in_toc = True
+                continue
+                
+            # Extract TOC entries once we're in TOC mode
+            if in_toc:
+                # Pattern: title + separators + page number
+                # match = re.search(r'^(.*?)\s*[.\-_\s]{2,}\s*(\d+)$', text)
+                match = re.search(r'((?:Part|Chapter|Section|Sub-chapter).*?)\s*[.\-_\s]{3,}\s*(\d+)\s*$', text, re.DOTALL)
+                if match:
+                    title, page = match.groups()
+                    title = title.strip()
+                    
+                    # Determine level by header type
+                    if title.startswith(('Chapter', 'Part')):
+                        level = 2
+                    elif title.startswith('Sub-chapter'):
+                        level = 3
+                    elif title.startswith('Section'):
+                        level = 4
+                    else:
+                        level = 1
+                        
+                    toc[title] = {"page": int(page), "level": level}
+                # Note: Don't set in_toc = False, keep extracting until end
+                    
+        return toc
+        
+
+
+
 if __name__ == "__main__":
     config = ProcessorConfig(
         chunk_size=1000,
