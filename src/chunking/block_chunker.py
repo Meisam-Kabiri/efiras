@@ -12,8 +12,8 @@ from typing import Any
 
 class RegulatoryChunkingSystem:
     def __init__(self, 
-                 min_chunk_size: int = 200,
-                 max_chunk_size: int = 2000,
+                 min_chunk_size: int = 100,
+                 max_chunk_size: int = 500,
                  overlap_percentage: float = 0.15,
                  semantic_model: str = "all-MiniLM-L6-v2"):
         

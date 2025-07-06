@@ -98,6 +98,7 @@ class PyMuPDFProcessor(DocumentProcessor):
                         })
                 
                 doc.close()
+                blocks = self.extract_headers(blocks)
                 blocks = [block for block in blocks 
                         if not (self.identify_header_footer_blocks(height, block) or len(block["text"]) < 5)
                         ]
@@ -163,7 +164,36 @@ class PyMuPDFProcessor(DocumentProcessor):
             # Check if the block is in the header or footer region
             if y1 < height * 0.08 or (y2 > height * 0.92 and y2-y1 < height * 0.1):
                 return True
- 
+            
+    def extract_headers(self, blocks):
+        # Header patterns with hierarchy levels (lower number = higher priority)
+        # ^ ensures pattern matches at start of text
+        patterns = {
+            1: r'(?i)^(?:part|chapter)\s+[ivx\d]+\b',
+            2: r'(?i)^sub-?chapter\s+[\d.]+\b',
+            3: r'(?i)^section\s+\d+\b',          # Section 4
+            4: r'(?i)^section\s+\d+\.\d+\b',     # Section 4.1  
+            5: r'(?i)^section\s+\d+\.\d+\.\d+\b', # Section 4.1.1
+            6: r'(?i)^sub-?section\s+[\d.]+\b'
+        }
+        
+        current_headers = {}  # level -> header text
+        
+        for block in blocks:
+            text = block['text']
+            
+            # Check for headers in current block
+            for level, pattern in patterns.items():
+                if re.search(pattern, text):
+                    # Clear lower priority headers and update current level
+                    current_headers = {k: v for k, v in current_headers.items() if k < level}
+                    current_headers[level] = re.search(pattern, text).group()
+                    break
+            
+            # Assign accumulated headers to block
+            block['headers'] = ', '.join(current_headers.values())
+        
+        return blocks
         
 if __name__ == "__main__":
     config = ProcessorConfig(
