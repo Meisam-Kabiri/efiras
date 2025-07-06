@@ -99,8 +99,10 @@ class PyMuPDFProcessor(DocumentProcessor):
                 
                 doc.close()
                 toc = self.extract_toc(blocks)  # Extract TOC if needed
-                [print (f"TOC entry: {title} - Page {info['page']} (Level {info['level']})") for title, info in toc.items()]
+                print(toc)
+                [print(f"{key}: {value}") for d in toc for key, value in d.items()]
                 blocks = self.extract_headers(blocks)
+                block = self.clean_text_for_rag(blocks)
                 blocks = [block for block in blocks 
                         if not (self.identify_header_footer_blocks(height, block) or len(block["text"]) < 5)
                         ]
@@ -129,7 +131,7 @@ class PyMuPDFProcessor(DocumentProcessor):
                         # print(f"Block starts with: '{matched_string}'")
 
 
-                    if block['text'].endswith(": \n"):
+                    if block['text'].endswith(": \n") or block['text'].endswith(":"):
                         blocks[i]['text'] +=  "\n" + blocks[i + 1]['text']
                         del blocks[i + 1] 
 
@@ -148,8 +150,18 @@ class PyMuPDFProcessor(DocumentProcessor):
                 # exist_ok=True prevents an error if the directory already exists
                 file_path.parent.mkdir(parents=True, exist_ok=True)
 
+                # Save as single JSON with both blocks and TOC
+                output = {
+                    "document_info": {
+                        "filename": "document.pdf",
+                        "total_pages": 50,
+                        "extraction_date": "2024-01-01"
+                    },
+                    "table_of_contents": toc,  # Your extracted TOC
+                    "blocks": blocks  # Your text blocks
+                }
                 with open(file_path, 'w', encoding='utf-8') as f:
-                    json.dump(blocks, f, indent=4, ensure_ascii=False)
+                    json.dump(output, f, indent=4, ensure_ascii=False)
 
                 print(f"Data saved to {file_path}")
                 return blocks
@@ -198,7 +210,7 @@ class PyMuPDFProcessor(DocumentProcessor):
         return blocks
     
     def extract_toc(self, blocks):
-        toc = {}
+        toc = []
         in_toc = False
         
         for block in blocks:
@@ -213,25 +225,51 @@ class PyMuPDFProcessor(DocumentProcessor):
             if in_toc:
                 # Pattern: title + separators + page number
                 # match = re.search(r'^(.*?)\s*[.\-_\s]{2,}\s*(\d+)$', text)
-                match = re.search(r'((?:Part|Chapter|Section|Sub-chapter).*?)\s*[.\-_\s]{3,}\s*(\d+)\s*$', text, re.DOTALL)
+                match = re.search(r'^((?:Part|Chapter|Section|Sub-chapter)\s+[ivxlcdm\d.]+)\.?\s*(.*?)\s*[.\-_\s]{3,}\s*(\d+)\s*$', text, re.IGNORECASE | re.DOTALL)
                 if match:
-                    title, page = match.groups()
-                    title = title.strip()
+                    # print(f"\n: {match.group()}")
+                    header, title, page_num = match.groups()
+                    header = header.strip()
                     
-                    # Determine level by header type
-                    if title.startswith(('Chapter', 'Part')):
+                    # Determine level
+                    if header.startswith('Part'):
+                        level = 1
+                    elif header.startswith('Chapter'):
                         level = 2
-                    elif title.startswith('Sub-chapter'):
+                    elif header.startswith('Sub-chapter'):
                         level = 3
-                    elif title.startswith('Section'):
+                    elif header.startswith('Section'):
                         level = 4
+                    elif header.startswith('Sub-section'):
+                        level = 5
                     else:
                         level = 1
-                        
-                    toc[title] = {"page": int(page), "level": level}
-                # Note: Don't set in_toc = False, keep extracting until end
                     
+                    
+                    toc_dict = {
+                        "page": int(page_num), 
+                        "level": level,
+                        "header": header.strip(),
+                        "title": title
+                    }
+                    toc.append(toc_dict)
+        # Sort TOC by page number                        
         return toc
+    
+    def clean_text_for_rag(self,blocks):
+        for block in blocks:
+            if 'text' in block:
+                text = block['text']
+                # Remove invisible/problematic characters
+                text = re.sub(r'[\u200b\u200c\u200d\u00ad\u00a0\ufeff\u200f\u200e]', '', text)
+                # Remove single \n but keep \n\n as paragraph breaks
+                text = re.sub(r'(?<!\n)\n(?!\n)', ' ', text)
+                # Clean up multiple spaces
+                text = re.sub(r' +', ' ', text)
+                # Strip leading/trailing whitespace
+                block['text'] = text.strip()
+        
+        return blocks
         
 
 
@@ -249,6 +287,8 @@ if __name__ == "__main__":
     if processor.is_available():
         result = processor.extract_text("data/regulatory_documents/lu/Lux_cssf18_698eng.pdf")
         result = processor.extract_blocks("data/regulatory_documents/lu/Lux_cssf18_698eng.pdf")
+        # result = processor.extract_blocks("data/regulatory_documents/eu/Basel  III.pdf")
+
         # print(f"Extraction successful with {processor.processor_type.value}")
         # print(f"Text length: {len(result['text'])} characters")
         # print(f"Pages: {result['metadata']['page_count']}")
