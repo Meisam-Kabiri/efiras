@@ -9,11 +9,12 @@ from langchain.schema import Document
 from langgraph.graph import StateGraph, END
 from typing import List, Dict, Any, TypedDict
 from src.rag.rag_base import BaseRAG
-from dotenv import load_dotenv
+
 import os
 import re
 from langchain_core.messages import SystemMessage, HumanMessage
 
+from dotenv import load_dotenv
 load_dotenv()
 openai_api_key = os.getenv("GPT_API_KEY")
 

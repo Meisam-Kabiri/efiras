@@ -142,6 +142,7 @@ class PyMuPDFProcessor(DocumentProcessor):
                     # print("\n-------------------------------------------------------------------\n")
                 
 
+                self.enrich_blocks_with_titles(blocks, toc)
                 file_path = Path('src/cleaning/output_processed_text_pymupdf.json')
 
                 # 1. Create the parent directory if it doesn't exist
@@ -270,7 +271,61 @@ class PyMuPDFProcessor(DocumentProcessor):
                 block['text'] = text.strip()
         
         return blocks
+    
+    
+    def find_toc_match(self, header: str, toc: List[Dict[str, Any]]) -> Optional[Dict[str, Any]]:
+        """
+        Find matching TOC entry for a given header
         
+        Args:
+            header: Header string to match (e.g., "Chapter 6", "Sub-section 6.3.2.1")
+            toc: Table of contents list
+            
+        Returns:
+            Matching TOC entry or None
+        """
+        header_clean = header.strip().rstrip(".").strip().lower()
+        
+        for entry in toc:
+            # Match against the 'header' field in TOC
+            toc_header = entry.get('header', '').strip().rstrip(".").strip().lower()
+            
+            # Exact match
+            if header_clean == toc_header:
+                return entry
+            
+        return None  
+    
+    def enrich_blocks_with_titles(self, blocks: List[Dict[str, Any]], toc: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+        """
+        Enrich blocks by appending TOC titles to each header segment.
+
+        Args:
+            blocks: List of parsed document blocks with 'headers'
+            toc: List of TOC entries with 'header' and 'title'
+
+        Returns:
+            List of enriched blocks with 'enriched_headers' added
+        """
+        enriched_blocks = blocks.copy()
+        for block in enriched_blocks:
+            enriched_parts = []
+            for header in block.get('headers', '').split(','):
+                header = header.strip()
+                if not header:
+                    continue
+
+                toc_entry = self.find_toc_match(header, toc)
+                if toc_entry:
+                    enriched = f"{header}: {toc_entry.get('title', '')}"
+                else:
+                    enriched = header  # fallback to original if no match
+
+                enriched_parts.append(enriched)
+
+            block['enriched_headers'] = ', '.join(enriched_parts)
+
+        return enriched_blocks
 
 
 
