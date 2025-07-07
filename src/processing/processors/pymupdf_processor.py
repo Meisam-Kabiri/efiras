@@ -310,6 +310,7 @@ class PyMuPDFProcessor(DocumentProcessor):
         enriched_blocks = blocks.copy()
         for block in enriched_blocks:
             enriched_parts = []
+            block['enriched_headers'] = ''  # Initialize enriched headers
             for header in block.get('headers', '').split(','):
                 header = header.strip()
                 if not header:
