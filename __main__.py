@@ -2,11 +2,11 @@
 import os, sys 
 sys.path.append(os.path.abspath("src"))
 
-from src.processing.core.manager import *
+from src.document_readers.core.manager import *
 # from chunking.chunker_simple import RegulationChunker
-from chunking.chunker import RegulationChunker
+from document_chunker.chunker import RegulationChunker
 from src.cleaning.text_cleaner import RegulationCleaner
-from chunking.hybrid_chunker import RegulatoryChunkingSystem
+from document_chunker.hybrid_chunker import RegulatoryChunkingSystem
 import json
 from src.utils.useful_functions import convert_numpy_types
 
