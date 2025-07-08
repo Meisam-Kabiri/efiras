@@ -7,9 +7,21 @@ from sklearn.metrics.pairwise import cosine_similarity
 from pathlib import Path
 
 
+# # FASTEST - 5x faster than mpnet, still good quality
+# local_embedding_model = "all-MiniLM-L6-v2"  # 384-dim, ~90MB
+
+# # GOOD BALANCE - 2-3x faster than mpnet, better quality than L6
+# local_embedding_model = "all-MiniLM-L12-v2"  # 384-dim, ~130MB
+
+# # STILL GOOD - Similar quality to mpnet, bit faster
+# local_embedding_model = "all-distilroberta-v1"  # 768-dim, ~290MB
+
 class RAGSystem:
-    def __init__(self, model: str = "gpt-4", embedding_model: str = "text-embedding-3-large"):
+    def __init__(self, model: str = "gpt-4", online_embedding_model: str = "text-embedding-3-large", use_local_embeddings: bool = False, local_embedding_model: str = "all-mpnet-base-v2"):
         """Initialize RAG system with OpenAI API"""
+        
+
+
         load_dotenv()
         api_key = os.getenv("GPT_API_KEY")
         if not api_key:
@@ -17,8 +29,14 @@ class RAGSystem:
         
         self.client = OpenAI(api_key=api_key)
         self.model = model
-        self.embedding_model = embedding_model
+        self.online_embedding_model = online_embedding_model
         self.vector_db = []
+
+        self.use_local_embeddings = use_local_embeddings
+        # Initialize local embedding model if needed
+        if use_local_embeddings:
+            from sentence_transformers import SentenceTransformer
+            self.local_model = SentenceTransformer(local_embedding_model)
     
     def create_embedding_text(self, block: Dict[str, Any]) -> str:
         """Create embedding text from enriched block"""
@@ -31,16 +49,24 @@ class RAGSystem:
     
     def embed_text(self, text: str) -> List[float]:
         """Generate embeddings for text"""
-        try:
-            response = self.client.embeddings.create(
-                model=self.embedding_model,
-                input=text,
-                encoding_format="float"
-            )
-            return response.data[0].embedding
-        except Exception as e:
-            print(f"Embedding error: {e}")
+        if self.use_local_embeddings:
+            try:
+                return self.local_model.encode(text).tolist()
+            except Exception as e:
+                print(f"Local embedding error: {e}")
             return []
+        else:
+            """Generate embeddings using OpenAI API"""
+            try:
+                response = self.client.embeddings.create(
+                    model=self.online_embedding_model,
+                    input=text,
+                    encoding_format="float"
+                )
+                return response.data[0].embedding
+            except Exception as e:
+                print(f"Embedding error: {e}")
+                return []
     
     def embed_blocks(self, blocks: List[Dict[str, Any]], cache_path: str) -> List[Dict[str, Any]]:
         """Embed blocks with caching"""
@@ -74,9 +100,16 @@ class RAGSystem:
         
         return embeddings
     
-    def add_documents(self, blocks: List[Dict[str, Any]], cache_path: str = "data_processed/embeddings.json"):
+    def add_documents(self, blocks: List[Dict[str, Any]], cache_path: str = "data_processed", cache_file_name: str =  "embeddings"):
         """Add documents to vector database"""
-        self.vector_db = self.embed_blocks(blocks, cache_path)
+        if self.use_local_embeddings:
+            cache_file_path = cache_path + "/" + cache_file_name + "_local.json"
+        else:
+            # cache_file_path = Path(cache_path)
+            # cache_file_path.mkdir(parents=True, exist_ok=True)
+            cache_file_path = cache_path + "/" + (cache_file_name + "_online.json")
+
+        self.vector_db = self.embed_blocks(blocks, cache_file_path)
         print(f"Added {len(self.vector_db)} documents to database")
     
     def search(self, query: str, top_k: int = 5) -> List[Dict[str, Any]]:
@@ -184,67 +217,67 @@ if __name__ == "__main__":
     # Initialize RAG system
     
     
-    # Example TOC with actual structure
-    toc = [
-        {
-            "page": 8,
-            "level": 1,
-            "header": "Part I.",
-            "title": "Definitions and abbreviations"
-        },
-        {
-            "page": 11,
-            "level": 1,
-            "header": "Part II.",
-            "title": "Conditions for obtaining and maintaining the authorisation of an authorised investment fund manager (IFM) who engages solely in the activity of management of UCIs as laid down in Article 101(2) of the 2010 Law and Article 5(2) of the 2013 Law"
-        },
-        {
-            "page": 11,
-            "level": 2,
-            "header": "Chapter 1.",
-            "title": "Basic principles"
-        },
-        {
-            "page": 15,
-            "level": 2,
-            "header": "Chapter 6.",
-            "title": "Bodies of IFM"
-        },
-        {
-            "page": 16,
-            "level": 3,
-            "header": "Sub-chapter 6.3",
-            "title": "Senior Management"
-        },
-        {
-            "page": 17,
-            "level": 4,
-            "header": "Section 6",
-            "title": "Required Number"
-        },
-        {
-            "page": 18,
-            "level": 5,
-            "header": "Sub-section 6.3.2.1",
-            "title": "Contractual Relationship"
-        }
-    ]
+    # # Example TOC with actual structure
+    # toc = [
+    #     {
+    #         "page": 8,
+    #         "level": 1,
+    #         "header": "Part I.",
+    #         "title": "Definitions and abbreviations"
+    #     },
+    #     {
+    #         "page": 11,
+    #         "level": 1,
+    #         "header": "Part II.",
+    #         "title": "Conditions for obtaining and maintaining the authorisation of an authorised investment fund manager (IFM) who engages solely in the activity of management of UCIs as laid down in Article 101(2) of the 2010 Law and Article 5(2) of the 2013 Law"
+    #     },
+    #     {
+    #         "page": 11,
+    #         "level": 2,
+    #         "header": "Chapter 1.",
+    #         "title": "Basic principles"
+    #     },
+    #     {
+    #         "page": 15,
+    #         "level": 2,
+    #         "header": "Chapter 6.",
+    #         "title": "Bodies of IFM"
+    #     },
+    #     {
+    #         "page": 16,
+    #         "level": 3,
+    #         "header": "Sub-chapter 6.3",
+    #         "title": "Senior Management"
+    #     },
+    #     {
+    #         "page": 17,
+    #         "level": 4,
+    #         "header": "Section 6",
+    #         "title": "Required Number"
+    #     },
+    #     {
+    #         "page": 18,
+    #         "level": 5,
+    #         "header": "Sub-section 6.3.2.1",
+    #         "title": "Contractual Relationship"
+    #     }
+    # ]
     
-    # Example blocks that would match the TOC structure
-    blocks = [
-        {
-            "headers": "Part II., Chapter 6., Sub-chapter 6.3, Sub-section 6.3.2.1",
-            "text": "The senior management must maintain a contractual relationship with the institution. This ensures proper governance and accountability structures are in place."
-        },
-        {
-            "headers": "Part II., Chapter 6., Sub-chapter 6.3, Section 6",
-            "text": "The minimum number of senior management members required is three, with at least one having expertise in financial management."
-        },
-        {
-            "headers": "Part I.",
-            "text": "Investment Fund Manager (IFM): An entity that manages investment funds and is subject to regulatory oversight."
-        }
-    ]
+    # # Example blocks that would match the TOC structure
+    # blocks = [
+    #     {
+    #         "headers": "Part II., Chapter 6., Sub-chapter 6.3, Sub-section 6.3.2.1",
+    #         "text": "The senior management must maintain a contractual relationship with the institution. This ensures proper governance and accountability structures are in place."
+    #     },
+    #     {
+    #         "headers": "Part II., Chapter 6., Sub-chapter 6.3, Section 6",
+    #         "text": "The minimum number of senior management members required is three, with at least one having expertise in financial management."
+    #     },
+    #     {
+    #         "headers": "Part I.",
+    #         "text": "Investment Fund Manager (IFM): An entity that manages investment funds and is subject to regulatory oversight."
+    #     }
+    # ]
     
     # Add documents to the system
     # load the json File
@@ -258,20 +291,21 @@ if __name__ == "__main__":
     with open(file_path, 'r') as f:
         data = json.load(f)
 
+    blocks = data.get("blocks", [])
 
     if data["document_info"]["filename_without_ext"]:
         filename = data["document_info"]["filename_without_ext"]
 
     print(f"Loaded {len(data)} blocks from JSON file.")
 
-    rag = RAGSystem()
-    rag.add_documents(blocks, cache_path=f"data_processed/{filename}_embeddings.json")
+    rag = RAGSystem(use_local_embeddings = True)
+    rag.add_documents(blocks, cache_path="data_processed", cache_file_name=filename + "_embeddings")
     
     # # Example queries with the new Chat API
     # print("Database stats:", rag.get_database_stats())
     
     # # Answer questions using the powerful Chat Completions API
-    answer1 = rag.answer_query("What is required for senior management contractual relationship?")
+    answer1 = rag.answer_query("Can the same conducting officer in an Investment Fund Manager (IFM) be responsible for both the risk management function and the investment management function?")
     print(f"Answer 1: {answer1}")
     
     # answer2 = rag.answer_query("How many senior management members are required?")
