@@ -107,40 +107,68 @@ class PyMuPDFProcessor(DocumentProcessor):
                 
                 doc.close()
 
-
-                toc = self._extract_toc(blocks)  # Extract TOC if needed
-
-                # [print(f"{key}: {value}") for d in toc for key, value in d.items()]
-
-                blocks = self._extract_headers(blocks)
-                block = self._clean_text(blocks)
-                blocks = [block for block in blocks 
-                        if not (self._identify_header_footer_blocks(height, block) or len(block["text"]) < 5)
-                        ]
-                
-
-
-                blocks = self._merge_blocks_with_colon_pattern(blocks)
-
-              
-                
-
-                self._enrich_blocks_with_titles(blocks, toc)
-
-                self._save_extracted_blocks(
-                    filename=filename,
-                    filename_without_ext=filename_without_ext,
-                    pages=pages,
-                    toc=toc,
-                    blocks=blocks)
                 
                 logger.info(f"Extracted {len(blocks)} blocks from {filename} using PyMuPDF")
-                return blocks
+                return {
+                        "blocks": blocks,
+                        "height": height,
+                        "width": width,
+                        "filename": filename,
+                        "filename_without_ext": filename_without_ext,
+                        "extension": extension,
+                        "pages": pages
+                    }
+
+
             
             except Exception as e:
                 logger.error(f"PyMuPDF block extraction failed: {e}")
                 raise
 
+    def process_and_chunk_blocks(self, file_path: Union[str, Path]) -> List[Dict[str, Any]]:
+        """
+        Process and chunk the extracted blocks of text.
+        Merges blocks with colons, identifies headers/footers, and chunks text.
+        """
+        pdf_content = self.extract_blocks(file_path)
+        if pdf_content is not None:
+            blocks = pdf_content.get("blocks")
+            height = pdf_content.get("height", 0)
+            filename = pdf_content.get("filename", "")
+            filename_without_ext = pdf_content.get("filename_without_ext", "")
+            pages = pdf_content.get("pages", 0)
+            extension = pdf_content.get("extension", "")   
+
+        if not blocks:
+            logger.warning("No blocks found in the PDF content.")
+            return []
+        
+        toc = self._extract_toc(blocks)  # Extract TOC if needed
+
+        # [print(f"{key}: {value}") for d in toc for key, value in d.items()]
+
+        blocks = self._extract_headers(blocks)
+        block = self._clean_text(blocks)
+        blocks = [block for block in blocks 
+                if not (self._identify_header_footer_blocks(height, block) or len(block["text"]) < 5)
+                ]
+        
+
+
+        blocks = self._merge_blocks_with_colon_pattern(blocks)
+
+        
+        
+
+        self._enrich_blocks_with_titles(blocks, toc)
+
+        self._save_extracted_blocks(
+            filename=filename,
+            filename_without_ext=filename_without_ext,
+            pages=pages,
+            toc=toc,
+            blocks=blocks)
+       
     def _merge_blocks_with_colon_pattern(self, blocks: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
         """
         Merges blocks that end with a colon (e.g., section headers) with the next block's text.
@@ -383,8 +411,7 @@ if __name__ == "__main__":
     processor = PyMuPDFProcessor(config)
     
     if processor.is_available():
-        result = processor.extract_text("data/regulatory_documents/lu/Lux_cssf18_698eng.pdf")
-        result = processor.extract_blocks("data/regulatory_documents/lu/Lux_cssf18_698eng.pdf")
+        result = processor.process_and_chunk_blocks("data/regulatory_documents/lu/Lux_cssf18_698eng.pdf")
         # result = processor.extract_blocks("data/regulatory_documents/eu/Basel  III.pdf")
 
         # print(f"Extraction successful with {processor.processor_type.value}")
