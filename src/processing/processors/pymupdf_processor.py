@@ -80,6 +80,12 @@ class PyMuPDFProcessor(DocumentProcessor):
                 import fitz
                 
                 doc = fitz.open(str(file_path))
+                pages = doc.page_count
+                path = Path(file_path)
+                filename = path.name  # gets the full filename with extension
+                filename_without_ext = path.stem  # gets filename without extension
+                extension = path.suffix  # gets just the extension
+                print (filename, filename_without_ext, extension)
                 page1 = doc[0]
                 width = page1.rect.width
                 height = page1.rect.height
@@ -143,7 +149,8 @@ class PyMuPDFProcessor(DocumentProcessor):
                 
 
                 self.enrich_blocks_with_titles(blocks, toc)
-                file_path = Path('src/cleaning/output_processed_text_pymupdf.json')
+                saving_path = f"data_processed/{filename_without_ext}_extracted_blocks.json"
+                file_path = Path(saving_path)  # Use Path to handle file paths
 
                 # 1. Create the parent directory if it doesn't exist
                 # file_path.parent gives you the directory part of the path ('src/')
@@ -154,9 +161,12 @@ class PyMuPDFProcessor(DocumentProcessor):
                 # Save as single JSON with both blocks and TOC
                 output = {
                     "document_info": {
-                        "filename": "document.pdf",
-                        "total_pages": 50,
-                        "extraction_date": "2024-01-01"
+                        "filename": filename,
+                        "total_pages": pages,
+                        "saved_path": str(file_path),
+                        "processor": "PyMuPDF",
+                        "filename_without_ext":filename_without_ext
+                        # "extraction_date": today
                     },
                     "table_of_contents": toc,  # Your extracted TOC
                     "blocks": blocks  # Your text blocks

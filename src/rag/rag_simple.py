@@ -4,6 +4,7 @@ from typing import List, Dict, Any, Optional
 from dotenv import load_dotenv
 from openai import OpenAI
 from sklearn.metrics.pairwise import cosine_similarity
+from pathlib import Path
 
 
 class RAGSystem:
@@ -41,7 +42,7 @@ class RAGSystem:
             print(f"Embedding error: {e}")
             return []
     
-    def embed_blocks(self, blocks: List[Dict[str, Any]], cache_path: str = "embeddings.json") -> List[Dict[str, Any]]:
+    def embed_blocks(self, blocks: List[Dict[str, Any]], cache_path: str) -> List[Dict[str, Any]]:
         """Embed blocks with caching"""
         # Try loading from cache
         if os.path.exists(cache_path):
@@ -73,9 +74,9 @@ class RAGSystem:
         
         return embeddings
     
-    def add_documents(self, blocks: List[Dict[str, Any]]):
+    def add_documents(self, blocks: List[Dict[str, Any]], cache_path: str = "data_processed/embeddings.json"):
         """Add documents to vector database"""
-        self.vector_db = self.embed_blocks(blocks)
+        self.vector_db = self.embed_blocks(blocks, cache_path)
         print(f"Added {len(self.vector_db)} documents to database")
     
     def search(self, query: str, top_k: int = 5) -> List[Dict[str, Any]]:
@@ -252,18 +253,19 @@ if __name__ == "__main__":
     # chunker = RegulatoryChunkingSystem()
     # chunks = chunker.block_chunker(blocks) #the chunks are saved under "content" key
     
-    with open('src/cleaning/output_processed_text_pymupdf.json', 'r') as f:
+    file = "data_processed/Lux_cssf18_698eng_extracted_blocks.json"
+    file_path = Path(file)
+    with open(file_path, 'r') as f:
         data = json.load(f)
 
 
-    # print(data)
-    # blocks = data["blocks"]
-    # toc = data["table_of_contents"]
-    # print(toc)
+    if data["document_info"]["filename_without_ext"]:
+        filename = data["document_info"]["filename_without_ext"]
+
     print(f"Loaded {len(data)} blocks from JSON file.")
 
     rag = RAGSystem()
-    rag.add_documents(blocks)
+    rag.add_documents(blocks, cache_path=f"data_processed/{filename}_embeddings.json")
     
     # # Example queries with the new Chat API
     # print("Database stats:", rag.get_database_stats())
