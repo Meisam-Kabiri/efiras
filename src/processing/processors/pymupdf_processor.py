@@ -86,6 +86,8 @@ class PyMuPDFProcessor(DocumentProcessor):
                 filename_without_ext = path.stem  # gets filename without extension
                 extension = path.suffix  # gets just the extension
                 print (filename, filename_without_ext, extension)
+
+
                 page1 = doc[0]
                 width = page1.rect.width
                 height = page1.rect.height
@@ -104,84 +106,75 @@ class PyMuPDFProcessor(DocumentProcessor):
                         })
                 
                 doc.close()
-                toc = self.extract_toc(blocks)  # Extract TOC if needed
-                print(toc)
-                [print(f"{key}: {value}") for d in toc for key, value in d.items()]
-                blocks = self.extract_headers(blocks)
-                block = self.clean_text_for_rag(blocks)
+
+
+                toc = self._extract_toc(blocks)  # Extract TOC if needed
+
+                # [print(f"{key}: {value}") for d in toc for key, value in d.items()]
+
+                blocks = self._extract_headers(blocks)
+                block = self._clean_text(blocks)
                 blocks = [block for block in blocks 
-                        if not (self.identify_header_footer_blocks(height, block) or len(block["text"]) < 5)
+                        if not (self._identify_header_footer_blocks(height, block) or len(block["text"]) < 5)
                         ]
-                for i, block in enumerate(blocks):
-                    
-                    # Regex to match "Section/Chapter/Part" followed by numbers and optional text on the same line.
-                    # The 'r"^\s*"' at the beginning allows for optional leading whitespace.
-                    # The outer parentheses ( ) around the whole pattern make it a capturing group.
-
-
-        
-
-                    pattern = re.compile(
-                        r"^\s*(Part|Chapter|Sub-chapter|Section)\s+"  # Prefix (e.g., "Part", "Chapter")
-                        r"([IVXLCDM]+|\d+(?:\.\d+)*)"  # Roman numerals (IV) or digits (4.2.2)
-                        r"(?:\.?)"  # Optional dot (e.g., "Chapter 1.")
-                        r"\s*"  # Optional space
-                        r"([^\n]*?(?=\s*\.{2,}\s*\d*|$))",  # Text until filler dots or end
-                        re.IGNORECASE | re.MULTILINE
-                    )   
-
-                    match = pattern.match(block['text']) # No need to strip() here if using ^\s* in pattern
-
-                    if match:
-                        matched_string = match.group(0).strip() # .group(0) is the entire matched string
-                        # print(f"Block starts with: '{matched_string}'")
-
-
-                    if block['text'].endswith(": \n") or block['text'].endswith(":"):
-                        blocks[i]['text'] +=  "\n" + blocks[i + 1]['text']
-                        del blocks[i + 1] 
-
-                for i in range(200):
-                    # Clean up text in each block
-                    block = blocks[i]
-                    # print(block['text'])
-                    # print("\n-------------------------------------------------------------------\n")
                 
 
-                self.enrich_blocks_with_titles(blocks, toc)
-                saving_path = f"data_processed/{filename_without_ext}_extracted_blocks.json"
-                file_path = Path(saving_path)  # Use Path to handle file paths
 
-                # 1. Create the parent directory if it doesn't exist
-                # file_path.parent gives you the directory part of the path ('src/')
-                # mkdir(parents=True) creates any missing parent directories (e.g., if 'src' itself didn't exist)
-                # exist_ok=True prevents an error if the directory already exists
-                file_path.parent.mkdir(parents=True, exist_ok=True)
+                blocks = self._merge_blocks_with_colon_pattern(blocks)
 
-                # Save as single JSON with both blocks and TOC
-                output = {
-                    "document_info": {
-                        "filename": filename,
-                        "total_pages": pages,
-                        "saved_path": str(file_path),
-                        "processor": "PyMuPDF",
-                        "filename_without_ext":filename_without_ext
-                        # "extraction_date": today
-                    },
-                    "table_of_contents": toc,  # Your extracted TOC
-                    "blocks": blocks  # Your text blocks
-                }
-                with open(file_path, 'w', encoding='utf-8') as f:
-                    json.dump(output, f, indent=4, ensure_ascii=False)
+              
+                
 
-                print(f"Data saved to {file_path}")
+                self._enrich_blocks_with_titles(blocks, toc)
+
+                self._save_extracted_blocks(
+                    filename=filename,
+                    filename_without_ext=filename_without_ext,
+                    pages=pages,
+                    toc=toc,
+                    blocks=blocks)
+                
+                logger.info(f"Extracted {len(blocks)} blocks from {filename} using PyMuPDF")
                 return blocks
             
             except Exception as e:
                 logger.error(f"PyMuPDF block extraction failed: {e}")
                 raise
-        
-    def identify_header_footer_blocks(self, height, block: Dict[str, Any]) -> bool:
+
+    def _merge_blocks_with_colon_pattern(self, blocks: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+        """
+        Merges blocks that end with a colon (e.g., section headers) with the next block's text.
+        Also detects section/chapter headers using regex.
+        """
+        i = 0
+        pattern = re.compile(
+            r"^\s*(Part|Chapter|Sub-chapter|Section)\s+"      # Prefix
+            r"([IVXLCDM]+|\d+(?:\.\d+)*)"                     # Roman numerals or digits
+            r"(?:\.?)\s*"                                     # Optional dot and space
+            r"([^\n]*?(?=\s*\.{2,}\s*\d*|$))",                # Title content
+            re.IGNORECASE | re.MULTILINE
+        )
+
+        while i < len(blocks) - 1:
+            text = blocks[i]['text']
+            
+            # Check for pattern match (but don't do anything with it unless needed)
+            match = pattern.match(text)
+            if match:
+                matched_string = match.group(0).strip()
+                # Optionally store or log this if needed
+                # logger.debug(f"Detected header: {matched_string}")
+
+            # Merge if block ends with a colon
+            if text.endswith(": \n") or text.endswith(":"):
+                blocks[i]['text'] += "\n" + blocks[i + 1]['text']
+                del blocks[i + 1]
+            else:
+                i += 1
+
+        return blocks
+   
+    def _identify_header_footer_blocks(self, height, block: Dict[str, Any]) -> bool:
             """Remove header and footer blocks based on their position."""
             bbox = block['bbox']
             y1 = bbox[1]  # Top y-coordinate of the block
@@ -190,7 +183,7 @@ class PyMuPDFProcessor(DocumentProcessor):
             if y1 < height * 0.08 or (y2 > height * 0.92 and y2-y1 < height * 0.1):
                 return True
             
-    def extract_headers(self, blocks):
+    def _extract_headers(self, blocks):
         # Header patterns with hierarchy levels (lower number = higher priority)
         # ^ ensures pattern matches at start of text
         patterns = {
@@ -220,7 +213,7 @@ class PyMuPDFProcessor(DocumentProcessor):
         
         return blocks
     
-    def extract_toc(self, blocks):
+    def _extract_toc(self, blocks):
         toc = []
         in_toc = False
         
@@ -267,7 +260,7 @@ class PyMuPDFProcessor(DocumentProcessor):
         # Sort TOC by page number                        
         return toc
     
-    def clean_text_for_rag(self,blocks):
+    def _clean_text(self,blocks):
         for block in blocks:
             if 'text' in block:
                 text = block['text']
@@ -282,8 +275,47 @@ class PyMuPDFProcessor(DocumentProcessor):
         
         return blocks
     
-    
-    def find_toc_match(self, header: str, toc: List[Dict[str, Any]]) -> Optional[Dict[str, Any]]:
+    def _save_extracted_blocks(
+        self,
+        filename: str,
+        filename_without_ext: str,
+        pages: int,
+        toc: List[Dict[str, Any]],
+        blocks: List[Dict[str, Any]]
+        ) -> None:
+        """
+        Save extracted document blocks and TOC to a JSON file.
+
+        Args:
+            filename: Full file name with extension.
+            filename_without_ext: File name without extension.
+            pages: Total number of pages.
+            toc: Table of contents entries.
+            blocks: Extracted text blocks.
+        """
+        saving_path = f"data_processed/{filename_without_ext}_extracted_blocks.json"
+        file_path = Path(saving_path)
+        file_path.parent.mkdir(parents=True, exist_ok=True)
+
+        output = {
+            "document_info": {
+                "filename": filename,
+                "total_pages": pages,
+                "saved_path": str(file_path),
+                "processor": "PyMuPDF",
+                "filename_without_ext": filename_without_ext
+            },
+            "table_of_contents": toc,
+            "blocks": blocks
+        }
+
+        with open(file_path, 'w', encoding='utf-8') as f:
+            json.dump(output, f, indent=4, ensure_ascii=False)
+
+        logger.info(f"Data saved to {file_path}")
+
+
+    def _find_toc_match(self, header: str, toc: List[Dict[str, Any]]) -> Optional[Dict[str, Any]]:
         """
         Find matching TOC entry for a given header
         
@@ -306,7 +338,7 @@ class PyMuPDFProcessor(DocumentProcessor):
             
         return None  
     
-    def enrich_blocks_with_titles(self, blocks: List[Dict[str, Any]], toc: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+    def _enrich_blocks_with_titles(self, blocks: List[Dict[str, Any]], toc: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
         """
         Enrich blocks by appending TOC titles to each header segment.
 
@@ -326,7 +358,7 @@ class PyMuPDFProcessor(DocumentProcessor):
                 if not header:
                     continue
 
-                toc_entry = self.find_toc_match(header, toc)
+                toc_entry = self._find_toc_match(header, toc)
                 if toc_entry:
                     enriched = f"{header}: {toc_entry.get('title', '')}"
                 else:
