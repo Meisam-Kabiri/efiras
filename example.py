@@ -69,7 +69,7 @@ def main():
     # Step 4: Create manageable chunks
     print("4. Creating manageable chunks...")
     chunker = RegulatoryChunkingSystem(max_chunk_size=1500)
-    chunked_blocks = chunker.chunk_blocks(processed_data['blocks'])
+    chunked_blocks = chunker.chunk_blocks(processed_data)
     
     # # Update processed data with chunked blocks
     # processed_data['blocks'] = chunked_blocks
@@ -104,7 +104,7 @@ def main():
     
     # Example queries
     queries = [
-        "Can the same conducting officer in an Investment Fund Manager (IFM) be responsible for both the risk management function and the investment management function?"
+       "What are the key requirements for appointing a Compliance Officer in an Investment Fund Manager (IFM), and what documents must be submitted to the CSSF?"
     ]
     
     for i, query in enumerate(queries, 1):
