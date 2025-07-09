@@ -5,7 +5,8 @@ import json
 import logging
 import re
 
-from base import DocumentProcessor, ProcessorConfig, ProcessorType
+
+from .base import DocumentProcessor, ProcessorConfig, ProcessorType
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -109,27 +110,20 @@ class PyMuPDFProcessor(DocumentProcessor):
 
                 
                 logger.info(f"Extracted {len(blocks)} blocks from {filename} using PyMuPDF")
-                output = {
-                        "blocks": blocks,
+                output= {
                         "height": height,
                         "width": width,
                         "filename": filename,
                         "filename_without_ext": filename_without_ext,
+                        "processor": "PyMuPDF",
                         "extension": extension,
-                        "pages": pages
+                        "pages": pages,
+                        "blocks": blocks,
                     }
                 # save file to json file
-                self._save_extracted_blocks(filename, filename_without_ext, pages, [], blocks)
+                self._save_extracted_blocks(output)
 
-                return {
-                        "blocks": blocks,
-                        "height": height,
-                        "width": width,
-                        "filename": filename,
-                        "filename_without_ext": filename_without_ext,
-                        "extension": extension,
-                        "pages": pages
-                    }
+                return output
 
 
             
@@ -139,11 +133,7 @@ class PyMuPDFProcessor(DocumentProcessor):
 
     def _save_extracted_blocks(
             self,
-            filename: str,
-            filename_without_ext: str,
-            pages: int,
-            toc: List[Dict[str, Any]],
-            blocks: List[Dict[str, Any]]
+            output: Dict[str, Any],
             ) -> None:
             """
             Save extracted document blocks and TOC to a JSON file.
@@ -155,35 +145,26 @@ class PyMuPDFProcessor(DocumentProcessor):
                 toc: Table of contents entries.
                 blocks: Extracted text blocks.
             """
-            saving_path = f"data_processed/{filename_without_ext}_raw_blocks.json"
+            saving_path = f"data_processed/{output['filename_without_ext']}_raw_blocks.json"
             file_path = Path(saving_path)
             file_path.parent.mkdir(parents=True, exist_ok=True)
-
-            output = {
-                    "filename": filename,
-                    "total_pages": pages,
-                    "saved_path": str(file_path),
-                    "processor": "PyMuPDF",
-                    "filename_without_ext": filename_without_ext,
-                    "blocks": blocks
-                    }
 
             with open(file_path, 'w', encoding='utf-8') as f:
                 json.dump(output, f, indent=4, ensure_ascii=False)
 
             logger.info(f"Data saved to {file_path}")
 
-if __name__ == "__main__":
-    config = ProcessorConfig(
-        chunk_size=1000,
-        overlap=200,
-        extract_tables=True,
-        ocr_fallback=True
-    )
+# if __name__ == "__main__":
+#     config = ProcessorConfig(
+#         chunk_size=1000,
+#         overlap=200,
+#         extract_tables=True,
+#         ocr_fallback=True
+#     )
     
-    processor = PyMuPDFProcessor(config)
+#     processor = PyMuPDFProcessor(config)
     
-    if processor.is_available():
-        result = processor.extract_blocks("data/regulatory_documents/lu/Lux_cssf18_698eng.pdf")
-    else:
-        print("PyMuPDF is not available. Please install the required library.")
+#     if processor.is_available():
+#         result = processor.extract_blocks("data/regulatory_documents/lu/Lux_cssf18_698eng.pdf")
+#     else:
+#         print("PyMuPDF is not available. Please install the required library.")

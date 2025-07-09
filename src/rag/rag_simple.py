@@ -213,110 +213,39 @@ class RAGSystem:
 
 
 # Example usage:
-if __name__ == "__main__":
-    # Initialize RAG system
+# if __name__ == "__main__":
     
-    
-    # # Example TOC with actual structure
-    # toc = [
-    #     {
-    #         "page": 8,
-    #         "level": 1,
-    #         "header": "Part I.",
-    #         "title": "Definitions and abbreviations"
-    #     },
-    #     {
-    #         "page": 11,
-    #         "level": 1,
-    #         "header": "Part II.",
-    #         "title": "Conditions for obtaining and maintaining the authorisation of an authorised investment fund manager (IFM) who engages solely in the activity of management of UCIs as laid down in Article 101(2) of the 2010 Law and Article 5(2) of the 2013 Law"
-    #     },
-    #     {
-    #         "page": 11,
-    #         "level": 2,
-    #         "header": "Chapter 1.",
-    #         "title": "Basic principles"
-    #     },
-    #     {
-    #         "page": 15,
-    #         "level": 2,
-    #         "header": "Chapter 6.",
-    #         "title": "Bodies of IFM"
-    #     },
-    #     {
-    #         "page": 16,
-    #         "level": 3,
-    #         "header": "Sub-chapter 6.3",
-    #         "title": "Senior Management"
-    #     },
-    #     {
-    #         "page": 17,
-    #         "level": 4,
-    #         "header": "Section 6",
-    #         "title": "Required Number"
-    #     },
-    #     {
-    #         "page": 18,
-    #         "level": 5,
-    #         "header": "Sub-section 6.3.2.1",
-    #         "title": "Contractual Relationship"
-    #     }
-    # ]
-    
-    # # Example blocks that would match the TOC structure
-    # blocks = [
-    #     {
-    #         "headers": "Part II., Chapter 6., Sub-chapter 6.3, Sub-section 6.3.2.1",
-    #         "text": "The senior management must maintain a contractual relationship with the institution. This ensures proper governance and accountability structures are in place."
-    #     },
-    #     {
-    #         "headers": "Part II., Chapter 6., Sub-chapter 6.3, Section 6",
-    #         "text": "The minimum number of senior management members required is three, with at least one having expertise in financial management."
-    #     },
-    #     {
-    #         "headers": "Part I.",
-    #         "text": "Investment Fund Manager (IFM): An entity that manages investment funds and is subject to regulatory oversight."
-    #     }
-    # ]
-    
-    # Add documents to the system
-    # load the json File
-    
-    # from chunking.block_chunker import RegulatoryChunkingSystem
-    # chunker = RegulatoryChunkingSystem()
-    # chunks = chunker.block_chunker(blocks) #the chunks are saved under "content" key
-    
-    file = "data_processed/Lux_cssf18_698eng_processed_blocks.json"
-    file_path = Path(file)
-    with open(file_path, 'r') as f:
-        data = json.load(f)
+    # file = "data_processed/Lux_cssf18_698eng_processed_blocks.json"
+    # file_path = Path(file)
+    # with open(file_path, 'r') as f:
+    #     data = json.load(f)
 
-    blocks = data.get("blocks", [])
+    # blocks = data.get("blocks", [])
 
-    if data["document_info"]["filename_without_ext"]:
-        filename = data["document_info"]["filename_without_ext"]
+    # if data["document_info"]["filename_without_ext"]:
+    #     filename = data["document_info"]["filename_without_ext"]
 
-    print(f"Loaded {len(data)} blocks from JSON file.")
+    # print(f"Loaded {len(data)} blocks from JSON file.")
 
-    rag = RAGSystem(use_local_embeddings = True)
-    rag.add_documents(blocks, cache_path="data_processed", cache_file_name=filename + "_embeddings")
+    # rag = RAGSystem(use_local_embeddings = True)
+    # rag.add_documents(blocks, cache_path="data_processed", cache_file_name=filename + "_embeddings")
     
-    # # Example queries with the new Chat API
-    # print("Database stats:", rag.get_database_stats())
+    # # # Example queries with the new Chat API
+    # # print("Database stats:", rag.get_database_stats())
     
-    # # Answer questions using the powerful Chat Completions API
-    answer1 = rag.answer_query("Can the same conducting officer in an Investment Fund Manager (IFM) be responsible for both the risk management function and the investment management function?")
-    print(f"Answer 1: {answer1}")
+    # # # Answer questions using the powerful Chat Completions API
+    # answer1 = rag.answer_query("Can the same conducting officer in an Investment Fund Manager (IFM) be responsible for both the risk management function and the investment management function?")
+    # print(f"Answer 1: {answer1}")
     
-    # answer2 = rag.answer_query("How many senior management members are required?")
-    # print(f"Answer 2: {answer2}")
+    # # answer2 = rag.answer_query("How many senior management members are required?")
+    # # print(f"Answer 2: {answer2}")
     
-    # # Get answer with source information
-    # detailed_answer = rag.answer_query_with_sources("What are the definitions mentioned in Part I?")
-    # print(f"Detailed Answer: {detailed_answer['answer']}")
-    # print(f"Sources: {detailed_answer['sources']}")
-    # print(f"Confidence: {detailed_answer['confidence']}")
+    # # # Get answer with source information
+    # # detailed_answer = rag.answer_query_with_sources("What are the definitions mentioned in Part I?")
+    # # print(f"Detailed Answer: {detailed_answer['answer']}")
+    # # print(f"Sources: {detailed_answer['sources']}")
+    # # print(f"Confidence: {detailed_answer['confidence']}")
     
-    # # Example of using different models
-    # # rag_gpt4 = RAGSystem(openai_api_key="your-key", model="gpt-4-turbo")
-    # # rag_gpt35 = RAGSystem(openai_api_key="your-key", model="gpt-3.5-turbo")
+    # # # Example of using different models
+    # # # rag_gpt4 = RAGSystem(openai_api_key="your-key", model="gpt-4-turbo")
+    # # # rag_gpt35 = RAGSystem(openai_api_key="your-key", model="gpt-3.5-turbo")

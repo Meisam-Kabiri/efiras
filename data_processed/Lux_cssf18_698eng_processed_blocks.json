@@ -1,7 +1,7 @@
 {
     "document_info": {
         "filename": "Lux_cssf18_698eng.pdf",
-        "total_pages": 0,
+        "total_pages": 96,
         "saved_path": "data_processed/Lux_cssf18_698eng_processed_blocks.json",
         "processor": "PyMuPDF",
         "filename_without_ext": "Lux_cssf18_698eng"
@@ -607,18 +607,6 @@
             "page": 2,
             "bbox": [
                 72.0625,
-                793.958984375,
-                507.411865234375,
-                806.1421508789062
-            ],
-            "text": "Circular CSSF 18/698 Page 2/96",
-            "headers": "",
-            "enriched_headers": ""
-        },
-        {
-            "page": 2,
-            "bbox": [
-                72.0625,
                 65.31450653076172,
                 507.47320556640625,
                 102.81254577636719
@@ -744,18 +732,6 @@
                 571.7725219726562
             ],
             "text": "Director Director Director General",
-            "headers": "",
-            "enriched_headers": ""
-        },
-        {
-            "page": 3,
-            "bbox": [
-                72.0625,
-                793.958984375,
-                535.8619384765625,
-                806.1421508789062
-            ],
-            "text": "Circular CSSF 18/698 Page 3/96",
             "headers": "",
             "enriched_headers": ""
         },
@@ -1128,18 +1104,6 @@
                 757.2852172851562
             ],
             "text": "Sub-chapter 5.2. General internal governance arrangements ............................................... 27",
-            "headers": "Chapter 5, Sub-chapter 5.2",
-            "enriched_headers": "Chapter 5: Arrangements regarding the central administration and internal governance, Sub-chapter 5.2: General internal governance arrangements"
-        },
-        {
-            "page": 4,
-            "bbox": [
-                72.0625,
-                793.958984375,
-                535.8619384765625,
-                806.1421508789062
-            ],
-            "text": "Circular CSSF 18/698 Page 4/96",
             "headers": "Chapter 5, Sub-chapter 5.2",
             "enriched_headers": "Chapter 5: Arrangements regarding the central administration and internal governance, Sub-chapter 5.2: General internal governance arrangements"
         },
@@ -1536,18 +1500,6 @@
                 762.3529052734375
             ],
             "text": "Section 5.5.3. Approval of new business relationships and new products........................................54",
-            "headers": "Chapter 5, Sub-chapter 5.5, Section 5",
-            "enriched_headers": "Chapter 5: Arrangements regarding the central administration and internal governance, Sub-chapter 5.5: Requirements with respect to organisation and procedures, Section 5"
-        },
-        {
-            "page": 5,
-            "bbox": [
-                72.0625,
-                793.958984375,
-                535.8619384765625,
-                806.1421508789062
-            ],
-            "text": "Circular CSSF 18/698 Page 5/96",
             "headers": "Chapter 5, Sub-chapter 5.5, Section 5",
             "enriched_headers": "Chapter 5: Arrangements regarding the central administration and internal governance, Sub-chapter 5.5: Requirements with respect to organisation and procedures, Section 5"
         },
@@ -1974,18 +1926,6 @@
         {
             "page": 6,
             "bbox": [
-                72.0625,
-                793.958984375,
-                535.8619384765625,
-                806.1421508789062
-            ],
-            "text": "Circular CSSF 18/698 Page 6/96",
-            "headers": "Chapter 6, Sub-chapter 6.4, Section 6",
-            "enriched_headers": "Chapter 6: Specific organisational arrangements, Sub-chapter 6.4: Organisation of the function of UCI administration, Section 6"
-        },
-        {
-            "page": 6,
-            "bbox": [
                 105.06249237060547,
                 65.31450653076172,
                 532.7261352539062,
@@ -2359,18 +2299,6 @@
             "page": 7,
             "bbox": [
                 72.0625,
-                793.958984375,
-                535.8619384765625,
-                806.1421508789062
-            ],
-            "text": "Circular CSSF 18/698 Page 7/96",
-            "headers": "Part IX",
-            "enriched_headers": "Part IX: Entry into force and various provisions"
-        },
-        {
-            "page": 7,
-            "bbox": [
-                72.0625,
                 66.08817291259766,
                 533.0532836914062,
                 92.84400177001953
@@ -2431,18 +2359,6 @@
             "page": 8,
             "bbox": [
                 72.0625,
-                793.958984375,
-                521.5762329101562,
-                806.1421508789062
-            ],
-            "text": "Circular CSSF 18/698 Page 8/96",
-            "headers": "Part IX",
-            "enriched_headers": "Part IX: Entry into force and various provisions"
-        },
-        {
-            "page": 8,
-            "bbox": [
-                72.0625,
                 55.68974685668945,
                 291.0738220214844,
                 71.18354797363281
@@ -2466,18 +2382,6 @@
         {
             "page": 9,
             "bbox": [
-                72.0625,
-                793.958984375,
-                521.5762329101562,
-                806.1421508789062
-            ],
-            "text": "Circular CSSF 18/698 Page 9/96",
-            "headers": "Part I",
-            "enriched_headers": "Part I: Definitions and abbreviations"
-        },
-        {
-            "page": 9,
-            "bbox": [
                 89.95207977294922,
                 53.074432373046875,
                 528.4002685546875,
@@ -2490,36 +2394,12 @@
         {
             "page": 10,
             "bbox": [
-                72.0625,
-                793.958984375,
-                521.5699462890625,
-                806.1421508789062
-            ],
-            "text": "Circular CSSF 18/698 Page 10/96",
-            "headers": "Part I",
-            "enriched_headers": "Part I: Definitions and abbreviations"
-        },
-        {
-            "page": 10,
-            "bbox": [
                 90.00104522705078,
                 53.074432373046875,
                 521.6480102539062,
                 546.8695068359375
             ],
             "text": "Parliament and of the Council with regard to regulatory technical standards for Own Funds requirements for institutions, as amended; 37) “EMIR” means Regulation (EU) No 648/2012 of the European Parliament and of the Council of 4 July 2012 on OTC derivatives, central counterparties and trade repositories as well as the related delegated and implementing acts; 38) “MiFID II Regulation” means • Law of 30 May 2018 on markets in financial instruments and transposing Directive 2014/65/EU of the European Parliament and of the Council of 15 May 2014 on markets in financial instruments and amending Directive 2002/92/EC and Directive 2011/61/EU; • Regulation (EU) No 600/2014 on markets in financial instruments (MiFIR) • Grand-ducal Regulation of 30 May 2018 on the protection of financial instruments and funds belonging to clients, product governance obligations and the rules applicable to the provision or reception of fees, commissions or any monetary or non-monetary benefits; • Commission Delegated Regulation (EU) 2017/565 of 25 April 2016 supplementing Directive 2014/65/EU of the European Parliament and of the Council as regards organisational requirements and operating conditions for investment firms and defined terms for the purposes of that Directive; and • relevant delegated acts, implementing acts as well as guidelines and FAQs; 39) “MMFR” means Regulation (EU) 2017/1131 of the European Parliament and of the Council of 14 June 2017 on money market funds as well as the relevant delegated acts, implementing acts and guidelines; 40) “CSSF Regulation 10-4” means CSSF Regulation N° 10-4 transposing Commission Directive 2010/43/EU of 1 July 2010 implementing Directive 2009/65/EC of the European Parliament and of the Council as regards organisational requirements, conflicts of interest, conduct of business, risk management and content of the agreement between a depositary and a management company; 41) “CSSF Regulation 12-02” means CSSF Regulation N° 12-02 of 14 December 2012 on the fight against money laundering and terrorist financing; 42) “CSSF Regulation 16-07” means CSSF Regulation N° 16-07 relating to out-of-court complaint resolution; 43) “SIAG” means self-managed investment company; 44) “UCITS-KIID” means key investor information documents, required under Commission Regulation (EU) No 583/2010 of 1 July 2010 implementing Directive 2009/65/EC of the European Parliament and of the Council as regards key investor information and conditions to be met when providing key investor information or the prospectus in a durable medium other than paper or by means of a website.",
-            "headers": "Part I",
-            "enriched_headers": "Part I: Definitions and abbreviations"
-        },
-        {
-            "page": 11,
-            "bbox": [
-                72.0625,
-                793.958984375,
-                514.61474609375,
-                806.1421508789062
-            ],
-            "text": "Circular CSSF 18/698 Page 11/96",
             "headers": "Part I",
             "enriched_headers": "Part I: Definitions and abbreviations"
         },
@@ -2682,18 +2562,6 @@
         {
             "page": 12,
             "bbox": [
-                72.0625,
-                793.958984375,
-                514.61474609375,
-                806.1421508789062
-            ],
-            "text": "Circular CSSF 18/698 Page 12/96",
-            "headers": "Chapter 2, Sub-chapter 2.1",
-            "enriched_headers": "Chapter 2: Shareholding, Sub-chapter 2.1: Initial authorisation"
-        },
-        {
-            "page": 12,
-            "bbox": [
                 43.74250030517578,
                 56.914398193359375,
                 514.748046875,
@@ -2795,19 +2663,7 @@
                 514.7344970703125,
                 775.3859252929688
             ],
-            "text": "16. In order to enhance compliance with the prudential requirements and rules of conduct, the CSSF may request a lettre de patronage (sponsorship letter). The issuer of this letter provides assurance to the CSSF that the entity patronnée (sponsored) complies/will comply with the prudential requirements imposed by the applicable law, particularly regarding the own funds requirements. This letter may be requested:\nCircular CSSF 18/698 Page 13/96",
-            "headers": "Chapter 2, Sub-chapter 2.1",
-            "enriched_headers": "Chapter 2: Shareholding, Sub-chapter 2.1: Initial authorisation"
-        },
-        {
-            "page": 13,
-            "bbox": [
-                100.38249206542969,
-                56.49982833862305,
-                514.69580078125,
-                112.40876770019531
-            ],
-            "text": "• at the time of the authorisation process of the IFM; • at the time of changes in the shareholding of the IFM; and • during the lifetime of the IFM, when the financial soundness of the IFM and/or of the existing shareholder(s) is not ensured any more.",
+            "text": "16. In order to enhance compliance with the prudential requirements and rules of conduct, the CSSF may request a lettre de patronage (sponsorship letter). The issuer of this letter provides assurance to the CSSF that the entity patronnée (sponsored) complies/will comply with the prudential requirements imposed by the applicable law, particularly regarding the own funds requirements. This letter may be requested:\n• at the time of the authorisation process of the IFM; • at the time of changes in the shareholding of the IFM; and • during the lifetime of the IFM, when the financial soundness of the IFM and/or of the existing shareholder(s) is not ensured any more.",
             "headers": "Chapter 2, Sub-chapter 2.1",
             "enriched_headers": "Chapter 2: Shareholding, Sub-chapter 2.1: Initial authorisation"
         },
@@ -2970,18 +2826,6 @@
         {
             "page": 14,
             "bbox": [
-                72.0625,
-                793.958984375,
-                514.61474609375,
-                806.1421508789062
-            ],
-            "text": "Circular CSSF 18/698 Page 14/96",
-            "headers": "Chapter 3, Sub-chapter 3.1",
-            "enriched_headers": "Chapter 3: Own funds, Sub-chapter 3.1: Required own funds"
-        },
-        {
-            "page": 14,
-            "bbox": [
                 43.74250030517578,
                 56.914398193359375,
                 511.9167785644531,
@@ -3084,18 +2928,6 @@
                 738.9094848632812
             ],
             "text": "35. Irrespective of the above, the IFM which is also authorised to provide the services referred to in Article 101(3) of the 2010 Law and/or Article 5(4) of the 2013 Law must, in addition, comply with the Luxembourg regulations transposing Directive 2013/36/EU of 26 June 2013 regarding capital adequacy.",
-            "headers": "Chapter 3, Sub-chapter 3.1",
-            "enriched_headers": "Chapter 3: Own funds, Sub-chapter 3.1: Required own funds"
-        },
-        {
-            "page": 15,
-            "bbox": [
-                72.0625,
-                793.958984375,
-                514.61474609375,
-                806.1421508789062
-            ],
-            "text": "Circular CSSF 18/698 Page 15/96",
             "headers": "Chapter 3, Sub-chapter 3.1",
             "enriched_headers": "Chapter 3: Own funds, Sub-chapter 3.1: Required own funds"
         },
@@ -3270,18 +3102,6 @@
         {
             "page": 16,
             "bbox": [
-                72.0625,
-                793.958984375,
-                514.61474609375,
-                806.1421508789062
-            ],
-            "text": "Circular CSSF 18/698 Page 16/96",
-            "headers": "Chapter 3, Sub-chapter 3.3",
-            "enriched_headers": "Chapter 3: Own funds, Sub-chapter 3.3: Use of own funds"
-        },
-        {
-            "page": 16,
-            "bbox": [
                 43.74250030517578,
                 56.914398193359375,
                 511.9938049316406,
@@ -3420,18 +3240,6 @@
                 778.8693237304688
             ],
             "text": "56. In order to enhance compliance with the prudential requirements, the CSSF requests the IFM to provide the half-yearly financial situation of the IFM, its subsidiaries and its qualifying holdings. To this end, the standard consolidation methods (for example, the global integration or equity method) must be applied. An undertaking need not be included in the consolidated accounts where it is not",
-            "headers": "Chapter 3, Sub-chapter 3.3",
-            "enriched_headers": "Chapter 3: Own funds, Sub-chapter 3.3: Use of own funds"
-        },
-        {
-            "page": 17,
-            "bbox": [
-                72.0625,
-                793.958984375,
-                514.61474609375,
-                806.1421508789062
-            ],
-            "text": "Circular CSSF 18/698 Page 17/96",
             "headers": "Chapter 3, Sub-chapter 3.3",
             "enriched_headers": "Chapter 3: Own funds, Sub-chapter 3.3: Use of own funds"
         },
@@ -3606,18 +3414,6 @@
         {
             "page": 18,
             "bbox": [
-                72.0625,
-                793.958984375,
-                514.61474609375,
-                806.1421508789062
-            ],
-            "text": "Circular CSSF 18/698 Page 18/96",
-            "headers": "Chapter 4, Sub-chapter 4.1, Section 4",
-            "enriched_headers": "Chapter 4: The bodies of the IFM, Sub-chapter 4.1: The members of the governing body or management body, Section 4"
-        },
-        {
-            "page": 18,
-            "bbox": [
                 43.74250030517578,
                 56.914398193359375,
                 514.7012939453125,
@@ -3720,18 +3516,6 @@
                 780.4302368164062
             ],
             "text": "73. Every member of the management body/governing body of the IFM is responsible for continuously ensuring compliance with the principles laid down in this section.",
-            "headers": "Chapter 4, Sub-chapter 4.1, Section 4",
-            "enriched_headers": "Chapter 4: The bodies of the IFM, Sub-chapter 4.1: The members of the governing body or management body, Section 4"
-        },
-        {
-            "page": 19,
-            "bbox": [
-                72.0625,
-                793.958984375,
-                514.61474609375,
-                806.1421508789062
-            ],
-            "text": "Circular CSSF 18/698 Page 19/96",
             "headers": "Chapter 4, Sub-chapter 4.1, Section 4",
             "enriched_headers": "Chapter 4: The bodies of the IFM, Sub-chapter 4.1: The members of the governing body or management body, Section 4"
         },
@@ -3852,18 +3636,6 @@
                 611.4909057617188
             ],
             "text": "81. Where the value of the portfolios managed by the IFM as defined in Articles 102(1)(a) of the 2010 Law, 8(7) of the 2013 Law and the second subparagraph of Article 14(2) of Delegated Regulation (EU) 231/2013 is less than one billion five hundred million euros (EUR 1,500,000,000), the following conditions must apply:\na) the conducting officers cannot perform more than two mandates as conducting officer in IFMs; b) the CSSF may authorise, based on a prior and duly supported request for derogation, that only one of the legally required conducting officers is permanently located in Luxembourg, provided that the IFM employs sufficient and competent staff in Luxembourg in order to support the conducting officer who is not permanently located in Luxembourg in his/her duties and that this conducting officer can regularly come to Luxembourg to demonstrate that the provisions of Section 4.2.3. (Organisation of the senior management) and of point 118 are complied with; c) if the IFM has more than two conducting officers, the provisions of point 81 must also apply to these additional conducting officers.",
-            "headers": "Chapter 4, Sub-chapter 4.2",
-            "enriched_headers": "Chapter 4: The bodies of the IFM, Sub-chapter 4.2: Senior management"
-        },
-        {
-            "page": 20,
-            "bbox": [
-                72.0625,
-                793.958984375,
-                514.61474609375,
-                806.1421508789062
-            ],
-            "text": "Circular CSSF 18/698 Page 20/96",
             "headers": "Chapter 4, Sub-chapter 4.2",
             "enriched_headers": "Chapter 4: The bodies of the IFM, Sub-chapter 4.2: Senior management"
         },
@@ -4002,18 +3774,6 @@
         {
             "page": 21,
             "bbox": [
-                72.0625,
-                793.958984375,
-                514.61474609375,
-                806.1421508789062
-            ],
-            "text": "Circular CSSF 18/698 Page 21/96",
-            "headers": "Chapter 4, Sub-chapter 4.2, Section 4",
-            "enriched_headers": "Chapter 4: The bodies of the IFM, Sub-chapter 4.2: Senior management, Section 4"
-        },
-        {
-            "page": 21,
-            "bbox": [
                 43.74250030517578,
                 56.914398193359375,
                 511.8393859863281,
@@ -4056,18 +3816,6 @@
                 762.9375610351562
             ],
             "text": "94. In the context of the operation of the executive committee and irrespective of the legal form or structure of the IFM, each conducting officer is assigned specific areas of responsibility, notably with regard to the following functions/activities:\n• investment management;",
-            "headers": "Chapter 4, Sub-chapter 4.2, Section 4",
-            "enriched_headers": "Chapter 4: The bodies of the IFM, Sub-chapter 4.2: Senior management, Section 4"
-        },
-        {
-            "page": 22,
-            "bbox": [
-                72.0625,
-                793.958984375,
-                514.61474609375,
-                806.1421508789062
-            ],
-            "text": "Circular CSSF 18/698 Page 22/96",
             "headers": "Chapter 4, Sub-chapter 4.2, Section 4",
             "enriched_headers": "Chapter 4: The bodies of the IFM, Sub-chapter 4.2: Senior management, Section 4"
         },
@@ -4224,18 +3972,6 @@
                 769.779052734375
             ],
             "text": "104. The identity of the members of the management body/governing body and the conducting officers as well as every person succeeding them in office must be notified beforehand to the CSSF for approval.",
-            "headers": "Chapter 4, Sub-chapter 4.3",
-            "enriched_headers": "Chapter 4: The bodies of the IFM, Sub-chapter 4.3: Procedure for the approval of the members of the management\nbody/governing body and the conducting officers"
-        },
-        {
-            "page": 23,
-            "bbox": [
-                72.0625,
-                793.958984375,
-                514.61474609375,
-                806.1421508789062
-            ],
-            "text": "Circular CSSF 18/698 Page 23/96",
             "headers": "Chapter 4, Sub-chapter 4.3",
             "enriched_headers": "Chapter 4: The bodies of the IFM, Sub-chapter 4.3: Procedure for the approval of the members of the management\nbody/governing body and the conducting officers"
         },
@@ -4399,18 +4135,6 @@
             "page": 24,
             "bbox": [
                 72.0625,
-                793.958984375,
-                514.61474609375,
-                806.1421508789062
-            ],
-            "text": "Circular CSSF 18/698 Page 24/96",
-            "headers": "Chapter 4, Sub-chapter 4.4",
-            "enriched_headers": "Chapter 4: The bodies of the IFM, Sub-chapter 4.4: Independence of the IFM’s bodies from the depositary"
-        },
-        {
-            "page": 24,
-            "bbox": [
-                72.0625,
                 55.44980239868164,
                 515.3477172851562,
                 84.98363494873047
@@ -4536,18 +4260,6 @@
                 758.9775390625
             ],
             "text": "122. The staff must have appropriate individual and collective professional skills having regard to the investment strategies of the managed UCIs.",
-            "headers": "Chapter 5, Sub-chapter 5.1, Section 5",
-            "enriched_headers": "Chapter 5: Arrangements regarding the central administration and internal governance, Sub-chapter 5.1: Arrangements regarding the central administration of the IFM, Section 5"
-        },
-        {
-            "page": 25,
-            "bbox": [
-                72.0625,
-                793.958984375,
-                514.61474609375,
-                806.1421508789062
-            ],
-            "text": "Circular CSSF 18/698 Page 25/96",
             "headers": "Chapter 5, Sub-chapter 5.1, Section 5",
             "enriched_headers": "Chapter 5: Arrangements regarding the central administration and internal governance, Sub-chapter 5.1: Arrangements regarding the central administration of the IFM, Section 5"
         },
@@ -4711,18 +4423,6 @@
             "page": 26,
             "bbox": [
                 72.0625,
-                793.958984375,
-                514.61474609375,
-                806.1421508789062
-            ],
-            "text": "Circular CSSF 18/698 Page 26/96",
-            "headers": "Chapter 5, Sub-chapter 5.1, Section 5",
-            "enriched_headers": "Chapter 5: Arrangements regarding the central administration and internal governance, Sub-chapter 5.1: Arrangements regarding the central administration of the IFM, Section 5"
-        },
-        {
-            "page": 26,
-            "bbox": [
-                72.0625,
                 59.06843566894531,
                 456.299072265625,
                 71.03101348876953
@@ -4848,18 +4548,6 @@
                 783.3290405273438
             ],
             "text": "143. Circular CSSF 17/654 on IT outsourcing relying on a cloud computing infrastructure applies to an IFM if the IFM uses this infrastructure. Pursuant to point 24(c) of the above-mentioned circular, the",
-            "headers": "Chapter 5, Sub-chapter 5.1, Section 5",
-            "enriched_headers": "Chapter 5: Arrangements regarding the central administration and internal governance, Sub-chapter 5.1: Arrangements regarding the central administration of the IFM, Section 5"
-        },
-        {
-            "page": 27,
-            "bbox": [
-                72.0625,
-                793.958984375,
-                514.61474609375,
-                806.1421508789062
-            ],
-            "text": "Circular CSSF 18/698 Page 27/96",
             "headers": "Chapter 5, Sub-chapter 5.1, Section 5",
             "enriched_headers": "Chapter 5: Arrangements regarding the central administration and internal governance, Sub-chapter 5.1: Arrangements regarding the central administration of the IFM, Section 5"
         },
@@ -5034,18 +4722,6 @@
         {
             "page": 28,
             "bbox": [
-                72.0625,
-                793.958984375,
-                514.61474609375,
-                806.1421508789062
-            ],
-            "text": "Circular CSSF 18/698 Page 28/96",
-            "headers": "Chapter 5, Sub-chapter 5.2",
-            "enriched_headers": "Chapter 5: Arrangements regarding the central administration and internal governance, Sub-chapter 5.2: General internal governance arrangements"
-        },
-        {
-            "page": 28,
-            "bbox": [
                 43.74250030517578,
                 56.914398193359375,
                 514.657470703125,
@@ -5160,18 +4836,6 @@
                 761.737548828125
             ],
             "text": "162. In accordance with CSSF Regulation 10-4 and Delegated Regulation (EU) 231/2013, every IFM must establish and maintain operational a permanent compliance, risk management and internal audit function.",
-            "headers": "Chapter 5, Sub-chapter 5.3",
-            "enriched_headers": "Chapter 5: Arrangements regarding the central administration and internal governance, Sub-chapter 5.3: Internal control functions"
-        },
-        {
-            "page": 29,
-            "bbox": [
-                72.0625,
-                793.958984375,
-                514.61474609375,
-                806.1421508789062
-            ],
-            "text": "Circular CSSF 18/698 Page 29/96",
             "headers": "Chapter 5, Sub-chapter 5.3",
             "enriched_headers": "Chapter 5: Arrangements regarding the central administration and internal governance, Sub-chapter 5.3: Internal control functions"
         },
@@ -5303,19 +4967,7 @@
                 490.54376220703125,
                 758.9804077148438
             ],
-            "text": "172. The independence of the internal control functions is incompatible with the situation in which:\nCircular CSSF 18/698 Page 30/96",
-            "headers": "Chapter 5, Sub-chapter 5.3",
-            "enriched_headers": "Chapter 5: Arrangements regarding the central administration and internal governance, Sub-chapter 5.3: Internal control functions"
-        },
-        {
-            "page": 30,
-            "bbox": [
-                100.38249206542969,
-                56.49982833862305,
-                514.7069091796875,
-                167.00189208984375
-            ],
-            "text": "• the staff of the internal control functions are in charge of tasks they are called upon to control; • the internal control functions are, from an organisational point of view, included in the business units they control or report to; and • the remuneration of the staff of the internal control functions is linked to the performance of the activities they control or is determined according to other criteria which compromise the objectivity of the work carried out by the internal control functions.",
+            "text": "172. The independence of the internal control functions is incompatible with the situation in which:\n• the staff of the internal control functions are in charge of tasks they are called upon to control; • the internal control functions are, from an organisational point of view, included in the business units they control or report to; and • the remuneration of the staff of the internal control functions is linked to the performance of the activities they control or is determined according to other criteria which compromise the objectivity of the work carried out by the internal control functions.",
             "headers": "Chapter 5, Sub-chapter 5.3",
             "enriched_headers": "Chapter 5: Arrangements regarding the central administration and internal governance, Sub-chapter 5.3: Internal control functions"
         },
@@ -5448,18 +5100,6 @@
                 738.08251953125
             ],
             "text": "183. The persons responsible for the internal control functions must document the work carried out in accordance with the assigned responsibilities, in particular in order to allow tracking the interventions as well as the conclusions reached.",
-            "headers": "Chapter 5, Sub-chapter 5.3",
-            "enriched_headers": "Chapter 5: Arrangements regarding the central administration and internal governance, Sub-chapter 5.3: Internal control functions"
-        },
-        {
-            "page": 31,
-            "bbox": [
-                72.0625,
-                793.958984375,
-                514.61474609375,
-                806.1421508789062
-            ],
-            "text": "Circular CSSF 18/698 Page 31/96",
             "headers": "Chapter 5, Sub-chapter 5.3",
             "enriched_headers": "Chapter 5: Arrangements regarding the central administration and internal governance, Sub-chapter 5.3: Internal control functions"
         },
@@ -5611,18 +5251,6 @@
             "page": 32,
             "bbox": [
                 72.0625,
-                793.958984375,
-                514.61474609375,
-                806.1421508789062
-            ],
-            "text": "Circular CSSF 18/698 Page 32/96",
-            "headers": "Chapter 5, Sub-chapter 5.3, Section 5, Sub-section 5.3.1.2",
-            "enriched_headers": "Chapter 5: Arrangements regarding the central administration and internal governance, Sub-chapter 5.3: Internal control functions, Section 5, Sub-section 5.3.1.2"
-        },
-        {
-            "page": 32,
-            "bbox": [
-                72.0625,
                 56.914398193359375,
                 511.9194030761719,
                 82.77620697021484
@@ -5766,18 +5394,6 @@
         {
             "page": 33,
             "bbox": [
-                72.0625,
-                793.958984375,
-                514.61474609375,
-                806.1421508789062
-            ],
-            "text": "Circular CSSF 18/698 Page 33/96",
-            "headers": "Chapter 5, Sub-chapter 5.3, Section 5, Sub-section 5.3.1.3",
-            "enriched_headers": "Chapter 5: Arrangements regarding the central administration and internal governance, Sub-chapter 5.3: Internal control functions, Section 5, Sub-section 5.3.1.3"
-        },
-        {
-            "page": 33,
-            "bbox": [
                 43.74250030517578,
                 56.914398193359375,
                 514.71240234375,
@@ -5898,18 +5514,6 @@
         {
             "page": 34,
             "bbox": [
-                72.0625,
-                793.958984375,
-                514.61474609375,
-                806.1421508789062
-            ],
-            "text": "Circular CSSF 18/698 Page 34/96",
-            "headers": "Chapter 5, Sub-chapter 5.3, Section 5, Sub-section 5.3.1.4",
-            "enriched_headers": "Chapter 5: Arrangements regarding the central administration and internal governance, Sub-chapter 5.3: Internal control functions, Section 5, Sub-section 5.3.1.4"
-        },
-        {
-            "page": 34,
-            "bbox": [
                 43.74250030517578,
                 56.914398193359375,
                 514.679443359375,
@@ -6000,18 +5604,6 @@
                 777.056884765625
             ],
             "text": "217. Any new IFM subject to Chapter 15 of the 2010 Law or Chapter 2 of the 2013 Law must include an RMP which has the appropriate format in the authorisation file to be submitted to the CSSF. Then, an update must be communicated to the CSSF at least once a year and within five months following the end of the financial year of the IFM. This obligation enters into force as from the financial year ending in 2018. It should be noted that, in case of an application for an extension of an AIFM’s",
-            "headers": "Chapter 5, Sub-chapter 5.3, Section 5, Sub-section 5.3.1.5",
-            "enriched_headers": "Chapter 5: Arrangements regarding the central administration and internal governance, Sub-chapter 5.3: Internal control functions, Section 5, Sub-section 5.3.1.5"
-        },
-        {
-            "page": 35,
-            "bbox": [
-                72.0625,
-                793.958984375,
-                514.61474609375,
-                806.1421508789062
-            ],
-            "text": "Circular CSSF 18/698 Page 35/96",
             "headers": "Chapter 5, Sub-chapter 5.3, Section 5, Sub-section 5.3.1.5",
             "enriched_headers": "Chapter 5: Arrangements regarding the central administration and internal governance, Sub-chapter 5.3: Internal control functions, Section 5, Sub-section 5.3.1.5"
         },
@@ -6132,18 +5724,6 @@
                 724.5315551757812
             ],
             "text": "225. The ongoing monitoring of the specialised third parties in charge of risk management must cover in particular the exposure of the UCI to market, liquidity, counterparty and concentration risks as well as to all other risks, including operational risk, which may be significant for the UCI.",
-            "headers": "Chapter 5, Sub-chapter 5.3, Section 5, Sub-section 5.3.1.6",
-            "enriched_headers": "Chapter 5: Arrangements regarding the central administration and internal governance, Sub-chapter 5.3: Internal control functions, Section 5, Sub-section 5.3.1.6"
-        },
-        {
-            "page": 36,
-            "bbox": [
-                72.0625,
-                793.958984375,
-                514.61474609375,
-                806.1421508789062
-            ],
-            "text": "Circular CSSF 18/698 Page 36/96",
             "headers": "Chapter 5, Sub-chapter 5.3, Section 5, Sub-section 5.3.1.6",
             "enriched_headers": "Chapter 5: Arrangements regarding the central administration and internal governance, Sub-chapter 5.3: Internal control functions, Section 5, Sub-section 5.3.1.6"
         },
@@ -6287,19 +5867,7 @@
                 511.8946533203125,
                 764.739013671875
             ],
-            "text": "233. For the purpose of reaching the objectives set, the responsibilities of the compliance function must cover at least the following aspects:\nCircular CSSF 18/698 Page 37/96",
-            "headers": "Chapter 5, Sub-chapter 5.3, Section 5, Sub-section 5.3.2.3",
-            "enriched_headers": "Chapter 5: Arrangements regarding the central administration and internal governance, Sub-chapter 5.3: Internal control functions, Section 5, Sub-section 5.3.2.3"
-        },
-        {
-            "page": 37,
-            "bbox": [
-                100.38249206542969,
-                56.49982833862305,
-                514.8058471679688,
-                632.6609497070312
-            ],
-            "text": "• identification of the standards to which the IFM is subject in the exercise of its activities and record keeping of the main rules. This record must be accessible to the relevant staff of the IFM; • identification of the compliance risks to which the IFM is exposed in the exercise of its activities and assessment of their significance and possible consequences. The classification of the identified compliance risks must allow the compliance function to establish its control plan according to the risk, thus enabling an effective use of the resources of the compliance function; • guarantee that the compliance risk is identified and assessed before the IFM expands into new activities, products or business relationships, as well as when developing the transactions and network of the group at international level; • guarantee that, for the implementation of the compliance policy, the IFM has rules that can be used as guidelines by the staff from different functions and business units in the exercise of their day-to-day tasks. These rules must be properly reflected in the instructions, procedures and internal controls in areas directly related to compliance. In drawing up these rules, the compliance function must take into account, as far as necessary for the IFM in question, the ethical rules laid down in the internal governance arrangements. The compliance policy may be included in the manual of procedures referred to in Section 5.5.4. of this circular; • the areas generally related to the compliance function are the fight against money laundering and terrorist financing, the prevention regarding market abuse and personal transactions, the integrity of the markets in financial instruments, the protection of the clients' and investors’ interests, the data protection (unless another person is appointed as Data Protection Officer in accordance with the regulation in force) and compliance with confidentiality obligations, the prevention and management of conflicts of interest, the prevention of the use of the financial sector by third parties to bypass their regulatory obligations and the management of the compliance risk related to cross-border activities. In the more general context of compliance with the code of conduct, the compliance function has also to cover the areas of ethics and professional conduct or even frauds. This list is not exhaustive. In general, the compliance function must be organised so that it covers all the areas which may result in compliance risks. However, insofar as some areas, resulting in practice in compliance risks, may also be linked to other functions such as the risk control function, accounting function or legal function, and for the sake of avoiding any duplication of the compliance controls, the areas other than those referred to above may not be directly covered by the compliance function. In this case, it is understood that the compliance risk is to be covered by the other internal control functions in accordance with a compliance policy clearly defining the competences and responsibilities of the different stakeholders in this area and subject to compliance with the segregation of duties. In this case, the Compliance Officer within the IFM as referred to in Sub-sections 5.3.2.4. and 5.3.2.5. must assume the role of coordination, centralisation and verification that the other areas which do not directly fall within his/her competence are well covered.",
+            "text": "233. For the purpose of reaching the objectives set, the responsibilities of the compliance function must cover at least the following aspects:\n• identification of the standards to which the IFM is subject in the exercise of its activities and record keeping of the main rules. This record must be accessible to the relevant staff of the IFM; • identification of the compliance risks to which the IFM is exposed in the exercise of its activities and assessment of their significance and possible consequences. The classification of the identified compliance risks must allow the compliance function to establish its control plan according to the risk, thus enabling an effective use of the resources of the compliance function; • guarantee that the compliance risk is identified and assessed before the IFM expands into new activities, products or business relationships, as well as when developing the transactions and network of the group at international level; • guarantee that, for the implementation of the compliance policy, the IFM has rules that can be used as guidelines by the staff from different functions and business units in the exercise of their day-to-day tasks. These rules must be properly reflected in the instructions, procedures and internal controls in areas directly related to compliance. In drawing up these rules, the compliance function must take into account, as far as necessary for the IFM in question, the ethical rules laid down in the internal governance arrangements. The compliance policy may be included in the manual of procedures referred to in Section 5.5.4. of this circular; • the areas generally related to the compliance function are the fight against money laundering and terrorist financing, the prevention regarding market abuse and personal transactions, the integrity of the markets in financial instruments, the protection of the clients' and investors’ interests, the data protection (unless another person is appointed as Data Protection Officer in accordance with the regulation in force) and compliance with confidentiality obligations, the prevention and management of conflicts of interest, the prevention of the use of the financial sector by third parties to bypass their regulatory obligations and the management of the compliance risk related to cross-border activities. In the more general context of compliance with the code of conduct, the compliance function has also to cover the areas of ethics and professional conduct or even frauds. This list is not exhaustive. In general, the compliance function must be organised so that it covers all the areas which may result in compliance risks. However, insofar as some areas, resulting in practice in compliance risks, may also be linked to other functions such as the risk control function, accounting function or legal function, and for the sake of avoiding any duplication of the compliance controls, the areas other than those referred to above may not be directly covered by the compliance function. In this case, it is understood that the compliance risk is to be covered by the other internal control functions in accordance with a compliance policy clearly defining the competences and responsibilities of the different stakeholders in this area and subject to compliance with the segregation of duties. In this case, the Compliance Officer within the IFM as referred to in Sub-sections 5.3.2.4. and 5.3.2.5. must assume the role of coordination, centralisation and verification that the other areas which do not directly fall within his/her competence are well covered.",
             "headers": "Chapter 5, Sub-chapter 5.3, Section 5, Sub-section 5.3.2.3",
             "enriched_headers": "Chapter 5: Arrangements regarding the central administration and internal governance, Sub-chapter 5.3: Internal control functions, Section 5, Sub-section 5.3.2.3"
         },
@@ -6324,18 +5892,6 @@
                 781.0946655273438
             ],
             "text": "235. The compliance function must verify compliance with the compliance policy and procedures on a regular basis and must propose adaptations, if required. To this end, the compliance officer must assess and control the compliance risk on a regular basis. In respect of the compliance risk controls as well as the verification of the procedures and instructions, the provisions of this circular do not prevent the compliance function from taking into account the internal audit work.",
-            "headers": "Chapter 5, Sub-chapter 5.3, Section 5, Sub-section 5.3.2.3",
-            "enriched_headers": "Chapter 5: Arrangements regarding the central administration and internal governance, Sub-chapter 5.3: Internal control functions, Section 5, Sub-section 5.3.2.3"
-        },
-        {
-            "page": 38,
-            "bbox": [
-                72.0625,
-                793.958984375,
-                514.61474609375,
-                806.1421508789062
-            ],
-            "text": "Circular CSSF 18/698 Page 38/96",
             "headers": "Chapter 5, Sub-chapter 5.3, Section 5, Sub-section 5.3.2.3",
             "enriched_headers": "Chapter 5: Arrangements regarding the central administration and internal governance, Sub-chapter 5.3: Internal control functions, Section 5, Sub-section 5.3.2.3"
         },
@@ -6498,18 +6054,6 @@
         {
             "page": 39,
             "bbox": [
-                72.0625,
-                793.958984375,
-                514.61474609375,
-                806.1421508789062
-            ],
-            "text": "Circular CSSF 18/698 Page 39/96",
-            "headers": "Chapter 5, Sub-chapter 5.3, Section 5, Sub-section 5.3.2.4",
-            "enriched_headers": "Chapter 5: Arrangements regarding the central administration and internal governance, Sub-chapter 5.3: Internal control functions, Section 5, Sub-section 5.3.2.4"
-        },
-        {
-            "page": 39,
-            "bbox": [
                 71.14537811279297,
                 58.8261833190918,
                 356.3800964355469,
@@ -6606,18 +6150,6 @@
         {
             "page": 40,
             "bbox": [
-                72.0625,
-                793.958984375,
-                514.61474609375,
-                806.1421508789062
-            ],
-            "text": "Circular CSSF 18/698 Page 40/96",
-            "headers": "Chapter 5, Sub-chapter 5.3, Section 5, Sub-section 5.3.2.5",
-            "enriched_headers": "Chapter 5: Arrangements regarding the central administration and internal governance, Sub-chapter 5.3: Internal control functions, Section 5, Sub-section 5.3.2.5"
-        },
-        {
-            "page": 40,
-            "bbox": [
                 43.74250030517578,
                 56.914398193359375,
                 514.7235107421875,
@@ -6696,18 +6228,6 @@
                 702.0543823242188
             ],
             "text": "260. In the summary report, the Compliance Officer must take into account any other information deemed relevant, for instance in the following areas (non-exhaustive list):\n• governance of the IFM; • compliance with the legal and regulatory requirements with respect to own funds and their use; • management of conflicts of interest; • net asset value errors;",
-            "headers": "Chapter 5, Sub-chapter 5.3, Section 5, Sub-section 5.3.2.6",
-            "enriched_headers": "Chapter 5: Arrangements regarding the central administration and internal governance, Sub-chapter 5.3: Internal control functions, Section 5, Sub-section 5.3.2.6"
-        },
-        {
-            "page": 41,
-            "bbox": [
-                72.0625,
-                793.958984375,
-                514.61474609375,
-                806.1421508789062
-            ],
-            "text": "Circular CSSF 18/698 Page 41/96",
             "headers": "Chapter 5, Sub-chapter 5.3, Section 5, Sub-section 5.3.2.6",
             "enriched_headers": "Chapter 5: Arrangements regarding the central administration and internal governance, Sub-chapter 5.3: Internal control functions, Section 5, Sub-section 5.3.2.6"
         },
@@ -6822,18 +6342,6 @@
         {
             "page": 42,
             "bbox": [
-                72.0625,
-                793.958984375,
-                514.61474609375,
-                806.1421508789062
-            ],
-            "text": "Circular CSSF 18/698 Page 42/96",
-            "headers": "Chapter 5, Sub-chapter 5.3, Section 5, Sub-section 5.3.3.2",
-            "enriched_headers": "Chapter 5: Arrangements regarding the central administration and internal governance, Sub-chapter 5.3: Internal control functions, Section 5, Sub-section 5.3.3.2"
-        },
-        {
-            "page": 42,
-            "bbox": [
                 100.38249206542969,
                 56.49982833862305,
                 514.71826171875,
@@ -6912,18 +6420,6 @@
                 533.0161743164062
             ],
             "text": "270. In general, the internal audit function must review and assess whether the IFM’s central administration and internal governance arrangements are adequate and operate effectively. In this respect, the internal audit function must assess, among others:\n• the monitoring of compliance with the laws and regulations and the prudential requirements imposed by the CSSF; • the effectiveness and efficiency of the internal control; • the adequacy of the IFM’s organisation, including, in particular, the monitoring of delegates as well as the implementation of the procedure for the approval of new business relationships and new products; • the adequacy of the accounting and IT function; • the adequacy of the segregation of duties and of the exercise of activities; • the accurate and complete registration of the transactions and the compilation of accurate, comprehensive, relevant and understandable financial and prudential information which is available without delay to the management body/governing body, to specialised committees, where appropriate, and to the senior management and the CSSF; • the implementation of the decisions taken by the senior management and by the persons acting by delegation and under their responsibility; • the compliance with the procedures governing capital adequacy as specified in Chapter 3 (Own funds) of this circular;",
-            "headers": "Chapter 5, Sub-chapter 5.3, Section 5, Sub-section 5.3.3.3",
-            "enriched_headers": "Chapter 5: Arrangements regarding the central administration and internal governance, Sub-chapter 5.3: Internal control functions, Section 5, Sub-section 5.3.3.3"
-        },
-        {
-            "page": 43,
-            "bbox": [
-                72.0625,
-                793.958984375,
-                514.61474609375,
-                806.1421508789062
-            ],
-            "text": "Circular CSSF 18/698 Page 43/96",
             "headers": "Chapter 5, Sub-chapter 5.3, Section 5, Sub-section 5.3.3.3",
             "enriched_headers": "Chapter 5: Arrangements regarding the central administration and internal governance, Sub-chapter 5.3: Internal control functions, Section 5, Sub-section 5.3.3.3"
         },
@@ -7099,18 +6595,6 @@
             "page": 44,
             "bbox": [
                 72.0625,
-                793.958984375,
-                514.61474609375,
-                806.1421508789062
-            ],
-            "text": "Circular CSSF 18/698 Page 44/96",
-            "headers": "Chapter 5, Sub-chapter 5.3, Section 5, Sub-section 5.3.3.5",
-            "enriched_headers": "Chapter 5: Arrangements regarding the central administration and internal governance, Sub-chapter 5.3: Internal control functions, Section 5, Sub-section 5.3.3.5"
-        },
-        {
-            "page": 44,
-            "bbox": [
-                72.0625,
                 56.914398193359375,
                 512.0185546875,
                 82.77620697021484
@@ -7200,18 +6684,6 @@
                 772.6475219726562
             ],
             "text": "287. All internal audit engagements must be planned and executed in accordance with an internal audit plan. The plan must be drawn up by the person responsible for the internal audit function for a period of several years (generally three years). Its purpose is to cover all activities and functions of the IFM, taking into account both the risks posed by an activity or function of the IFM and the effectiveness of the organisation and internal control in place for this activity or function. The plan must take into account the opinions of the management body/governing body and the senior management. The plan must cover all matters of prudential interest (including the CSSF's comments and requests) and must also reflect the developments and innovations provided for as well as the risks which may arise therefrom.",
-            "headers": "Chapter 5, Sub-chapter 5.3, Section 5, Sub-section 5.3.3.6",
-            "enriched_headers": "Chapter 5: Arrangements regarding the central administration and internal governance, Sub-chapter 5.3: Internal control functions, Section 5, Sub-section 5.3.3.6"
-        },
-        {
-            "page": 45,
-            "bbox": [
-                72.0625,
-                793.958984375,
-                514.61474609375,
-                806.1421508789062
-            ],
-            "text": "Circular CSSF 18/698 Page 45/96",
             "headers": "Chapter 5, Sub-chapter 5.3, Section 5, Sub-section 5.3.3.6",
             "enriched_headers": "Chapter 5: Arrangements regarding the central administration and internal governance, Sub-chapter 5.3: Internal control functions, Section 5, Sub-section 5.3.3.6"
         },
@@ -7363,18 +6835,6 @@
             "page": 46,
             "bbox": [
                 72.0625,
-                793.958984375,
-                514.61474609375,
-                806.1421508789062
-            ],
-            "text": "Circular CSSF 18/698 Page 46/96",
-            "headers": "Chapter 5, Sub-chapter 5.3, Section 5, Sub-section 5.3.3.7",
-            "enriched_headers": "Chapter 5: Arrangements regarding the central administration and internal governance, Sub-chapter 5.3: Internal control functions, Section 5, Sub-section 5.3.3.7"
-        },
-        {
-            "page": 46,
-            "bbox": [
-                72.0625,
                 56.914398193359375,
                 514.6708984375,
                 123.6906967163086
@@ -7500,18 +6960,6 @@
                 779.9747924804688
             ],
             "text": "305. Every IFM is subject to the laws and regulations in force regarding the fight against money laundering and terrorist financing, including the AML/CFT Law, CSSF Regulation 12-02 and the CSSF circulars on AML/CFT. In addition, every IFM is also subject to the Law of 27 October 2010 which, among other things, implements United Nations Security Council resolutions as well as acts adopted by the European Union concerning prohibitions and restrictive measures in financial matters",
-            "headers": "Chapter 5, Sub-chapter 5.4, Section 5, Sub-section 5.4.1.1",
-            "enriched_headers": "Chapter 5: Arrangements regarding the central administration and internal governance, Sub-chapter 5.4, Section 5, Sub-section 5.4.1.1"
-        },
-        {
-            "page": 47,
-            "bbox": [
-                72.0625,
-                793.958984375,
-                514.61474609375,
-                806.1421508789062
-            ],
-            "text": "Circular CSSF 18/698 Page 47/96",
             "headers": "Chapter 5, Sub-chapter 5.4, Section 5, Sub-section 5.4.1.1",
             "enriched_headers": "Chapter 5: Arrangements regarding the central administration and internal governance, Sub-chapter 5.4, Section 5, Sub-section 5.4.1.1"
         },
@@ -7650,18 +7098,6 @@
         {
             "page": 48,
             "bbox": [
-                72.0625,
-                793.958984375,
-                514.61474609375,
-                806.1421508789062
-            ],
-            "text": "Circular CSSF 18/698 Page 48/96",
-            "headers": "Chapter 5, Sub-chapter 5.4, Section 5, Sub-section 5.4.1.2",
-            "enriched_headers": "Chapter 5: Arrangements regarding the central administration and internal governance, Sub-chapter 5.4, Section 5, Sub-section 5.4.1.2"
-        },
-        {
-            "page": 48,
-            "bbox": [
                 43.74250030517578,
                 56.914398193359375,
                 514.6354370117188,
@@ -7704,18 +7140,6 @@
                 314.61907958984375
             ],
             "text": "318. The report must at least cover the following:\na) the results of the identification and assessment of ML/TF risks and the measures taken to mitigate them, as well as the IFM’s ML/TF risk level tolerance; b) the results of the due diligence conducted on clients, initiators of UCIs, portfolio managers to whom it delegates the management, investment advisers, including ongoing due diligence; c) the results of the enhanced due diligence conducted on intermediaries acting on behalf of their clients in accordance with the provisions of Article 3 of CSSF Regulation 12- 02, including the ongoing due diligence; d) the results of the enhanced due diligence on persons identified as politically exposed persons (PEPs) in accordance with the provisions of Article 3-2(4)(d) of the AML/CFT Law; e) the results of the due diligence conducted on assets of UCIs, including the ongoing due diligence; f) the monitoring of the positions blocked due to AML/CFT in the registers of unit-holders of UCIs and/or intermediaries involved in the marketing of UCIs; g) the periodic review of all business relationships according to their risk level; h) in the case of delegation of tasks relating to professional obligations to third parties, the results of the monitoring carried out on the compliance of the services provided by these third parties, not only with the legal and regulatory provisions but also with the contractual provisions; where appropriate, the reasons why the IFM has chosen new third parties during the year; i) statistical history concerning the identified suspicious transactions which inform about the number of suspicious transaction cases reported to the Financial Intelligence Unit (FIU) by the IFM, as well as the total amount of funds involved; j) statistical history concerning the transactions reported in the framework of the financial sanctions relating to terrorist financing and those linked to the implementation of the United Nations Security Council resolutions and acts adopted by the European Union as referred to in point 305 as well as the amount of the funds involved; k) the number of identified breaches of AML/CFT professional obligations. If the number is zero, it must be clearly specified; l) the number of AML/CFT actions implemented, with a description of the main actions, and the deadline for their implementation, pursuant to Article 7(2) of Grand-ducal Regulation of 1 February 2010 and Article 42(5) of CSSF Regulation 12-02. If the number is zero, it must be clearly specified. The number of actions results in particular",
-            "headers": "Chapter 5, Sub-chapter 5.4, Section 5, Sub-section 5.4.1.2",
-            "enriched_headers": "Chapter 5: Arrangements regarding the central administration and internal governance, Sub-chapter 5.4, Section 5, Sub-section 5.4.1.2"
-        },
-        {
-            "page": 49,
-            "bbox": [
-                72.0625,
-                793.958984375,
-                514.61474609375,
-                806.1421508789062
-            ],
-            "text": "Circular CSSF 18/698 Page 49/96",
             "headers": "Chapter 5, Sub-chapter 5.4, Section 5, Sub-section 5.4.1.2",
             "enriched_headers": "Chapter 5: Arrangements regarding the central administration and internal governance, Sub-chapter 5.4, Section 5, Sub-section 5.4.1.2"
         },
@@ -7962,18 +7386,6 @@
         {
             "page": 50,
             "bbox": [
-                72.0625,
-                793.958984375,
-                514.61474609375,
-                806.1421508789062
-            ],
-            "text": "Circular CSSF 18/698 Page 50/96",
-            "headers": "Chapter 5, Sub-chapter 5.4, Section 5",
-            "enriched_headers": "Chapter 5: Arrangements regarding the central administration and internal governance, Sub-chapter 5.4, Section 5"
-        },
-        {
-            "page": 50,
-            "bbox": [
                 43.74250030517578,
                 56.914398193359375,
                 514.6683959960938,
@@ -8039,19 +7451,7 @@
                 514.60205078125,
                 752.5771484375
             ],
-            "text": "330. The ongoing monitoring operations of intermediaries which market and act on behalf of clients must for example concern (non-exhaustive list):\nCircular CSSF 18/698 Page 51/96",
-            "headers": "Chapter 5, Sub-chapter 5.4, Section 5",
-            "enriched_headers": "Chapter 5: Arrangements regarding the central administration and internal governance, Sub-chapter 5.4, Section 5"
-        },
-        {
-            "page": 51,
-            "bbox": [
-                100.38248443603516,
-                56.914398193359375,
-                514.7288208007812,
-                178.28382873535156
-            ],
-            "text": "a) the monitoring of the marketing policy with the implementation of a procedure enabling the IFM to be involved in decision-making concerning new countries of registration; b) the monitoring of the existence of contracts or any other document up to date which establish the responsibilities of the intermediary and of the IFM, respectively; c) the regular screening of the lists of financial sanctions relating to terrorist financing as well as a screening of the persons, entities or groups mentioned in the United Nations Security Council resolutions and acts adopted by the European Union as referred to in point 305; d) the monitoring of the compliance of the intermediaries with their AML/CFT obligations.",
+            "text": "330. The ongoing monitoring operations of intermediaries which market and act on behalf of clients must for example concern (non-exhaustive list):\na) the monitoring of the marketing policy with the implementation of a procedure enabling the IFM to be involved in decision-making concerning new countries of registration; b) the monitoring of the existence of contracts or any other document up to date which establish the responsibilities of the intermediary and of the IFM, respectively; c) the regular screening of the lists of financial sanctions relating to terrorist financing as well as a screening of the persons, entities or groups mentioned in the United Nations Security Council resolutions and acts adopted by the European Union as referred to in point 305; d) the monitoring of the compliance of the intermediaries with their AML/CFT obligations.",
             "headers": "Chapter 5, Sub-chapter 5.4, Section 5",
             "enriched_headers": "Chapter 5: Arrangements regarding the central administration and internal governance, Sub-chapter 5.4, Section 5"
         },
@@ -8142,18 +7542,6 @@
         {
             "page": 52,
             "bbox": [
-                72.0625,
-                793.958984375,
-                514.61474609375,
-                806.1421508789062
-            ],
-            "text": "Circular CSSF 18/698 Page 52/96",
-            "headers": "Chapter 5, Sub-chapter 5.4, Section 5",
-            "enriched_headers": "Chapter 5: Arrangements regarding the central administration and internal governance, Sub-chapter 5.4, Section 5"
-        },
-        {
-            "page": 52,
-            "bbox": [
                 43.74250030517578,
                 56.914398193359375,
                 514.74560546875,
@@ -8232,18 +7620,6 @@
                 446.9784851074219
             ],
             "text": "342. In this context, the Management Information must cover, at least:\n• the monitoring of the legal and corporate life; • the monitoring of the financial and accounting activity and of the level of own funds; • the monitoring of human resources; • the functions included in the collective portfolio management activity as defined in Annex II of the 2010 Law or the functions included in Annex I of the 2013 Law, respectively, among which the launch of new products, the monitoring of the UCI performance, the monitoring of the best execution policy and the monitoring of incidents (significant and non-significant errors of the net asset value, breaches of limits, valuation problems, problems of reconciliation, situations giving rise to conflicts of interest and other problems, marketing incidents, ML/TF incidents, etc.); • the discretionary management and non-core services referred to in Article 101(3)(a) of the 2010 Law and Article 5(4) of the 2013 Law, where appropriate; • the results of the controls carried out on the delegated activities, including analyses of these results carried out by the IFM; • the analyses of the risk management of the IFM and UCIs, including the monitoring of the operational risk; • the results of the controls on the effective and proper implementation of the general investment policy and of the strategy of the managed UCIs; • the results of the controls of the adequate transparency in the prospectus and, where appropriate, in the UCITS-KIID and/or the PRIIPs-KID of every managed UCI in relation to the general investment policy and the strategy implemented; • the result of the work carried out by the compliance function; • the monitoring of the observations of the internal audit function;",
-            "headers": "Chapter 5, Sub-chapter 5.5",
-            "enriched_headers": "Chapter 5: Arrangements regarding the central administration and internal governance, Sub-chapter 5.5: Requirements with respect to organisation and procedures"
-        },
-        {
-            "page": 53,
-            "bbox": [
-                72.0625,
-                793.958984375,
-                514.61474609375,
-                806.1421508789062
-            ],
-            "text": "Circular CSSF 18/698 Page 53/96",
             "headers": "Chapter 5, Sub-chapter 5.5",
             "enriched_headers": "Chapter 5: Arrangements regarding the central administration and internal governance, Sub-chapter 5.5: Requirements with respect to organisation and procedures"
         },
@@ -8419,18 +7795,6 @@
             "page": 54,
             "bbox": [
                 72.0625,
-                793.958984375,
-                514.61474609375,
-                806.1421508789062
-            ],
-            "text": "Circular CSSF 18/698 Page 54/96",
-            "headers": "Chapter 5, Sub-chapter 5.5, Section 5",
-            "enriched_headers": "Chapter 5: Arrangements regarding the central administration and internal governance, Sub-chapter 5.5: Requirements with respect to organisation and procedures, Section 5"
-        },
-        {
-            "page": 54,
-            "bbox": [
-                72.0625,
                 59.06843566894531,
                 411.13433837890625,
                 71.03101348876953
@@ -8568,18 +7932,6 @@
                 783.0875854492188
             ],
             "text": "361. The name of the conducting officer responsible for the handling, centralisation and monitoring of complaints must be communicated to the CSSF. Subject to prior notification to the CSSF and in accordance with Article 15(3) of CSSF Regulation 16-07, the person responsible at senior management level may delegate internally the complaint management.",
-            "headers": "Chapter 5, Sub-chapter 5.5, Section 5",
-            "enriched_headers": "Chapter 5: Arrangements regarding the central administration and internal governance, Sub-chapter 5.5: Requirements with respect to organisation and procedures, Section 5"
-        },
-        {
-            "page": 55,
-            "bbox": [
-                72.0625,
-                793.958984375,
-                514.61474609375,
-                806.1421508789062
-            ],
-            "text": "Circular CSSF 18/698 Page 55/96",
             "headers": "Chapter 5, Sub-chapter 5.5, Section 5",
             "enriched_headers": "Chapter 5: Arrangements regarding the central administration and internal governance, Sub-chapter 5.5: Requirements with respect to organisation and procedures, Section 5"
         },
@@ -8767,18 +8119,6 @@
             "page": 56,
             "bbox": [
                 72.0625,
-                793.958984375,
-                514.61474609375,
-                806.1421508789062
-            ],
-            "text": "Circular CSSF 18/698 Page 56/96",
-            "headers": "Chapter 5, Sub-chapter 5.5, Section 5",
-            "enriched_headers": "Chapter 5: Arrangements regarding the central administration and internal governance, Sub-chapter 5.5: Requirements with respect to organisation and procedures, Section 5"
-        },
-        {
-            "page": 56,
-            "bbox": [
-                72.0625,
                 56.914398193359375,
                 253.58721923828125,
                 69.09756469726562
@@ -8904,18 +8244,6 @@
                 731.2515869140625
             ],
             "text": "381. In accordance with Article 22(1) of CSSF Regulation 10-4 and Article 35 of Delegated Regulation (EU) 231/2013, the IFM must keep and regularly update a record of the types of activities undertaken by or on behalf of the IFM in which a conflict of interest entailing a material risk of damage to the interests of one of more UCIs or its investors has arisen or, in the case of an ongoing activity, may arise. This record must be specific to the organisation and activities of the IFM. It is recommended that the record covers at least the following:\n• the description of the conflict of interest (whether potential or actual); • the identification of the person or units concerned by the conflict of interest; • the date on which the conflict of interest occurred or was discovered;",
-            "headers": "Chapter 5, Sub-chapter 5.5, Section 5, Sub-section 5.5.7.2",
-            "enriched_headers": "Chapter 5: Arrangements regarding the central administration and internal governance, Sub-chapter 5.5: Requirements with respect to organisation and procedures, Section 5, Sub-section 5.5.7.2"
-        },
-        {
-            "page": 57,
-            "bbox": [
-                72.0625,
-                793.958984375,
-                514.61474609375,
-                806.1421508789062
-            ],
-            "text": "Circular CSSF 18/698 Page 57/96",
             "headers": "Chapter 5, Sub-chapter 5.5, Section 5, Sub-section 5.5.7.2",
             "enriched_headers": "Chapter 5: Arrangements regarding the central administration and internal governance, Sub-chapter 5.5: Requirements with respect to organisation and procedures, Section 5, Sub-section 5.5.7.2"
         },
@@ -9048,18 +8376,6 @@
                 731.9788208007812
             ],
             "text": "388. In order to promote a sound and prudent risk management, every IFM must implement a remuneration policy in compliance with Articles 111a and 111b of the 2010 Law and/or Article 12 of the 2013 Law respectively.",
-            "headers": "Chapter 5, Sub-chapter 5.5, Section 5",
-            "enriched_headers": "Chapter 5: Arrangements regarding the central administration and internal governance, Sub-chapter 5.5: Requirements with respect to organisation and procedures, Section 5"
-        },
-        {
-            "page": 58,
-            "bbox": [
-                72.0625,
-                793.958984375,
-                514.61474609375,
-                806.1421508789062
-            ],
-            "text": "Circular CSSF 18/698 Page 58/96",
             "headers": "Chapter 5, Sub-chapter 5.5, Section 5",
             "enriched_headers": "Chapter 5: Arrangements regarding the central administration and internal governance, Sub-chapter 5.5: Requirements with respect to organisation and procedures, Section 5"
         },
@@ -9234,18 +8550,6 @@
         {
             "page": 59,
             "bbox": [
-                72.0625,
-                793.958984375,
-                514.61474609375,
-                806.1421508789062
-            ],
-            "text": "Circular CSSF 18/698 Page 59/96",
-            "headers": "Chapter 5, Sub-chapter 5.5, Section 5",
-            "enriched_headers": "Chapter 5: Arrangements regarding the central administration and internal governance, Sub-chapter 5.5: Requirements with respect to organisation and procedures, Section 5"
-        },
-        {
-            "page": 59,
-            "bbox": [
                 43.74250030517578,
                 56.914398193359375,
                 514.7235107421875,
@@ -9312,18 +8616,6 @@
                 699.5728149414062
             ],
             "text": "403. When performing the function of management of UCIs qualifying as money market funds, every IFM must implement procedures and arrangements in order to comply with the MMFR pursuant to Article 5(4)(a) of the MMFR and in order to ensure that the managed UCIs qualifying as money market funds comply with their obligations under the MMFR in accordance with Article 7(4) of the MMFR.",
-            "headers": "Chapter 5, Sub-chapter 5.5, Section 5",
-            "enriched_headers": "Chapter 5: Arrangements regarding the central administration and internal governance, Sub-chapter 5.5: Requirements with respect to organisation and procedures, Section 5"
-        },
-        {
-            "page": 60,
-            "bbox": [
-                72.0625,
-                793.958984375,
-                514.61474609375,
-                806.1421508789062
-            ],
-            "text": "Circular CSSF 18/698 Page 60/96",
             "headers": "Chapter 5, Sub-chapter 5.5, Section 5",
             "enriched_headers": "Chapter 5: Arrangements regarding the central administration and internal governance, Sub-chapter 5.5: Requirements with respect to organisation and procedures, Section 5"
         },
@@ -9456,18 +8748,6 @@
                 638.9811401367188
             ],
             "text": "411. Among the activities that an IFM may, in principle, delegate, the following tasks are noteworthy:\n• the functions included in the activity of collective portfolio management as defined in Annex II of the 2010 Law or the functions included in Annex I of the 2013 Law respectively, within the limits described in points 417 and 418 above; • the risk management within the limit described in Sub-section 5.3.1.6. of this circular; • the valuation function under the conditions described in Section 6.6.3. of this circular; • the handling of complaints under the conditions described in Section 5.5.5. of this circular;",
-            "headers": "Chapter 6, Sub-chapter 6.1",
-            "enriched_headers": "Chapter 6: Specific organisational arrangements, Sub-chapter 6.1: Limits to the scope of delegation"
-        },
-        {
-            "page": 61,
-            "bbox": [
-                72.0625,
-                793.958984375,
-                514.61474609375,
-                806.1421508789062
-            ],
-            "text": "Circular CSSF 18/698 Page 61/96",
             "headers": "Chapter 6, Sub-chapter 6.1",
             "enriched_headers": "Chapter 6: Specific organisational arrangements, Sub-chapter 6.1: Limits to the scope of delegation"
         },
@@ -9630,18 +8910,6 @@
         {
             "page": 62,
             "bbox": [
-                72.0625,
-                793.958984375,
-                514.61474609375,
-                806.1421508789062
-            ],
-            "text": "Circular CSSF 18/698 Page 62/96",
-            "headers": "Chapter 6, Sub-chapter 6.2",
-            "enriched_headers": "Chapter 6: Specific organisational arrangements, Sub-chapter 6.2: Delegation framework"
-        },
-        {
-            "page": 62,
-            "bbox": [
                 43.74250030517578,
                 56.914398193359375,
                 514.7014770507812,
@@ -9792,18 +9060,6 @@
                 757.5418701171875
             ],
             "text": "Specific provisions applicable to ManCos:\n431. The prospectuses of the UCITS list the functions which the IFM has been authorised to delegate.",
-            "headers": "Chapter 6, Sub-chapter 6.2, Section 6",
-            "enriched_headers": "Chapter 6: Specific organisational arrangements, Sub-chapter 6.2: Delegation framework, Section 6"
-        },
-        {
-            "page": 63,
-            "bbox": [
-                72.0625,
-                793.958984375,
-                514.61474609375,
-                806.1421508789062
-            ],
-            "text": "Circular CSSF 18/698 Page 63/96",
             "headers": "Chapter 6, Sub-chapter 6.2, Section 6",
             "enriched_headers": "Chapter 6: Specific organisational arrangements, Sub-chapter 6.2: Delegation framework, Section 6"
         },
@@ -10038,18 +9294,6 @@
         {
             "page": 64,
             "bbox": [
-                72.0625,
-                793.958984375,
-                514.61474609375,
-                806.1421508789062
-            ],
-            "text": "Circular CSSF 18/698 Page 64/96",
-            "headers": "Chapter 6, Sub-chapter 6.2, Section 6, Sub-section 6.2.3.2",
-            "enriched_headers": "Chapter 6: Specific organisational arrangements, Sub-chapter 6.2: Delegation framework, Section 6, Sub-section 6.2.3.2"
-        },
-        {
-            "page": 64,
-            "bbox": [
                 43.74250030517578,
                 56.914398193359375,
                 514.7786254882812,
@@ -10206,18 +9450,6 @@
         {
             "page": 65,
             "bbox": [
-                72.0625,
-                793.958984375,
-                514.61474609375,
-                806.1421508789062
-            ],
-            "text": "Circular CSSF 18/698 Page 65/96",
-            "headers": "Chapter 6, Sub-chapter 6.2, Section 6, Sub-section 6.2.3.3",
-            "enriched_headers": "Chapter 6: Specific organisational arrangements, Sub-chapter 6.2: Delegation framework, Section 6, Sub-section 6.2.3.3"
-        },
-        {
-            "page": 65,
-            "bbox": [
                 43.74250030517578,
                 56.914398193359375,
                 514.7565307617188,
@@ -10260,18 +9492,6 @@
                 585.7506713867188
             ],
             "text": "462. All due diligence must be formalised in a written report which includes at least:\n• the description of the due diligence measures taken in accordance with the risk-based approach as referred to in point 448 above such as, for example, the submission of an initial questionnaire and the analysis of this questionnaire and related documents; the analysis of all relevant reports such as, for example, the reports on the functioning of the relevant controls, audit reports, etc.; the review of the relevant policies and procedures implemented within the delegate; the meetings (on the phone or on site) with the persons responsible within the delegate, formalised in the minutes of the meeting; the controls, where appropriate, in the premises of the delegate during an on-site visit, etc.; • the description and critical analysis of the observations made; • the results of the analysis of the information and documents received during the due diligence assessment; • where appropriate, the escalation measures taken;",
-            "headers": "Chapter 6, Sub-chapter 6.2, Section 6, Sub-section 6.2.3.3",
-            "enriched_headers": "Chapter 6: Specific organisational arrangements, Sub-chapter 6.2: Delegation framework, Section 6, Sub-section 6.2.3.3"
-        },
-        {
-            "page": 66,
-            "bbox": [
-                72.0625,
-                793.958984375,
-                514.61474609375,
-                806.1421508789062
-            ],
-            "text": "Circular CSSF 18/698 Page 66/96",
             "headers": "Chapter 6, Sub-chapter 6.2, Section 6, Sub-section 6.2.3.3",
             "enriched_headers": "Chapter 6: Specific organisational arrangements, Sub-chapter 6.2: Delegation framework, Section 6, Sub-section 6.2.3.3"
         },
@@ -10411,18 +9631,6 @@
             "page": 67,
             "bbox": [
                 72.0625,
-                793.958984375,
-                514.61474609375,
-                806.1421508789062
-            ],
-            "text": "Circular CSSF 18/698 Page 67/96",
-            "headers": "Chapter 6, Sub-chapter 6.2, Section 6, Sub-section 6.2.3.4",
-            "enriched_headers": "Chapter 6: Specific organisational arrangements, Sub-chapter 6.2: Delegation framework, Section 6, Sub-section 6.2.3.4"
-        },
-        {
-            "page": 67,
-            "bbox": [
-                72.0625,
                 56.914398193359375,
                 162.2745819091797,
                 69.09756469726562
@@ -10542,18 +9750,6 @@
         {
             "page": 68,
             "bbox": [
-                72.0625,
-                793.958984375,
-                514.61474609375,
-                806.1421508789062
-            ],
-            "text": "Circular CSSF 18/698 Page 68/96",
-            "headers": "Chapter 6, Sub-chapter 6.3, Sub-section 6.3.1.1",
-            "enriched_headers": "Chapter 6: Specific organisational arrangements, Sub-chapter 6.3: Organisation of the portfolio management function, Sub-section 6.3.1.1"
-        },
-        {
-            "page": 68,
-            "bbox": [
                 43.74250030517578,
                 56.914398193359375,
                 514.703857421875,
@@ -10644,18 +9840,6 @@
                 650.6168823242188
             ],
             "text": "482. In order to perform effectively its function and to benefit from the specific skills taking into account the strategy of the UCI, the IFM may use the services of investment advisers provided that the following cumulative conditions are complied with:\n• the IFM must define and implement a procedure which describes the IFM’s critical and independent analysis of the transactions proposed by the investment adviser. Moreover, the document must describe the decision-making process within the IFM with respect to the approval or refusal to carry out the proposed investment. The analysis by the IFM must be carried out prior to the execution of the transaction and must be documented in writing. A simple verification by the IFM that the transaction complies with the UCI’s investment restrictions is not sufficient; • when the investment process is based on the adviser’s proposal of an investment universe in which it predetermined a precise, limited and detailed list of financial",
-            "headers": "Chapter 6, Sub-chapter 6.3, Sub-section 6.3.1.4",
-            "enriched_headers": "Chapter 6: Specific organisational arrangements, Sub-chapter 6.3: Organisation of the portfolio management function, Sub-section 6.3.1.4"
-        },
-        {
-            "page": 69,
-            "bbox": [
-                72.0625,
-                793.958984375,
-                514.61474609375,
-                806.1421508789062
-            ],
-            "text": "Circular CSSF 18/698 Page 69/96",
             "headers": "Chapter 6, Sub-chapter 6.3, Sub-section 6.3.1.4",
             "enriched_headers": "Chapter 6: Specific organisational arrangements, Sub-chapter 6.3: Organisation of the portfolio management function, Sub-section 6.3.1.4"
         },
@@ -10819,18 +10003,6 @@
             "page": 70,
             "bbox": [
                 72.0625,
-                793.958984375,
-                514.61474609375,
-                806.1421508789062
-            ],
-            "text": "Circular CSSF 18/698 Page 70/96",
-            "headers": "Chapter 6, Sub-chapter 6.3, Section 6, Sub-section 6.3.2.1",
-            "enriched_headers": "Chapter 6: Specific organisational arrangements, Sub-chapter 6.3: Organisation of the portfolio management function, Section 6, Sub-section 6.3.2.1"
-        },
-        {
-            "page": 70,
-            "bbox": [
-                72.0625,
                 56.914398193359375,
                 514.7039184570312,
                 110.01205444335938
@@ -10896,18 +10068,6 @@
                 564.3037719726562
             ],
             "text": "496. Moreover, the IFM delegating the portfolio management function should, for example, include the following elements (non-exhaustive list) to its ongoing monitoring operations:\n• the verification that the assets of the managed UCI are invested in compliance with the instruments of incorporation and the legal provisions in force; • the verification that the investment decisions on behalf of the managed UCIs are carried out in compliance with the objectives, the investment strategy and, where appropriate, the risk limits of these UCIs; • the verification that the prospectus and, where appropriate, the UCITS-KIID and/or the PRIIPs-KID of every managed UCI adequately reflect the general investment policy and the strategy implemented; • the regular monitoring of the number and nature of pre-trade and post-trade incidents accompanied by the process for regularising incidents; • the regular monitoring of the number and nature of operational errors and the implementation of corrective measures; • the verification that the delegate complies with the best execution policy.",
-            "headers": "Chapter 6, Sub-chapter 6.3, Section 6, Sub-section 6.3.2.2",
-            "enriched_headers": "Chapter 6: Specific organisational arrangements, Sub-chapter 6.3: Organisation of the portfolio management function, Section 6, Sub-section 6.3.2.2"
-        },
-        {
-            "page": 71,
-            "bbox": [
-                72.0625,
-                793.958984375,
-                514.61474609375,
-                806.1421508789062
-            ],
-            "text": "Circular CSSF 18/698 Page 71/96",
             "headers": "Chapter 6, Sub-chapter 6.3, Section 6, Sub-section 6.3.2.2",
             "enriched_headers": "Chapter 6: Specific organisational arrangements, Sub-chapter 6.3: Organisation of the portfolio management function, Section 6, Sub-section 6.3.2.2"
         },
@@ -11071,18 +10231,6 @@
             "page": 72,
             "bbox": [
                 72.0625,
-                793.958984375,
-                514.61474609375,
-                806.1421508789062
-            ],
-            "text": "Circular CSSF 18/698 Page 72/96",
-            "headers": "Chapter 6, Sub-chapter 6.4, Section 6",
-            "enriched_headers": "Chapter 6: Specific organisational arrangements, Sub-chapter 6.4: Organisation of the function of UCI administration, Section 6"
-        },
-        {
-            "page": 72,
-            "bbox": [
-                72.0625,
                 59.06843566894531,
                 436.9677734375,
                 71.03101348876953
@@ -11226,18 +10374,6 @@
         {
             "page": 73,
             "bbox": [
-                72.0625,
-                793.958984375,
-                514.61474609375,
-                806.1421508789062
-            ],
-            "text": "Circular CSSF 18/698 Page 73/96",
-            "headers": "Chapter 6, Sub-chapter 6.4, Section 6, Sub-section 6.4.3.1",
-            "enriched_headers": "Chapter 6: Specific organisational arrangements, Sub-chapter 6.4: Organisation of the function of UCI administration, Section 6, Sub-section 6.4.3.1"
-        },
-        {
-            "page": 73,
-            "bbox": [
                 71.14537811279297,
                 58.8261833190918,
                 326.20391845703125,
@@ -11316,18 +10452,6 @@
                 662.729736328125
             ],
             "text": "521. The procedure referred to in point 520 above must also address the following aspects (non-exhaustive list) when the UCIs are marketed in the European Union:\n• where appropriate, the contribution to the identification of the target market of the UCI together with the UCI’s initiator in accordance with the MiFID II Regulation; • the arrangements for the exchange of structured information between the IFM and the marketing intermediaries, particularly with respect to the target market; • the arrangements for the remuneration of marketing intermediaries including, where appropriate, benefits in accordance with the MiFID II Regulation.",
-            "headers": "Chapter 6, Sub-chapter 6.5",
-            "enriched_headers": "Chapter 6: Specific organisational arrangements, Sub-chapter 6.5: Organisation of the marketing function"
-        },
-        {
-            "page": 74,
-            "bbox": [
-                72.0625,
-                793.958984375,
-                514.61474609375,
-                806.1421508789062
-            ],
-            "text": "Circular CSSF 18/698 Page 74/96",
             "headers": "Chapter 6, Sub-chapter 6.5",
             "enriched_headers": "Chapter 6: Specific organisational arrangements, Sub-chapter 6.5: Organisation of the marketing function"
         },
@@ -11467,18 +10591,6 @@
             "page": 75,
             "bbox": [
                 72.0625,
-                793.958984375,
-                514.61474609375,
-                806.1421508789062
-            ],
-            "text": "Circular CSSF 18/698 Page 75/96",
-            "headers": "Chapter 6, Sub-chapter 6.6",
-            "enriched_headers": "Chapter 6: Specific organisational arrangements, Sub-chapter 6.6: Organisation of the valuation function (specific provisions applicable to \nIFMs authorised as AIFM)"
-        },
-        {
-            "page": 75,
-            "bbox": [
-                72.0625,
                 56.914398193359375,
                 512.04052734375,
                 82.77620697021484
@@ -11568,18 +10680,6 @@
                 670.0468139648438
             ],
             "text": "536. Where the AIFM establishes a valuation committee, it is recommended that the AIFM comply with the following conditions:\n• the members of the committee as a whole have the necessary professional experience and skills having regard to the managed strategies; • the committee is (not necessarily exclusively) composed of members of the senior management and of the staff of the AIFM who are permanently located in Luxembourg or who have their domicile in a place allowing them, in principle, to come to Luxembourg every day; it is recommended that the conducting officer in charge of the valuation function be part of the valuation committee;",
-            "headers": "Chapter 6, Sub-chapter 6.6, Section 6",
-            "enriched_headers": "Chapter 6: Specific organisational arrangements, Sub-chapter 6.6: Organisation of the valuation function (specific provisions applicable to \nIFMs authorised as AIFM), Section 6"
-        },
-        {
-            "page": 76,
-            "bbox": [
-                72.0625,
-                793.958984375,
-                514.61474609375,
-                806.1421508789062
-            ],
-            "text": "Circular CSSF 18/698 Page 76/96",
             "headers": "Chapter 6, Sub-chapter 6.6, Section 6",
             "enriched_headers": "Chapter 6: Specific organisational arrangements, Sub-chapter 6.6: Organisation of the valuation function (specific provisions applicable to \nIFMs authorised as AIFM), Section 6"
         },
@@ -11743,18 +10843,6 @@
             "page": 77,
             "bbox": [
                 72.0625,
-                793.958984375,
-                514.61474609375,
-                806.1421508789062
-            ],
-            "text": "Circular CSSF 18/698 Page 77/96",
-            "headers": "Chapter 8",
-            "enriched_headers": "Chapter 8: Information exchange between the IFM and the depositary"
-        },
-        {
-            "page": 77,
-            "bbox": [
-                72.0625,
                 56.914398193359375,
                 511.88641357421875,
                 82.77620697021484
@@ -11898,18 +10986,6 @@
         {
             "page": 78,
             "bbox": [
-                72.0625,
-                793.958984375,
-                514.61474609375,
-                806.1421508789062
-            ],
-            "text": "Circular CSSF 18/698 Page 78/96",
-            "headers": "Chapter 9",
-            "enriched_headers": "Chapter 9: Programme of activity"
-        },
-        {
-            "page": 78,
-            "bbox": [
                 100.36614990234375,
                 56.914398193359375,
                 514.7571411132812,
@@ -11964,18 +11040,6 @@
                 661.89404296875
             ],
             "text": "557. Where the AIFM intends to manage AIFs qualifying as money market funds, the AIFM must submit a written application for authorisation to manage AIFs qualifying as money market funds pursuant to Article 5 of the MMFR.",
-            "headers": "Chapter 9",
-            "enriched_headers": "Chapter 9: Programme of activity"
-        },
-        {
-            "page": 79,
-            "bbox": [
-                72.0625,
-                793.958984375,
-                514.61474609375,
-                806.1421508789062
-            ],
-            "text": "Circular CSSF 18/698 Page 79/96",
             "headers": "Chapter 9",
             "enriched_headers": "Chapter 9: Programme of activity"
         },
@@ -12084,18 +11148,6 @@
                 784.3783569335938
             ],
             "text": "565. Every IFM that provides services of management of portfolios of investments, including those owned by pension funds in accordance with mandates given by investors on a discretionary, client-by-client",
-            "headers": "Part III",
-            "enriched_headers": "Part III: Conditions for obtaining and maintaining the authorisation of IFMs which exercise \nactivities of UCI management and management of portfolios of investments on a client-by-client \nbasis as referred to in Article 101(3) of the 2010 Law and Article 5(4) of the 2013 Law"
-        },
-        {
-            "page": 80,
-            "bbox": [
-                72.0625,
-                793.958984375,
-                514.61474609375,
-                806.1421508789062
-            ],
-            "text": "Circular CSSF 18/698 Page 80/96",
             "headers": "Part III",
             "enriched_headers": "Part III: Conditions for obtaining and maintaining the authorisation of IFMs which exercise \nactivities of UCI management and management of portfolios of investments on a client-by-client \nbasis as referred to in Article 101(3) of the 2010 Law and Article 5(4) of the 2013 Law"
         },
@@ -12216,18 +11268,6 @@
                 672.5694580078125
             ],
             "text": "activities or to provide services within the territory of another Member State, by way of a branch under the AIFMD, must submit a notification which includes the information referred to in Article 32 of the 2013 Law to the CSSF. Thus, the notification must be accompanied by the following pieces of information:\na) the Member State within the territory of which the AIFM plans to establish a branch, and/or to provide the services referred to in Article 5(4) of the 2013 Law; b) a programme of operations stating in particular the services which the AIFM intends to provide and/or identifying the AIFs it intends to manage; c) the organisational structure of the branch; d) the address in the home Member State of the AIF from which documents may be obtained;",
-            "headers": "Chapter 1, Sub-chapter 1.1",
-            "enriched_headers": "Chapter 1: Basic principles, Sub-chapter 1.1: Obligation of notification"
-        },
-        {
-            "page": 81,
-            "bbox": [
-                72.0625,
-                793.958984375,
-                514.61474609375,
-                806.1421508789062
-            ],
-            "text": "Circular CSSF 18/698 Page 81/96",
             "headers": "Chapter 1, Sub-chapter 1.1",
             "enriched_headers": "Chapter 1: Basic principles, Sub-chapter 1.1: Obligation of notification"
         },
@@ -12378,18 +11418,6 @@
         {
             "page": 82,
             "bbox": [
-                72.0625,
-                793.958984375,
-                514.61474609375,
-                806.1421508789062
-            ],
-            "text": "Circular CSSF 18/698 Page 82/96",
-            "headers": "Chapter 1, Sub-chapter 1.2",
-            "enriched_headers": "Chapter 1: Basic principles, Sub-chapter 1.2: Operating conditions"
-        },
-        {
-            "page": 82,
-            "bbox": [
                 43.74250030517578,
                 56.914398193359375,
                 514.66845703125,
@@ -12528,18 +11556,6 @@
                 772.7733154296875
             ],
             "text": "589. The IFM which established a branch or which acts under the freedom to provide services in another Member State, must notify in writing any changes in the information referred to in point 568(b), (c) and (d), or in point 583(b) for ManCos, or in point 570 or point 586 for AIFMs, to the competent authority of its host country as well as to the CSSF within one month before the entry into force of the change at the latest (Articles 114(7) or 115(4) of the 2010 Law for the ManCo and Article 32(5) of the 2013 Law for the AIFM).",
-            "headers": "Chapter 3",
-            "enriched_headers": "Chapter 3: Own funds"
-        },
-        {
-            "page": 83,
-            "bbox": [
-                72.0625,
-                793.958984375,
-                514.61474609375,
-                806.1421508789062
-            ],
-            "text": "Circular CSSF 18/698 Page 83/96",
             "headers": "Chapter 3",
             "enriched_headers": "Chapter 3: Own funds"
         },
@@ -12690,18 +11706,6 @@
         {
             "page": 84,
             "bbox": [
-                72.0625,
-                793.958984375,
-                514.61474609375,
-                806.1421508789062
-            ],
-            "text": "Circular CSSF 18/698 Page 84/96",
-            "headers": "Chapter 1",
-            "enriched_headers": "Chapter 1: Basic principles"
-        },
-        {
-            "page": 84,
-            "bbox": [
                 100.3517837524414,
                 56.914398193359375,
                 514.6654663085938,
@@ -12803,19 +11807,7 @@
                 511.87249755859375,
                 751.9003295898438
             ],
-            "text": "603. The conditions for obtaining and maintaining this authorisation are specified in this chapter. To this end, it is particularly noteworthy that a SIAG or a FIAAG must:\nCircular CSSF 18/698 Page 85/96",
-            "headers": "Chapter 1",
-            "enriched_headers": "Chapter 1: Basic principles"
-        },
-        {
-            "page": 85,
-            "bbox": [
-                100.38248443603516,
-                56.49982833862305,
-                514.7177734375,
-                404.56207275390625
-            ],
-            "text": "• have a share capital of EUR 300,000 at the time of its authorisation in accordance with Article 27(1) of the 2010 Law for the SIAG and with Article 8(1) of the 2013 Law for the FIAAG; • submit a programme of activity (Article 27(1) of the 2010 Law for the SIAG and Article 6(2)(c) of the 2013 Law for the FIAAG) at the time of its authorisation; • appoint at least two conducting officers (Article 27(1) of the 2010 Law for the SIAG and Article 7(1)(c) of the 2013 Law for the FIAAG); • comply with some conditions regarding delegation (Article 27(2) of the 2010 Law with reference to Article 110(1) of the 2010 Law for the SIAG and Article 18 of the 2013 Law for the FIAAG); • act in compliance with the rules of conduct provided for in Article 27(2) of the 2010 Law with reference to Article 111 of the 2010 Law for the SIAG and other operating conditions provided for in Article 11 of the 2013 Law for the FIAAG; • comply with the rules regarding remuneration policies and practices as provided for in Article 27(2) of the 2010 Law with reference to Articles 111a and 111b of the 2010 Law for the SIAG and Article 12 of the 2013 Law for the FIAAG; • comply with the provisions provided for in Section 5.5.5. on the obligations regarding claim and complaint handling; • have sound administrative and accounting procedures (Article 27(3) of the 2010 Law with reference to Article 109(1)(a) of the 2010 Law for the SIAG and Article 16 of the 2013 Law for the FIAAG); • put in place a risk management and measurement policy (Article 42(1) of the 2010 Law for the SIAG and Article 14 of the 2013 Law for the FIAAG); • have a central administration and registered office in Luxembourg (Article 102(1)(e) of the 2010 Law for the SIAG and Article 7(1)(e) of the 2013 Law for the FIAAG).",
+            "text": "603. The conditions for obtaining and maintaining this authorisation are specified in this chapter. To this end, it is particularly noteworthy that a SIAG or a FIAAG must:\n• have a share capital of EUR 300,000 at the time of its authorisation in accordance with Article 27(1) of the 2010 Law for the SIAG and with Article 8(1) of the 2013 Law for the FIAAG; • submit a programme of activity (Article 27(1) of the 2010 Law for the SIAG and Article 6(2)(c) of the 2013 Law for the FIAAG) at the time of its authorisation; • appoint at least two conducting officers (Article 27(1) of the 2010 Law for the SIAG and Article 7(1)(c) of the 2013 Law for the FIAAG); • comply with some conditions regarding delegation (Article 27(2) of the 2010 Law with reference to Article 110(1) of the 2010 Law for the SIAG and Article 18 of the 2013 Law for the FIAAG); • act in compliance with the rules of conduct provided for in Article 27(2) of the 2010 Law with reference to Article 111 of the 2010 Law for the SIAG and other operating conditions provided for in Article 11 of the 2013 Law for the FIAAG; • comply with the rules regarding remuneration policies and practices as provided for in Article 27(2) of the 2010 Law with reference to Articles 111a and 111b of the 2010 Law for the SIAG and Article 12 of the 2013 Law for the FIAAG; • comply with the provisions provided for in Section 5.5.5. on the obligations regarding claim and complaint handling; • have sound administrative and accounting procedures (Article 27(3) of the 2010 Law with reference to Article 109(1)(a) of the 2010 Law for the SIAG and Article 16 of the 2013 Law for the FIAAG); • put in place a risk management and measurement policy (Article 42(1) of the 2010 Law for the SIAG and Article 14 of the 2013 Law for the FIAAG); • have a central administration and registered office in Luxembourg (Article 102(1)(e) of the 2010 Law for the SIAG and Article 7(1)(e) of the 2013 Law for the FIAAG).",
             "headers": "Chapter 1",
             "enriched_headers": "Chapter 1: Basic principles"
         },
@@ -12888,18 +11880,6 @@
                 762.94189453125
             ],
             "text": "609. Specific provision applicable to SIAGs: The SIAG must have procedures for the handling of claims from investors and for the transmission of information, upon request of the public or competent",
-            "headers": "Chapter 1",
-            "enriched_headers": "Chapter 1: Basic principles"
-        },
-        {
-            "page": 86,
-            "bbox": [
-                72.0625,
-                793.958984375,
-                514.61474609375,
-                806.1421508789062
-            ],
-            "text": "Circular CSSF 18/698 Page 86/96",
             "headers": "Chapter 1",
             "enriched_headers": "Chapter 1: Basic principles"
         },
@@ -13099,18 +12079,6 @@
             "page": 87,
             "bbox": [
                 72.0625,
-                793.958984375,
-                514.61474609375,
-                806.1421508789062
-            ],
-            "text": "Circular CSSF 18/698 Page 87/96",
-            "headers": "Part IX",
-            "enriched_headers": "Part IX: Entry into force and various provisions"
-        },
-        {
-            "page": 87,
-            "bbox": [
-                72.0625,
                 82.08917999267578,
                 134.06317138671875,
                 96.39115142822266
@@ -13212,18 +12180,6 @@
                 608.2594604492188
             ],
             "text": "Committee ABC",
-            "headers": "Part IX",
-            "enriched_headers": "Part IX: Entry into force and various provisions"
-        },
-        {
-            "page": 88,
-            "bbox": [
-                72.0625,
-                793.958984375,
-                514.61474609375,
-                806.1421508789062
-            ],
-            "text": "Circular CSSF 18/698 Page 88/96",
             "headers": "Part IX",
             "enriched_headers": "Part IX: Entry into force and various provisions"
         },
@@ -13362,18 +12318,6 @@
         {
             "page": 89,
             "bbox": [
-                72.0625,
-                793.958984375,
-                514.61474609375,
-                806.1421508789062
-            ],
-            "text": "Circular CSSF 18/698 Page 89/96",
-            "headers": "Part IX",
-            "enriched_headers": "Part IX: Entry into force and various provisions"
-        },
-        {
-            "page": 89,
-            "bbox": [
                 109.378173828125,
                 76.2345199584961,
                 521.0949096679688,
@@ -13483,18 +12427,6 @@
             "page": 90,
             "bbox": [
                 72.0625,
-                793.958984375,
-                514.61474609375,
-                806.1421508789062
-            ],
-            "text": "Circular CSSF 18/698 Page 90/96",
-            "headers": "Part IX",
-            "enriched_headers": "Part IX: Entry into force and various provisions"
-        },
-        {
-            "page": 90,
-            "bbox": [
-                72.0625,
                 71.85438537597656,
                 472.2167663574219,
                 85.6711654663086
@@ -13512,18 +12444,6 @@
                 408.3324890136719
             ],
             "text": "2.1. Provide the name of the strategy subject to this specific complementary section. 2.2. Briefly describe the strategy and instruments used to implement it. 2.3. Briefly describe the investment process, including the process for the selection, due diligence, decision, monitoring and disinvestment of assets. Name the players involved in the process. 2.4. Where appropriate, describe possible organisational elements regarding the risk management which would differ from the presentation in the general section. 2.5. Describe the market risk management policy. 2.6. Describe the liquidity risk management policy, demonstrate that the liquidity profile of the AIFs’ investments is appropriate to the AIFs’ obligations and explain the role played by the stress testing in this assessment. 2.7. Describe the counterparty risk management policy. 2.8. Describe the credit risk management policy. 2.9. Describe the operational risk management policy, detail the significant operational risks (including the legal risk) to which the AIFs are subject and explain the manner in which they are assessed and managed. 2.10. Describe the valuation policy of assets. 2.11. Describe the policy on the use of leverage. 2.12. Provide the list of AIFs covered by this specific complementary section. 3. Specific complementary section: exercise of discretionary management Briefly describe the manner in which the IFM providing services of management of portfolios of investments on a discretionary and individual basis in the framework of a mandate given by the investors pursuant to Article 5(4) of the 2013 Law complies with the risk management requirements under MiFID II Regulation.",
-            "headers": "Part IX",
-            "enriched_headers": "Part IX: Entry into force and various provisions"
-        },
-        {
-            "page": 91,
-            "bbox": [
-                63.90250015258789,
-                793.958984375,
-                514.61328125,
-                806.1421508789062
-            ],
-            "text": "Circular CSSF 18/698 Page 91/96",
             "headers": "Part IX",
             "enriched_headers": "Part IX: Entry into force and various provisions"
         },
@@ -13567,35 +12487,11 @@
             "page": 92,
             "bbox": [
                 63.90250015258789,
-                793.958984375,
-                514.61328125,
-                806.1421508789062
-            ],
-            "text": "Circular CSSF 18/698 Page 92/96",
-            "headers": "Part IX",
-            "enriched_headers": "Part IX: Entry into force and various provisions"
-        },
-        {
-            "page": 92,
-            "bbox": [
-                63.90250015258789,
                 76.94854736328125,
                 389.6086120605469,
                 88.91112518310547
             ],
             "text": "2. Changes subject to notification to the CSSF (non-exhaustive list):\n1. Change in the shareholding not subject to authorisation (i.e. new shareholder representing less than 10% of the shareholding, including indirect shareholders, restructuring of the group, crossing the thresholds for an AIFM, etc.) 2. Delegation of the performance of the accounting function or IT function; 3. Resignation of members of the management body/governing body, the conducting officers and, where appropriate, of the members of the supervisory board; 4. Delegation of complaint handling; 5. Substantial change in the programme of operations; 6. Change in the identity of the following persons: • Compliance Officer; • person responsible for the monitoring of the work of third parties in charge of the compliance function where the performance of the function is delegated; • person responsible for the internal audit function; • person responsible for the monitoring of the work of the internal auditor where the performance of the function is delegated; • person responsible for the permanent risk management function; • AML/CFT compliance officer at the management level; • AML/CFT Compliance Officer; • person responsible for the accounting function of the IFM; • person responsible for the accounting administration of UCIs; 7. Change affecting the consolidated prudential supervision; 8. Change of the premises (where it is not subject to an amendment in the articles of incorporation); 9. Important change in the risk management procedure; 10. Case of branches: change affecting the organisation of the branch or any substantial change affecting the number of staff in the branch as well as the nature and volume of activity carried out from the branch; 11. Application of the principle of proportionality with respect to the remuneration policy.",
-            "headers": "Part IX",
-            "enriched_headers": "Part IX: Entry into force and various provisions"
-        },
-        {
-            "page": 93,
-            "bbox": [
-                63.90250015258789,
-                793.958984375,
-                514.61328125,
-                806.1421508789062
-            ],
-            "text": "Circular CSSF 18/698 Page 93/96",
             "headers": "Part IX",
             "enriched_headers": "Part IX: Entry into force and various provisions"
         },
@@ -13620,18 +12516,6 @@
                 130.4314422607422
             ],
             "text": "financial year of the IFM at the latest, except for the elements referred to in points 1 and 2 which must be submitted within one month after the ordinary general meeting that approved the annual accounts of the IFM and seven months following the closing date of the financial year of the IFM at the latest:\n1. Audited annual report of the IFM; 2. Management letter; 3. Report on the permanent risk management function; 4. Report containing information giving a true picture of the types of financial instruments used for each managed UCITS, the underlying risks, the quantitative limits and the methods chosen for assessing the risks associated with transactions in derivative instruments (ManCo); 5. Report on the compliance function; 6. Report on the internal audit function; 7. Report of the AML/CFT compliance officer at the management level; 8. Handling of complaints: a table including the number of complaints registered by the professional, classified by type of complaints, as well as a summary report of the complaints and of the measures taken to handle them; 9. List of third parties authorised to handle complaints; 10. Risk management procedure; 11. Organisation chart of the group (if changed); 12. Summary table of the mandates of the members of the management body/governing body, the conducting officers and, where appropriate, of the members of the supervisory board; 13. Annual list of all the delegates of the IFM, including the intermediaries ensuring marketing with whom the IFM has a direct relationship; 14. Report on the activity of the branch; 15. Final calculation of the capital ratio of IFMs authorised to carry out discretionary management.",
-            "headers": "Part IX",
-            "enriched_headers": "Part IX: Entry into force and various provisions"
-        },
-        {
-            "page": 94,
-            "bbox": [
-                63.90250015258789,
-                793.958984375,
-                514.61328125,
-                806.1421508789062
-            ],
-            "text": "Circular CSSF 18/698 Page 94/96",
             "headers": "Part IX",
             "enriched_headers": "Part IX: Entry into force and various provisions"
         },
@@ -13716,18 +12600,6 @@
                 726.6199340820312
             ],
             "text": "1. Capital and reserves 2. Loans 3. Provisions for liabilities and charges 3.1. Provisions for pensions and similar obligations 3.2. Provisions for taxation 3.3. Other provisions 4. Debts 5. Profit for the financial year Overall total (1+2+3+4+5)",
-            "headers": "Part IX",
-            "enriched_headers": "Part IX: Entry into force and various provisions"
-        },
-        {
-            "page": 95,
-            "bbox": [
-                63.90250015258789,
-                793.958984375,
-                514.61328125,
-                806.1421508789062
-            ],
-            "text": "Circular CSSF 18/698 Page 95/96",
             "headers": "Part IX",
             "enriched_headers": "Part IX: Entry into force and various provisions"
         },

@@ -2,6 +2,10 @@ from document_readers.base import DocumentProcessor, ProcessorConfig, ProcessorT
 from typing import Dict, Any, List, Optional, Union
 from pathlib import Path
 
+import logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
 class UnstructuredProcessor(DocumentProcessor):
     """Multi-format processor using unstructured.io"""
     

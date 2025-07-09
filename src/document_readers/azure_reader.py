@@ -2,6 +2,10 @@ from document_readers.base import DocumentProcessor, ProcessorConfig, ProcessorT
 from typing import Dict, Any, List, Optional, Union
 from pathlib import Path
 
+import logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
 class AzureDocumentProcessor(DocumentProcessor):
     """Azure Document Intelligence processor for complex documents"""
     

@@ -24,7 +24,7 @@ if __name__ == "__main__":
     print(blocks[4]['text'])
 
     chunker = RegulatoryChunkingSystem()
-    chunks = chunker.block_chunker(blocks)
+    chunks = chunker.chunk_blocks(blocks)
     print(f"Created {len(chunks)} chunks")
     # Save chunks to a JSON file
     clean_chunks = [chunk['content'] for chunk in chunks]

@@ -1,8 +1,9 @@
 from document_readers.base import *
-from document_readers.pymupdf_processor import PyMuPDFProcessor
-from document_readers.pdfminer_processor import PDFMinerProcessor
-from document_readers.azure_processor import AzureDocumentProcessor
-from document_readers.unstructured_processor import UnstructuredProcessor
+from document_readers.pymupdf_reader import PyMuPDFProcessor
+from document_readers.pdfminer_reader import PDFMinerProcessor
+from document_readers.azure_reader import AzureDocumentProcessor
+from document_readers.unstructured_reader import UnstructuredProcessor
+
 
 class DocumentProcessorManager:
     """Main manager class that orchestrates all processors"""
@@ -69,21 +70,27 @@ class DocumentProcessorManager:
             try:
                 logger.info(f"Attempting extraction with {processor_type.value}")
                 processor = self.processors[processor_type]
-                result = processor.extract_text(file_path)
                 
-                # Check quality
-                quality_score = processor.get_quality_score(result)
-                result['quality_score'] = quality_score
-                result['processor_used'] = processor_type.value
-                
-                if quality_score >= 0.5:  # Acceptable quality threshold
-                    logger.info(f"Successful extraction with {processor_type.value} (quality: {quality_score:.2f})")
-                    return result
-                elif not fallback:
-                    return result
+                if processor_type == ProcessorType.PYMUPDF:
+                    result = processor.extract_blocks(file_path)
                 else:
-                    logger.warning(f"Low quality extraction ({quality_score:.2f}), trying fallback")
-                    continue
+                    result = processor.extract_text(file_path)
+                
+                
+                # # Check quality
+                # quality_score = processor.get_quality_score(result)
+                # result['quality_score'] = quality_score
+                # result['processor_used'] = processor_type.value
+                
+                # if quality_score >= 0.5:  # Acceptable quality threshold
+                #     logger.info(f"Successful extraction with {processor_type.value} (quality: {quality_score:.2f})")
+                #     return result
+                # elif not fallback:
+                #     return result
+                # else:
+                #     logger.warning(f"Low quality extraction ({quality_score:.2f}), trying fallback")
+                #     continue
+                return result
                     
             except Exception as e:
                 last_error = e

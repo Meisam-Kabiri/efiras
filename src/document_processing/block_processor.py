@@ -22,6 +22,7 @@ class block_processor():
         if pdf_content is not None:
             blocks = pdf_content.get("blocks")
             height = pdf_content.get("height", 0)
+            width = pdf_content.get("width", 0)
             filename = pdf_content.get("filename", "")
             filename_without_ext = pdf_content.get("filename_without_ext", "")
             pages = pdf_content.get("pages", 0)
@@ -57,6 +58,18 @@ class block_processor():
             pages=pages,
             toc=toc,
             blocks=blocks)
+        
+        return {
+                "height": height,
+                "width": width,
+                "filename": filename,
+                "filename_without_ext": filename_without_ext,
+                "processor": "PyMuPDF",
+                "extension": extension,
+                "pages": pages,
+                "blocks": blocks,
+                "table_of_contents": toc
+                    }
        
     def _merge_blocks_with_colon_pattern(self, blocks: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
         """

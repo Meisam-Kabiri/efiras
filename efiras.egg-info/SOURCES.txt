@@ -1,0 +1,5 @@
+setup.py
+efiras.egg-info/PKG-INFO
+efiras.egg-info/SOURCES.txt
+efiras.egg-info/dependency_links.txt
+efiras.egg-info/top_level.txt
