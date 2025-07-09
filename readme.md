@@ -121,11 +121,18 @@ Processed documents are saved as JSON files containing:
 - Section headers and structure information
 - Embeddings for similarity search (cached separately)
 
-## What This System Does Not Do
+## Future Work
 
-- Does not modify original documents
-- Does not store documents permanently (only processes them)
-- Does not provide document editing capabilities
-- Does not handle non-PDF formats (except through Unstructured processor)
+### Enhanced Document Processing
 
-This system is designed for organizations that need to process and analyze large volumes of PDF documents efficiently.
+- **Table Extraction**: Improve extraction and preservation of financial tables and structured data
+- **Multi-Document Analysis**: Enable comparative analysis across multiple documents simultaneously
+- **Document Summarization**: Automated generation of executive summaries for lengthy financial documents
+
+### Financial-Specific Features
+
+- **Financial Entity Recognition**: Specialized identification of financial terms, regulations, and compliance references
+- **Regulatory Citation Linking**: Automatic cross-referencing between related regulatory documents
+- **API Integration**: RESTful API for integration with existing financial systems and workflows
+
+These immediate enhancements would strengthen the core document processing capabilities while adding financial industry-specific value.
