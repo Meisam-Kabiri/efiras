@@ -1,564 +1,131 @@
-# AI-Powered Financial Regulatory Intelligence Platform
-[![Python](https://img.shields.io/badge/Python-3.8%2B-blue.svg)](https://python.org)
-[![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
-[![Status](https://img.shields.io/badge/Status-Phase%201%20Complete-orange.svg)](https://github.com/yourusername/financial-rag-system)
+# Document Processing System
 
-> An enterprise-grade RAG system revolutionizing financial advisory and compliance through intelligent document processing and real-time market integration.
+## Overview
 
----
+This system processes PDF documents by extracting text, cleaning it, and making it searchable through a question-answering interface. It consists of several components that work together to transform raw PDFs into structured, queryable data.
 
-## 🚀 Project Overview
+## What It Does
 
-The Financial Regulatory Intelligence Platform is a comprehensive AI-powered system designed to streamline financial advisory services and regulatory compliance. By combining advanced document processing, semantic search, and real-time market data integration, this platform enables financial professionals to make informed decisions with unprecedented speed and accuracy.
+### Document Processing
+- **Extracts text** from PDF files using multiple processing engines
+- **Cleans and structures** the extracted text by removing headers/footers and organizing content
+- **Splits large documents** into manageable chunks while preserving context
+- **Creates searchable databases** from processed documents
 
-### 🎯 Key Features
+### Question Answering
+- **Answers questions** about your documents using AI
+- **Finds relevant information** by searching through document content
+- **Provides source citations** showing where answers came from
+- **Works with multiple documents** simultaneously
 
--   **🔍 Intelligent Document Processing**: Multi-engine architecture supporting diverse document formats with 95%+ extraction success rate
--   **📊 Regulatory Q&A System**: Advanced RAG-based question answering for EU financial regulations (MiFID II, GDPR, AML)
--   **🇱🇺 Luxembourg Specialization**: Focused expertise in Luxembourg's financial regulations and tax codes
--   **⚡ Real-Time Integration**: Ready for market data feeds and regulatory updates
--   **🏗️ Enterprise Architecture**: Scalable design with role-based access and confidence scoring
+## System Components
 
----
+### 1. Multi-Engine Document Processor
+Processes PDF documents using different engines:
+- **PyMuPDF**: Fast processing for text-based PDFs
+- **Azure Document Intelligence**: Advanced OCR and table extraction
+- **PDFMiner**: Complex layout analysis
+- **Unstructured**: Multi-format document support
 
-## 🏛️ System Architecture
+The system automatically selects the best engine for each document and falls back to alternatives if needed.
 
-### Document Processing Pipeline
+### 2. Block Processor
+Cleans and structures extracted text:
+- **Extracts Table of Contents (TOC)** from documents when available
+- **Assigns hierarchical TOC titles** to each text block/chunk based on document structure
+- Removes headers and footers based on positioning
+- Identifies section titles and hierarchies using regex patterns
+- Merges related text blocks (e.g., blocks ending with colons)
+- **Enriches blocks with TOC-derived semantics** for better context
+- Repairs paragraphs split across page breaks
+- Cleans up formatting issues and normalizes text
 
-📄 Raw Documents → 🔧 Multi-Engine Processor → 📊 Semantic Chunking → 🗄️ Vector Storage → 🤖 RAG System
+### 3. Block Chunker
+Splits large documents into smaller pieces:
+- Tries to split by paragraphs first
+- Falls back to sentences if needed
+- Uses word-based splitting as last resort
+- Preserves document structure and metadata
 
+### 4. RAG (Retrieval-Augmented Generation) System
+Provides question-answering capabilities:
+- Creates embeddings from document chunks using either:
+  - **Online embeddings**: OpenAI's text-embedding-3-large model
+  - **Offline embeddings**: Local sentence-transformer models (e.g., all-mpnet-base-v2)
+- Searches for relevant content using similarity matching
+- Generates answers using OpenAI's GPT models
+- Returns answers with source information
 
-**Processing Engines:**
--   **PyMuPDF**: Fast text extraction for standard PDFs
--   **Azure Document Intelligence**: OCR and complex layout analysis
--   **PDFMiner**: Detailed layout analysis for complex documents
--   **Unstructured**: Multi-format document support
+## Input and Output
 
-### RAG Workflow (LangGraph)
+### Input
+- PDF documents (any size)
+- Text-based or scanned PDFs
+- Documents with tables and complex layouts
 
-🔍 Query → 📚 Document Retrieval → 🧠 Context Generation → ✅ Answer Generation → 📊 Confidence Evaluation
+### Output
+- Structured JSON files with processed text blocks including:
+  - Cleaned text content
+  - Hierarchical section headers and TOC titles
+  - Page numbers and positioning metadata
+  - Document structure information
+- Searchable embeddings for fast retrieval
+- Natural language answers to questions about documents
+- Source citations with page numbers and confidence scores
 
-
----
-
-## 🛠️ Technical Stack
-
-### Core Technologies
-
--   **Backend**: Python 3.8+, Abstract Base Classes, Type Hints
--   **Document Processing**: PyMuPDF, Azure AI Services, PDFMiner, Unstructured
--   **RAG Framework**: LangChain, LangGraph, OpenAI API
--   **Vector Storage**: FAISS, HuggingFace Transformers
--   **Design Patterns**: Strategy, Factory, Template Method, Chain of Responsibility
-
-### Dependencies
+## Usage Example
 
 ```python
-# Core RAG Dependencies
-langchain>=0.1.0
-langgraph>=0.1.0
-faiss-cpu>=1.7.4
-sentence-transformers>=2.2.0
-openai>=1.0.0
+# Process a PDF document
+from multi_engine_document_processor import DocumentProcessorManager, ProcessorConfig
 
-# Document Processing
-PyMuPDF>=1.23.0
-azure-ai-documentintelligence>=1.0.0
-pdfminer.six>=20221105
-unstructured>=0.10.0
-
-# Utilities
-python-dotenv>=1.0.0
-numpy>=1.24.0
-📁 Project Structure
-financial-rag-system/
-├── src/
-│   ├── processors/
-│   │   ├── __init__.py
-│   │   ├── base.py              # Abstract base classes
-│   │   ├── pymupdf_processor.py # PyMuPDF implementation
-│   │   ├── azure_processor.py   # Azure AI implementation
-│   │   ├── pdfminer_processor.py# PDFMiner implementation
-│   │   └── manager.py           # Processing orchestrator
-│   ├── chunkers/
-│   │   ├── __init__.py
-│   │   └── regulation_chunker.py # Hierarchical document chunking
-│   ├── rag/
-│   │   ├── __init__.py
-│   │   ├── rag_base.py          # RAG base classes
-│   │   └── langgraph_rag.py     # LangGraph RAG implementation
-│   └── utils/
-│       ├── __init__.py
-│       └── config.py            # Configuration management
-├── data/
-│   ├── documents/               # Source documents
-│   └── processed/               # Processed chunks
-├── tests/
-│   ├── test_processors.py
-│   ├── test_chunkers.py
-│   └── test_rag.py
-├── examples/
-│   ├── basic_usage.py
-│   └── advanced_workflow.py
-├── requirements.txt
-├── .env.example
-└── README.md
-🚀 Quick Start
-Prerequisites
-Python 3.8+
-
-OpenAI API key
-
-Azure Document Intelligence credentials (optional)
-
-Installation
-Bash
-
-# Clone the repository
-git clone git@github.com:yourusername/financial-rag-system.git
-cd financial-rag-system
-
-# Create virtual environment
-python -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
-
-# Install dependencies
-pip install -r requirements.txt
-
-# Configure environment
-cp .env.example .env
-# Edit .env with your API keys
-Basic Usage
-Python
-
-from src.processors.manager import DocumentProcessorManager
-from src.chunkers.regulation_chunker import RegulationChunker
-from src.rag.langgraph_rag import LangGraphRAG
-from src.utils.config import ProcessorConfig
-
-# Initialize system
-config = ProcessorConfig(
-    chunk_size=1000,
-    overlap=200,
-    extract_tables=True
-)
-
-# Process documents
+config = ProcessorConfig(chunk_size=1000, extract_tables=True)
 manager = DocumentProcessorManager(config)
-result = manager.process_document("path/to/regulation.pdf")
+result = manager.process_document("document.pdf")
 
-# Create chunks
-chunker = RegulationChunker(result['text'])
-chunks = chunker.chunk()
+# Create searchable knowledge base with local embeddings
+from rag_system import RAGSystem
 
-# Initialize RAG system
-rag = LangGraphRAG()
-rag.embed_documents(chunks)
+rag = RAGSystem(use_local_embeddings=True)  # or False for online OpenAI embeddings
+rag.add_documents(processed_blocks, cache_path="data", cache_file_name="embeddings")
 
-# Query the system
-answer = rag.generate_detailed_answer(
-    "What are the capital requirements for Luxembourg investment funds?")
+# Ask questions
+answer = rag.answer_query("What are the main requirements?")
+```
 
-print(f"Answer: {answer['answer']}")
-print(f"Confidence: {answer['confidence_score']:.2f}")
-📊 Current Status: Phase 1 Complete
-✅ Completed Features
-Multi-engine document processing architecture
+## Requirements
 
-Intelligent processor selection with quality scoring
+### For Document Processing:
+- Python packages: PyMuPDF, pdfminer, unstructured
+- Optional: Azure Document Intelligence credentials for advanced processing
 
-Hierarchical document chunking for regulatory texts
+### For Question Answering:
+- OpenAI API key (set as GPT_API_KEY in .env file) for answer generation and online embeddings
+- sentence-transformers (for offline/local embeddings option)
 
-LangGraph-based RAG workflow implementation
+## File Structure
 
-Confidence scoring and answer validation
+The system processes documents through this workflow:
+1. **Raw PDF** → Multi-engine processor → **Extracted text with metadata**
+2. **Extracted text** → Block processor → **Cleaned and structured blocks with TOC hierarchy**
+3. **Structured blocks** → Block chunker → **Manageable chunks preserving TOC context**
+4. **Chunks** → RAG system → **Searchable knowledge base**
 
-FAISS vector storage integration
+## Output Format
 
-Comprehensive error handling and fallback mechanisms
+Processed documents are saved as JSON files containing:
+- Document metadata (filename, page count, etc.)
+- **Extracted Table of Contents structure** when available
+- Cleaned text blocks with page numbers
+- **Hierarchical section headers and TOC-derived titles** for each block
+- Section headers and structure information
+- Embeddings for similarity search (cached separately)
 
-🔄 In Progress
-EU financial regulations corpus (MiFID II, GDPR, AML)
+## What This System Does Not Do
 
-Luxembourg-specific regulatory documents
+- Does not modify original documents
+- Does not store documents permanently (only processes them)
+- Does not provide document editing capabilities
+- Does not handle non-PDF formats (except through Unstructured processor)
 
-Real-time market data integration
-
-Advanced financial entity recognition
-
-🗺️ Development Roadmap
-Phase 2: Advanced Financial RAG (Weeks 3-4)
-Contextual financial queries with market data
-
-Risk correlation analysis
-
-Multi-jurisdiction regulatory comparison
-
-Financial sentiment analysis
-
-Phase 3: Consulting Intelligence (Weeks 5-6)
-Role-based access control
-
-Client portfolio risk assessment
-
-Automated compliance gap analysis
-
-Regulatory change impact assessment
-
-Phase 4: Client-Facing Applications (Weeks 7-8)
-Interactive financial advisory interface
-
-Regulatory compliance scorecard
-
-Automated filing assistance
-
-Market opportunity identification
-
-🎯 Business Applications
-Target Markets
-Financial Consulting Firms: Streamline regulatory research and client advisory
-
-Compliance Departments: Automate regulatory analysis and gap identification
-
-Investment Management: Real-time regulatory risk assessment
-
-RegTech Companies: White-label regulatory intelligence solutions
-
-Value Propositions
-70% Reduction in compliance research time
-
-95%+ Accuracy in regulatory document processing
-
-Real-time regulatory change monitoring
-
-Multi-jurisdiction regulatory comparison capabilities
-
-🧪 Testing
-Bash
-
-# Run all tests
-python -m pytest tests/
-
-# Run specific test categories
-python -m pytest tests/test_processors.py
-python -m pytest tests/test_rag.py
-
-# Run with coverage
-python -m pytest tests/ --cov=src --cov-report=html
-🤝 Contributing
-We welcome contributions! Please see our Contributing Guidelines for details.
-
-Development Setup
-Bash
-
-# Install development dependencies
-pip install -r requirements-dev.txt
-
-# Install pre-commit hooks
-pre-commit install
-
-# Run linting
-flake8 src/
-black src/
-📄 License
-This project is licensed under the MIT License - see the LICENSE file for details.
-
-🔗 Links
-Documentation (Coming soon)
-
-Issue Tracker
-
-Changelog (Coming soon)
-
-You stopped this response
-
-
-
-
-
-
-but you are breaking it ? I want to do one copy!! wite all in one canvas
-
-
-My apologies! It seems I misunderstood and added extra formatting that broke the single-copy usability.
-
-Here's the entire README.md content in one block, ready for you to copy and paste directly into your readme.md file:
-
-Markdown
-
-# AI-Powered Financial Regulatory Intelligence Platform
-[![Python](https://img.shields.io/badge/Python-3.8%2B-blue.svg)](https://python.org)
-[![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
-[![Status](https://img.shields.io/badge/Status-Phase%201%20Complete-orange.svg)](https://github.com/yourusername/financial-rag-system)
-
-> An enterprise-grade RAG system revolutionizing financial advisory and compliance through intelligent document processing and real-time market integration.
-
----
-
-## 🚀 Project Overview
-
-The Financial Regulatory Intelligence Platform is a comprehensive AI-powered system designed to streamline financial advisory services and regulatory compliance. By combining advanced document processing, semantic search, and real-time market data integration, this platform enables financial professionals to make informed decisions with unprecedented speed and accuracy.
-
-### 🎯 Key Features
-
--   **🔍 Intelligent Document Processing**: Multi-engine architecture supporting diverse document formats with 95%+ extraction success rate
--   **📊 Regulatory Q&A System**: Advanced RAG-based question answering for EU financial regulations (MiFID II, GDPR, AML)
--   **🇱🇺 Luxembourg Specialization**: Focused expertise in Luxembourg's financial regulations and tax codes
--   **⚡ Real-Time Integration**: Ready for market data feeds and regulatory updates
--   **🏗️ Enterprise Architecture**: Scalable design with role-based access and confidence scoring
-
----
-
-## 🏛️ System Architecture
-
-### Document Processing Pipeline
-
-📄 Raw Documents → 🔧 Multi-Engine Processor → 📊 Semantic Chunking → 🗄️ Vector Storage → 🤖 RAG System
-
-
-**Processing Engines:**
--   **PyMuPDF**: Fast text extraction for standard PDFs
--   **Azure Document Intelligence**: OCR and complex layout analysis
--   **PDFMiner**: Detailed layout analysis for complex documents
--   **Unstructured**: Multi-format document support
-
-### RAG Workflow (LangGraph)
-
-🔍 Query → 📚 Document Retrieval → 🧠 Context Generation → ✅ Answer Generation → 📊 Confidence Evaluation
-
-
----
-
-## 🛠️ Technical Stack
-
-### Core Technologies
-
--   **Backend**: Python 3.8+, Abstract Base Classes, Type Hints
--   **Document Processing**: PyMuPDF, Azure AI Services, PDFMiner, Unstructured
--   **RAG Framework**: LangChain, LangGraph, OpenAI API
--   **Vector Storage**: FAISS, HuggingFace Transformers
--   **Design Patterns**: Strategy, Factory, Template Method, Chain of Responsibility
-
-### Dependencies
-
-```python
-# Core RAG Dependencies
-langchain>=0.1.0
-langgraph>=0.1.0
-faiss-cpu>=1.7.4
-sentence-transformers>=2.2.0
-openai>=1.0.0
-
-# Document Processing
-PyMuPDF>=1.23.0
-azure-ai-documentintelligence>=1.0.0
-pdfminer.six>=20221105
-unstructured>=0.10.0
-
-# Utilities
-python-dotenv>=1.0.0
-numpy>=1.24.0
-📁 Project Structure
-financial-rag-system/
-├── src/
-│   ├── processors/
-│   │   ├── __init__.py
-│   │   ├── base.py              # Abstract base classes
-│   │   ├── pymupdf_processor.py # PyMuPDF implementation
-│   │   ├── azure_processor.py   # Azure AI implementation
-│   │   ├── pdfminer_processor.py# PDFMiner implementation
-│   │   └── manager.py           # Processing orchestrator
-│   ├── chunkers/
-│   │   ├── __init__.py
-│   │   └── regulation_chunker.py # Hierarchical document chunking
-│   ├── rag/
-│   │   ├── __init__.py
-│   │   ├── rag_base.py          # RAG base classes
-│   │   └── langgraph_rag.py     # LangGraph RAG implementation
-│   └── utils/
-│       ├── __init__.py
-│       └── config.py            # Configuration management
-├── data/
-│   ├── documents/               # Source documents
-│   └── processed/               # Processed chunks
-├── tests/
-│   ├── test_processors.py
-│   ├── test_chunkers.py
-│   └── test_rag.py
-├── examples/
-│   ├── basic_usage.py
-│   └── advanced_workflow.py
-├── requirements.txt
-├── .env.example
-└── README.md
-🚀 Quick Start
-Prerequisites
-Python 3.8+
-
-OpenAI API key
-
-Azure Document Intelligence credentials (optional)
-
-Installation
-Bash
-
-# Clone the repository
-git clone git@github.com:yourusername/financial-rag-system.git
-cd financial-rag-system
-
-# Create virtual environment
-python -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
-
-# Install dependencies
-pip install -r requirements.txt
-
-# Configure environment
-cp .env.example .env
-# Edit .env with your API keys
-Basic Usage
-Python
-
-from src.processors.manager import DocumentProcessorManager
-from src.chunkers.regulation_chunker import RegulationChunker
-from src.rag.langgraph_rag import LangGraphRAG
-from src.utils.config import ProcessorConfig
-
-# Initialize system
-config = ProcessorConfig(
-    chunk_size=1000,
-    overlap=200,
-    extract_tables=True
-)
-
-# Process documents
-manager = DocumentProcessorManager(config)
-result = manager.process_document("path/to/regulation.pdf")
-
-# Create chunks
-chunker = RegulationChunker(result['text'])
-chunks = chunker.chunk()
-
-# Initialize RAG system
-rag = LangGraphRAG()
-rag.embed_documents(chunks)
-
-# Query the system
-answer = rag.generate_detailed_answer(
-    "What are the capital requirements for Luxembourg investment funds?")
-
-print(f"Answer: {answer['answer']}")
-print(f"Confidence: {answer['confidence_score']:.2f}")
-📊 Current Status: Phase 1 Complete
-✅ Completed Features
-Multi-engine document processing architecture
-
-Intelligent processor selection with quality scoring
-
-Hierarchical document chunking for regulatory texts
-
-LangGraph-based RAG workflow implementation
-
-Confidence scoring and answer validation
-
-FAISS vector storage integration
-
-Comprehensive error handling and fallback mechanisms
-
-🔄 In Progress
-EU financial regulations corpus (MiFID II, GDPR, AML)
-
-Luxembourg-specific regulatory documents
-
-Real-time market data integration
-
-Advanced financial entity recognition
-
-🗺️ Development Roadmap
-Phase 2: Advanced Financial RAG (Weeks 3-4)
-Contextual financial queries with market data
-
-Risk correlation analysis
-
-Multi-jurisdiction regulatory comparison
-
-Financial sentiment analysis
-
-Phase 3: Consulting Intelligence (Weeks 5-6)
-Role-based access control
-
-Client portfolio risk assessment
-
-Automated compliance gap analysis
-
-Regulatory change impact assessment
-
-Phase 4: Client-Facing Applications (Weeks 7-8)
-Interactive financial advisory interface
-
-Regulatory compliance scorecard
-
-Automated filing assistance
-
-Market opportunity identification
-
-🎯 Business Applications
-Target Markets
-Financial Consulting Firms: Streamline regulatory research and client advisory
-
-Compliance Departments: Automate regulatory analysis and gap identification
-
-Investment Management: Real-time regulatory risk assessment
-
-RegTech Companies: White-label regulatory intelligence solutions
-
-Value Propositions
-70% Reduction in compliance research time
-
-95%+ Accuracy in regulatory document processing
-
-Real-time regulatory change monitoring
-
-Multi-jurisdiction regulatory comparison capabilities
-
-🧪 Testing
-Bash
-
-# Run all tests
-python -m pytest tests/
-
-# Run specific test categories
-python -m pytest tests/test_processors.py
-python -m pytest tests/test_rag.py
-
-# Run with coverage
-python -m pytest tests/ --cov=src --cov-report=html
-🤝 Contributing
-We welcome contributions! Please see our Contributing Guidelines for details.
-
-Development Setup
-Bash
-
-# Install development dependencies
-pip install -r requirements-dev.txt
-
-# Install pre-commit hooks
-pre-commit install
-
-# Run linting
-flake8 src/
-black src/
-📄 License
-This project is licensed under the MIT License - see the LICENSE file for details.
-
-🔗 Links
-Documentation (Coming soon)
-
-Issue Tracker
-
-Changelog (Coming soon)
-
-📧 Contact
-Developer: Your Name
-LinkedIn: Your LinkedIn Profile
-Project Link: https://github.com/yourusername/financial-rag-system
+This system is designed for organizations that need to process and analyze large volumes of PDF documents efficiently.

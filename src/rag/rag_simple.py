@@ -286,7 +286,7 @@ if __name__ == "__main__":
     # chunker = RegulatoryChunkingSystem()
     # chunks = chunker.block_chunker(blocks) #the chunks are saved under "content" key
     
-    file = "data_processed/Lux_cssf18_698eng_extracted_blocks.json"
+    file = "data_processed/Lux_cssf18_698eng_processed_blocks.json"
     file_path = Path(file)
     with open(file_path, 'r') as f:
         data = json.load(f)
