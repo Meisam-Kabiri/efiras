@@ -64,16 +64,16 @@ class RegulatoryChunkingSystem:
                     chunks.append(chunk)
 
 
-            saving_path = f"data_processed/{pdf_content['filename_without_ext']}_chunked_blocks.json"
-            file_path = Path(saving_path)
-            file_path.parent.mkdir(parents=True, exist_ok=True)
+        saving_path = f"data_processed/{pdf_content['filename_without_ext']}_chunked_blocks.json"
+        file_path = Path(saving_path)
+        file_path.parent.mkdir(parents=True, exist_ok=True)
 
-            with open(file_path, 'w', encoding='utf-8') as f:
-                json.dump(chunks, f, indent=4, ensure_ascii=False)
+        with open(file_path, 'w', encoding='utf-8') as f:
+            json.dump(chunks, f, indent=4, ensure_ascii=False)
 
-            logger.info(f"Data saved to {file_path}")
+        logger.info(f"Data saved to {file_path}")
 
-            return chunks
+        return chunks
 
     def _split_large_text(self, text: str) -> List[Dict[str, str]]:
         """Split large text into overlapping chunks."""

@@ -32,8 +32,8 @@ def main():
     # Step 1: Configure document processor
     print("1. Configuring document processor...")
     config = ProcessorConfig(
-        chunk_size=1500,
-        overlap=200,
+        chunk_size=2000,
+        overlap=100,
         preserve_formatting=True,
         extract_tables=True,
         ocr_fallback=True
@@ -104,8 +104,10 @@ def main():
     
     # Example queries
     queries = [
-       "What are the key requirements for appointing a Compliance Officer in an Investment Fund Manager (IFM), and what documents must be submitted to the CSSF?"
-    ]
+        "What monitoring elements must IFM implement for central administration delegation?",
+        "What are the ongoing monitoring requirements for marketing intermediaries?", 
+        "When must IFM submit the list of marketing intermediaries to CSSF?"
+        ]
     
     for i, query in enumerate(queries, 1):
         print(f"\n   Query {i}: {query}")

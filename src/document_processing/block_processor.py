@@ -201,6 +201,11 @@ class block_processor():
                 # Clean up multiple spaces
                 text = re.sub(r' +', ' ', text)
                 # Strip leading/trailing whitespace
+                """Simple bullet point cleaning"""
+                # Replace bullet points with line breaks or spaces
+                text = text.replace('•', '\n')  # or just ' ' for space
+                text = text.replace(';', '.')   # Replace semicolons with periods
+                
                 block['text'] = text.strip()
         
         return blocks
