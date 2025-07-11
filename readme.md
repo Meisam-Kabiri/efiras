@@ -1,4 +1,4 @@
-# Document Processing System
+# Enhanced Financial Intelligence and Regulatory Analysis System
 
 ## Overview
 
