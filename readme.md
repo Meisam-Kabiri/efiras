@@ -124,14 +124,14 @@ cover at least the following elements:
 5. Controlling the fees and commissions to be borne by UCIs (Undertakings for Collective Investment).
 6. Monitoring the reconciliation of the number of units in circulation.
 
-These requirements are outlined in section 518 of the provided context.
+Source: Page 73, Chapter 6: Specific organisational arrangements, Sub-chapter 6.4:  Organisation of the function of UCI administration, Section 6, Sub-section 6.4.3.2
 ```
 
 **Key Features Demonstrated:**
 - ✅ **Precise extraction** of specific regulatory requirements from complex financial documents
 - ✅ **Complete enumeration** of all required monitoring elements (6/6 found)
 - ✅ **Professional formatting** with numbered lists suitable for compliance documentation
-- ✅ **Source attribution** referencing the exact regulatory section (518)
+- ✅ **Accurate source attribution** with full regulatory hierarchy (Sub-section 6.4.3.2, Page 73)
 - ✅ **Contextual understanding** of financial terminology (IFM, UCI, net asset value)
 
 This example shows the system successfully processing a 96-page Luxembourg regulatory document and providing comprehensive, accurate answers for compliance and regulatory questions.
