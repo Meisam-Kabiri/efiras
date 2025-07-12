@@ -4,6 +4,35 @@
 
 This system processes PDF documents by extracting text, cleaning it, and making it searchable through a question-answering interface. It consists of several components that work together to transform raw PDFs into structured, queryable data.
 
+## Installation & Setup
+
+### Prerequisites
+- Python 3.8+
+- Git
+
+### Quick Setup
+1. **Clone the repository:**
+   ```bash
+   git clone <repository-url>
+   cd EFIRAS
+   ```
+
+2. **Install dependencies:**
+   ```bash
+   pip install -r requirement.txt
+   ```
+
+3. **Environment configuration:**
+   Create a `.env` file in the root directory:
+   ```bash
+   GPT_API_KEY=your_openai_api_key_here
+   ```
+
+4. **Run the example:**
+   ```bash
+   python example.py
+   ```
+
 ## What It Does
 
 ### Document Processing
