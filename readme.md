@@ -199,7 +199,6 @@ This example shows the system successfully processing a 96-page Luxembourg regul
 - **OpenAI**: API key (set as GPT_API_KEY in .env file) for answer generation and online embeddings
 - **Azure OpenAI**: Endpoint and API key (AZURE_OPENAI_ENDPOINT and AZURE_OPENAI_API_KEY) for enterprise deployment
 - **Azure AI Search**: Endpoint and API key (AZURE_SEARCH_ENDPOINT and AZURE_SEARCH_API_KEY) for scalable vector storage
-- **Azure Key Vault**: Optional for secure credential management (AZURE_KEY_VAULT_URL)
 - sentence-transformers (for offline/local embeddings option)
 
 ## File Structure
