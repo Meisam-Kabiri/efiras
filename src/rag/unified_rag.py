@@ -1,3 +1,97 @@
+"""
+Unified RAG (Retrieval-Augmented Generation) System
+
+This module provides a flexible, unified interface for document-based question-answering using various
+embedding models, language models, and vector storage backends. It supports both local and cloud-based
+processing with seamless switching between different configurations.
+
+Key Features:
+============
+1. Multi-Backend Support:
+   - Local embeddings (sentence-transformers) for offline processing
+   - OpenAI embeddings for high-quality cloud-based embeddings
+   - Azure OpenAI integration for enterprise environments
+   - Azure AI Search for scalable vector storage
+
+2. Flexible Model Configuration:
+   - Supports both OpenAI and Azure OpenAI language models
+   - Configurable embedding models (local or cloud)
+   - Automatic fallback mechanisms for robust operation
+
+3. Advanced Search Capabilities:
+   - Vector similarity search using cosine similarity
+   - Hybrid search with Azure AI Search (vector + text)
+   - Configurable retrieval parameters (top_k, filters)
+   - Context-aware document ranking
+
+4. Enterprise Features:
+   - Environment variable configuration
+   - Embedding caching for performance optimization
+   - Batch processing for large document sets
+   - Comprehensive error handling and logging
+
+5. Document Processing Integration:
+   - Seamless integration with document chunking systems
+   - Metadata preservation and enrichment
+   - Support for hierarchical document structures
+   - TOC-aware chunking and retrieval
+
+Architecture:
+============
+The UnifiedRAGSystem class serves as the main interface, coordinating between:
+- Embedding generation (local or cloud-based)
+- Vector storage (in-memory or Azure AI Search)
+- Language model inference (OpenAI or Azure OpenAI)
+- Document preprocessing and chunking
+
+Configuration Options:
+=====================
+Environment Variables:
+- GPT_API_KEY: OpenAI API key
+- AZURE_OPENAI_API_KEY: Azure OpenAI API key
+- AZURE_OPENAI_ENDPOINT: Azure OpenAI endpoint
+- AZURE_SEARCH_API_KEY: Azure AI Search API key
+- AZURE_SEARCH_ENDPOINT: Azure AI Search endpoint
+
+Embedding Models:
+- Local: sentence-transformers models (e.g., 'all-MiniLM-L6-v2')
+- OpenAI: text-embedding-ada-002, text-embedding-3-small, text-embedding-3-large
+- Azure: Azure OpenAI embedding deployments
+
+Language Models:
+- OpenAI: gpt-3.5-turbo, gpt-4, gpt-4-turbo
+- Azure: Azure OpenAI deployment names
+
+Usage Examples:
+==============
+# Basic local setup
+rag = UnifiedRAGSystem(use_local_embeddings=True)
+
+# Azure OpenAI with local embeddings
+rag = UnifiedRAGSystem(
+    use_local_embeddings=True,
+    use_azure=True,
+    model="gpt-35-turbo"
+)
+
+# Full Azure integration with AI Search
+rag = UnifiedRAGSystem(
+    use_local_embeddings=False,
+    use_azure=True,
+    model="gpt-35-turbo",
+    online_embedding_model="text-embedding-ada-002",
+    use_azure_search=True
+)
+
+Performance Considerations:
+==========================
+- Local embeddings: Faster for small datasets, no API costs
+- Cloud embeddings: Higher quality, better for large-scale applications
+- Azure AI Search: Scalable for enterprise workloads, supports hybrid search
+- Embedding caching: Significantly improves performance for repeated operations
+
+"""
+
 import os
 import json
 from typing import List, Dict, Any, Optional
@@ -6,6 +100,12 @@ from openai import OpenAI, AzureOpenAI
 from sklearn.metrics.pairwise import cosine_similarity
 from pathlib import Path
 import re
+
+try:
+    from .azure_search_backend import AzureSearchBackend
+    AZURE_SEARCH_AVAILABLE = True
+except ImportError:
+    AZURE_SEARCH_AVAILABLE = False
 
 
 class UnifiedRAGSystem:
@@ -19,7 +119,13 @@ class UnifiedRAGSystem:
                  use_azure: bool = False,
                  azure_endpoint: Optional[str] = None,
                  azure_api_key: Optional[str] = None,
-                 api_version: str = "2024-02-01"):
+                 api_version: str = "2024-02-01",
+                 # Azure Search parameters
+                 use_azure_search: bool = False,
+                 azure_search_endpoint: Optional[str] = None,
+                 azure_search_key: Optional[str] = None,
+                 azure_search_index: str = "documents",
+                 use_managed_identity: bool = False):
         """Initialize unified RAG system
         
         Args:
@@ -31,6 +137,11 @@ class UnifiedRAGSystem:
             azure_endpoint: Azure OpenAI endpoint URL
             azure_api_key: Azure OpenAI API key
             api_version: Azure OpenAI API version
+            use_azure_search: Whether to use Azure AI Search instead of in-memory vector DB
+            azure_search_endpoint: Azure Search service endpoint
+            azure_search_key: Azure Search API key (optional if using managed identity)
+            azure_search_index: Name of the search index
+            use_managed_identity: Use Azure managed identity for search authentication
         """
         
         load_dotenv()
@@ -38,7 +149,28 @@ class UnifiedRAGSystem:
         self.use_azure = use_azure
         self.model = model
         self.online_embedding_model = online_embedding_model
+        self.use_azure_search = use_azure_search
         self.vector_db = []
+        
+        # Initialize Azure Search backend if requested
+        if use_azure_search:
+            if not AZURE_SEARCH_AVAILABLE:
+                raise ImportError("Azure Search dependencies not available. Install: pip install azure-search-documents azure-identity")
+            
+            search_endpoint = azure_search_endpoint or os.getenv("AZURE_SEARCH_ENDPOINT")
+            search_key = azure_search_key or os.getenv("AZURE_SEARCH_API_KEY") or os.getenv("AZURE_SEARCH_KEY")
+            
+            if not search_endpoint:
+                raise ValueError("Azure Search endpoint is required. Set AZURE_SEARCH_ENDPOINT environment variable or pass azure_search_endpoint parameter.")
+            
+            self.search_backend = AzureSearchBackend(
+                endpoint=search_endpoint,
+                index_name=azure_search_index,
+                api_key=search_key,
+                use_managed_identity=use_managed_identity
+            )
+        else:
+            self.search_backend = None
         
         # Initialize client based on type
         if use_azure:
@@ -132,6 +264,13 @@ class UnifiedRAGSystem:
     
     def add_documents(self, blocks: List[Dict[str, Any]], cache_path: str = "data_processed", cache_file_name: str = "embeddings"):
         """Add documents to vector database"""
+        if self.use_azure_search:
+            # Use Azure Search backend
+            embeddings = self.embed_blocks(blocks, f"{cache_path}/{cache_file_name}_azure_search.json")
+            self.search_backend.add_documents(embeddings)
+            return
+        
+        # Use in-memory vector database
         if self.use_local_embeddings:
             provider_suffix = "local"
         elif self.use_azure:
@@ -147,11 +286,20 @@ class UnifiedRAGSystem:
     
     def search(self, query: str, top_k: int = 5) -> List[Dict[str, Any]]:
         """Search for similar documents"""
-        if not self.vector_db:
-            return []
-        
         query_embedding = self.embed_text(query)
         if not query_embedding:
+            return []
+        
+        if self.use_azure_search:
+            # Use Azure Search backend with hybrid search
+            return self.search_backend.search(
+                query_embedding=query_embedding,
+                query_text=query,  # Enable hybrid search
+                top_k=top_k
+            )
+        
+        # Use in-memory vector database
+        if not self.vector_db:
             return []
         
         # Extract key terms (numbers, important words)
@@ -335,24 +483,28 @@ Please provide a comprehensive answer that includes all relevant requirements, e
             "confidence": len(relevant_chunks) / top_k
         }
     
-    def stats(self) -> Dict[str, int]:
+    def stats(self) -> Dict[str, Any]:
         """Get database statistics"""
-        return {"total_documents": len(self.vector_db)}
-    
-    def get_config_info(self) -> Dict[str, str]:
-        """Get configuration info for debugging"""
-        if self.use_azure:
-            return {
-                "provider": "Azure OpenAI",
-                "endpoint": getattr(self, 'azure_endpoint', 'N/A'),
-                "model": self.model,
-                "embedding_model": self.online_embedding_model,
-                "using_local_embeddings": self.use_local_embeddings
-            }
+        if self.use_azure_search:
+            return self.search_backend.get_stats()
         else:
-            return {
-                "provider": "OpenAI",
-                "model": self.model,
-                "embedding_model": self.online_embedding_model,
-                "using_local_embeddings": self.use_local_embeddings
-            }
+            return {"total_documents": len(self.vector_db)}
+    
+    def get_config_info(self) -> Dict[str, Any]:
+        """Get configuration info for debugging"""
+        config = {
+            "llm_provider": "Azure OpenAI" if self.use_azure else "OpenAI",
+            "search_backend": "Azure AI Search" if self.use_azure_search else "In-Memory Vector DB",
+            "model": self.model,
+            "embedding_model": self.online_embedding_model,
+            "using_local_embeddings": self.use_local_embeddings
+        }
+        
+        if self.use_azure:
+            config["azure_endpoint"] = getattr(self, 'azure_endpoint', 'N/A')
+        
+        if self.use_azure_search:
+            config["search_endpoint"] = getattr(self.search_backend, 'endpoint', 'N/A')
+            config["search_index"] = getattr(self.search_backend, 'index_name', 'N/A')
+        
+        return config

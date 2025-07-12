@@ -1,13 +1,60 @@
-"""
-Document Processing System - Usage Example
 
-This example demonstrates how to:
-1. Process a PDF document using multiple engines
-2. Clean and structure the extracted text
-3. Create manageable chunks
-4. Build a searchable knowledge base
-5. Query documents using natural language
 """
+Document Processing Pipeline Example
+
+This script demonstrates the end-to-end document processing workflow:
+
+1. Document Processing:
+   - DocumentProcessor(ProcessorType.AUTO) - Auto-selects best engine (PyMuPDF, Azure, PDFMiner, Unstructured)
+   - ProcessorConfig(chunk_size=2000, extract_tables=True) - Configure extraction settings
+   - processor.process(input_pdf, output_dir) - Extract text and structure
+
+2. Block Processing:
+   - block_processor(text_blocks) - Extract TOC, assign headers, clean text
+   - Returns structured blocks with hierarchical metadata
+
+3. Document Chunking:
+   - RegulatoryChunkingSystem(chunk_size=1500) - Create manageable chunks
+   - chunker.chunk_blocks(processed_blocks) - Preserve TOC structure in chunks
+
+4. RAG System Setup:
+   UnifiedRAGSystem supports multiple configurations:
+   
+   # Option A: OpenAI API with Local embeddings only
+   rag = UnifiedRAGSystem(use_local_embeddings=True)
+   
+   # Option B: Azure OpenAI with local embeddings
+   rag = UnifiedRAGSystem(
+       use_local_embeddings=True, 
+       use_azure=True, 
+       model="gpt-35-turbo"
+   )
+   
+   # Option C: Full Azure with AI Search (use Azure OpenAPI services as well as Azure AI search services)
+   rag = UnifiedRAGSystem(
+       use_local_embeddings=True,
+       use_azure=True,
+       model="gpt-35-turbo",
+       use_azure_search=True
+   )
+
+5. Document Indexing:
+   - rag.add_documents(chunked_blocks, cache_path, cache_file_name)
+   - Generates embeddings and stores in vector database
+
+6. Querying:
+   - rag.answer_with_sources(query, top_k=3) - Returns answer with source citations
+   - Uses vector similarity search to find relevant chunks
+
+Key Arguments:
+- chunk_size: Characters per chunk (default 1500)
+- top_k: Number of relevant chunks to retrieve
+- cache_path/cache_file_name: Embedding cache location
+- use_local_embeddings: True for sentence-transformers, False for OpenAI embeddings
+- use_azure: True for Azure OpenAI, False for standard OpenAI
+- use_azure_search: True for Azure AI Search backend, False for in-memory storage
+"""
+
 import os, sys 
 sys.path.append(os.path.abspath("src"))
 
@@ -85,15 +132,24 @@ def main():
     print("5. Building searchable knowledge base...")
     
     # Option A: Use OpenAI with local embeddings
-    # rag_local = UnifiedRAGSystem(use_local_embeddings=True, use_azure=False)
+    rag = UnifiedRAGSystem(use_local_embeddings=True, use_azure=False)
 
     # Option B: Use Azure OpenAI with local embeddings  
-    rag_local = UnifiedRAGSystem(use_local_embeddings=True, use_azure=True, model="gpt-35-turbo")
+    # rag = UnifiedRAGSystem(use_local_embeddings=True, use_azure=True, model="gpt-35-turbo")
 
     # Option C: Use original Azure OpenAI class (for compatibility)
     # rag_local = AzureOpenAIRAGSystem(use_local_embeddings=True)
+
+    # # Option D: Use Azure AI Search (loads from environment variables)
+    # rag = UnifiedRAGSystem(
+    #     use_local_embeddings=True,
+    #     use_azure=True,
+    #     model="gpt-35-turbo",
+    #     use_azure_search=True  # Will load AZURE_SEARCH_ENDPOINT and AZURE_SEARCH_KEY from env
+    # )
+
     
-    rag_local.add_documents(
+    rag.add_documents(
         chunked_blocks,
         cache_path=str(output_dir),
         cache_file_name=f"{Path(input_pdf).stem}_embeddings_local"
@@ -113,7 +169,7 @@ def main():
         print( "-" * 50)
         
         # Get answer with sources
-        result = rag_local.answer_with_sources(query, top_k=3)
+        result = rag.answer_with_sources(query, top_k=3)
         
         print(f" \n   Answer: {result['answer']} \n")
         print( "." * 50)

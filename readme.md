@@ -2,7 +2,7 @@
 
 ## Overview
 
-This system processes PDF documents by extracting text, cleaning it, and making it searchable through a question-answering interface. It consists of several components that work together to transform raw PDFs into structured, queryable data.
+This system processes PDF documents by extracting text, cleaning it, and making it searchable through a question-answering interface. It supports Azure OpenAI services and Azure AI Search for enterprise-grade scalability and performance. It consists of several components that work together to transform raw PDFs into structured, queryable data.
 
 ## Installation & Setup
 
@@ -23,7 +23,7 @@ This system processes PDF documents by extracting text, cleaning it, and making 
    ```
 
 3. **Environment configuration:**
-   Create a `.env` file in the root directory with either OpenAI or Azure OpenAI credentials:
+   Create a `.env` file in the root directory with your API credentials:
    
    **For OpenAI:**
    ```bash
@@ -34,6 +34,12 @@ This system processes PDF documents by extracting text, cleaning it, and making 
    ```bash
    AZURE_OPENAI_ENDPOINT=https://your-resource-name.openai.azure.com/
    AZURE_OPENAI_API_KEY=your_azure_openai_api_key_here
+   ```
+   
+   **For Azure AI Search (optional):**
+   ```bash
+   AZURE_SEARCH_ENDPOINT=https://your-search-service.search.windows.net
+   AZURE_SEARCH_API_KEY=your_azure_search_api_key_here
    ```
 
 4. **Run the example:**
@@ -134,12 +140,15 @@ processed_data = processor.process_and_chunk_blocks(raw_result)
 chunker = RegulatoryChunkingSystem(max_chunk_size=1500)
 chunked_blocks = chunker.chunk_blocks(processed_data)
 
-# 4. Build searchable knowledge base with either OpenAI or Azure OpenAI
-# Option A: Use OpenAI
+# 4. Build searchable knowledge base with various configurations
+# Option A: Use OpenAI with local embeddings
 rag = UnifiedRAGSystem(use_local_embeddings=True, use_azure=False)
 
-# Option B: Use Azure OpenAI
+# Option B: Use Azure OpenAI with local embeddings
 # rag = UnifiedRAGSystem(use_local_embeddings=True, use_azure=True, model="gpt-35-turbo")
+
+# Option C: Use Azure OpenAI with Azure AI Search backend
+# rag = UnifiedRAGSystem(use_local_embeddings=True, use_azure=True, model="gpt-35-turbo", use_azure_search=True)
 
 rag.add_documents(chunked_blocks, cache_path="data", cache_file_name="embeddings")
 
@@ -189,6 +198,8 @@ This example shows the system successfully processing a 96-page Luxembourg regul
 ### For Question Answering:
 - **OpenAI**: API key (set as GPT_API_KEY in .env file) for answer generation and online embeddings
 - **Azure OpenAI**: Endpoint and API key (AZURE_OPENAI_ENDPOINT and AZURE_OPENAI_API_KEY) for enterprise deployment
+- **Azure AI Search**: Endpoint and API key (AZURE_SEARCH_ENDPOINT and AZURE_SEARCH_API_KEY) for scalable vector storage
+- **Azure Key Vault**: Optional for secure credential management (AZURE_KEY_VAULT_URL)
 - sentence-transformers (for offline/local embeddings option)
 
 ## File Structure
