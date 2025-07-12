@@ -16,7 +16,6 @@ This system processes PDF documents by extracting text, cleaning it, and making 
 - **Answers questions** about your documents using AI
 - **Finds relevant information** by searching through document content
 - **Provides source citations** showing where answers came from
-- **Works with multiple documents** simultaneously
 
 ## System Components
 
@@ -52,16 +51,18 @@ Provides question-answering capabilities:
 - Creates embeddings from document chunks using either:
   - **Online embeddings**: OpenAI's text-embedding-3-large model
   - **Offline embeddings**: Local sentence-transformer models (e.g., all-mpnet-base-v2)
-- Searches for relevant content using similarity matching
-- Generates answers using OpenAI's GPT models
-- Returns answers with source information
+- Searches for relevant content using hybrid similarity matching with regulatory boosting
+- Keyword term matching adds boost per matching term
+- Regulatory number boosting for numbers like "517", "698"
+- Regulatory reference boosting for citations like "Article 5", "Section 3.2"
+- Generates answers using OpenAI's GPT models with regulatory-specific prompting
+- Returns answers with source information including page numbers and hierarchical context
 
 ## Input and Output
 
 ### Input
-- PDF documents (any size)
+- PDF documents
 - Text-based or scanned PDFs
-- Documents with tables and complex layouts
 
 ### Output
 - Structured JSON files with processed text blocks including:
@@ -177,5 +178,3 @@ Processed documents are saved as JSON files containing:
 - **Financial Entity Recognition**: Specialized identification of financial terms, regulations, and compliance references
 - **Regulatory Citation Linking**: Automatic cross-referencing between related regulatory documents
 - **API Integration**: RESTful API for integration with existing financial systems and workflows
-
-These immediate enhancements would strengthen the core document processing capabilities while adding financial industry-specific value.
