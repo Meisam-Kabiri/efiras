@@ -14,7 +14,7 @@ This system processes PDF documents by extracting text, cleaning it, and making 
 1. **Clone the repository:**
    ```bash
    git clone <repository-url>
-   cd EFIRAS
+   cd efiras
    ```
 
 2. **Install dependencies:**
@@ -23,9 +23,17 @@ This system processes PDF documents by extracting text, cleaning it, and making 
    ```
 
 3. **Environment configuration:**
-   Create a `.env` file in the root directory:
+   Create a `.env` file in the root directory with either OpenAI or Azure OpenAI credentials:
+   
+   **For OpenAI:**
    ```bash
    GPT_API_KEY=your_openai_api_key_here
+   ```
+   
+   **For Azure OpenAI:**
+   ```bash
+   AZURE_OPENAI_ENDPOINT=https://your-resource-name.openai.azure.com/
+   AZURE_OPENAI_API_KEY=your_azure_openai_api_key_here
    ```
 
 4. **Run the example:**
@@ -76,15 +84,16 @@ Splits large documents into smaller pieces:
 - Preserves document structure and metadata
 
 ### 4. RAG (Retrieval-Augmented Generation) System
-Provides question-answering capabilities:
+Provides question-answering capabilities with support for both OpenAI and Azure OpenAI:
+- **Unified RAG System**: Single interface supporting both OpenAI and Azure OpenAI
 - Creates embeddings from document chunks using either:
-  - **Online embeddings**: OpenAI's text-embedding-3-large model
+  - **Online embeddings**: OpenAI's text-embedding-3-large or Azure OpenAI embedding models
   - **Offline embeddings**: Local sentence-transformer models (e.g., all-mpnet-base-v2)
 - Searches for relevant content using hybrid similarity matching with regulatory boosting
 - Keyword term matching adds boost per matching term
 - Regulatory number boosting for numbers like "517", "698"
 - Regulatory reference boosting for citations like "Article 5", "Section 3.2"
-- Generates answers using OpenAI's GPT models with regulatory-specific prompting
+- Generates answers using OpenAI's GPT models or Azure OpenAI deployments with regulatory-specific prompting
 - Returns answers with source information including page numbers and hierarchical context
 
 ## Input and Output
@@ -109,7 +118,7 @@ Provides question-answering capabilities:
 from src.document_readers.base import DocumentProcessor, ProcessorConfig
 from src.document_processing.block_processor import block_processor
 from src.document_chunker.block_chunker import RegulatoryChunkingSystem
-from src.rag.rag_simple import RAGSystem
+from src.rag.unified_rag import UnifiedRAGSystem
 from src.document_processing.manager import DocumentProcessorManager
 
 # 1. Configure and process PDF document
@@ -125,8 +134,13 @@ processed_data = processor.process_and_chunk_blocks(raw_result)
 chunker = RegulatoryChunkingSystem(max_chunk_size=1500)
 chunked_blocks = chunker.chunk_blocks(processed_data)
 
-# 4. Build searchable knowledge base
-rag = RAGSystem(use_local_embeddings=True)
+# 4. Build searchable knowledge base with either OpenAI or Azure OpenAI
+# Option A: Use OpenAI
+rag = UnifiedRAGSystem(use_local_embeddings=True, use_azure=False)
+
+# Option B: Use Azure OpenAI
+# rag = UnifiedRAGSystem(use_local_embeddings=True, use_azure=True, model="gpt-35-turbo")
+
 rag.add_documents(chunked_blocks, cache_path="data", cache_file_name="embeddings")
 
 # 5. Ask questions
@@ -173,7 +187,8 @@ This example shows the system successfully processing a 96-page Luxembourg regul
 - Optional: Azure Document Intelligence credentials for advanced processing
 
 ### For Question Answering:
-- OpenAI API key (set as GPT_API_KEY in .env file) for answer generation and online embeddings
+- **OpenAI**: API key (set as GPT_API_KEY in .env file) for answer generation and online embeddings
+- **Azure OpenAI**: Endpoint and API key (AZURE_OPENAI_ENDPOINT and AZURE_OPENAI_API_KEY) for enterprise deployment
 - sentence-transformers (for offline/local embeddings option)
 
 ## File Structure
