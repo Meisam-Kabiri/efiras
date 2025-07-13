@@ -152,7 +152,7 @@ def main():
     rag.add_documents(
         chunked_blocks,
         cache_path=str(output_dir),
-        cache_file_name=f"{Path(input_pdf).stem}_embeddings_local"
+        cache_file_name=f"{Path(input_pdf).stem}_embeddings"
     )
     
     

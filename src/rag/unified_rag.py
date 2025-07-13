@@ -200,8 +200,8 @@ class UnifiedRAGSystem:
             from sentence_transformers import SentenceTransformer
             self.local_model = SentenceTransformer(local_embedding_model)
     
-    def create_embedding_text(self, block: Dict[str, Any]) -> str:
-        """Create embedding text from enriched block"""
+    def enrich_text_with_headers(self, block: Dict[str, Any]) -> str:
+        """Enrich block text with hierarchical headers"""
         enriched = block.get('enriched_headers')
         if enriched:
             return f"{enriched}\n\n{block['text']}"
@@ -244,7 +244,7 @@ class UnifiedRAGSystem:
         for i, block in enumerate(blocks):
             print(f"Embedding {i+1}/{len(blocks)}")
             
-            content = self.create_embedding_text(block)
+            content = self.enrich_text_with_headers(block)
             embedding = self.embed_text(content)
             
             if embedding:
@@ -264,13 +264,8 @@ class UnifiedRAGSystem:
     
     def add_documents(self, blocks: List[Dict[str, Any]], cache_path: str = "data_processed", cache_file_name: str = "embeddings"):
         """Add documents to vector database"""
-        if self.use_azure_search:
-            # Use Azure Search backend
-            embeddings = self.embed_blocks(blocks, f"{cache_path}/{cache_file_name}_azure_search.json")
-            self.search_backend.add_documents(embeddings)
-            return
         
-        # Use in-memory vector database
+        # Determine embedding provider suffix (independent of search backend)
         if self.use_local_embeddings:
             provider_suffix = "local"
         elif self.use_azure:
@@ -279,10 +274,20 @@ class UnifiedRAGSystem:
             provider_suffix = "openai_online"
         
         cache_file_path = f"{cache_path}/{cache_file_name}_{provider_suffix}.json"
-
-        self.vector_db = self.embed_blocks(blocks, cache_file_path)
-        provider = "Azure OpenAI" if self.use_azure else "OpenAI"
-        print(f"Added {len(self.vector_db)} documents to {provider} database")
+        
+        # Generate embeddings (same regardless of search backend)
+        embeddings = self.embed_blocks(blocks, cache_file_path)
+        
+        # Store embeddings based on search backend
+        if self.use_azure_search:
+            # Use Azure Search backend for storage
+            self.search_backend.add_documents(embeddings)
+            print(f"Added {len(embeddings)} documents to Azure AI Search")
+        else:
+            # Use in-memory vector database
+            self.vector_db = embeddings
+            provider = "Azure OpenAI" if self.use_azure else "OpenAI"
+            print(f"Added {len(self.vector_db)} documents to in-memory {provider} database")
     
     def search(self, query: str, top_k: int = 5) -> List[Dict[str, Any]]:
         """Search for similar documents"""
