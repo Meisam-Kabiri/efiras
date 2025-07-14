@@ -128,21 +128,24 @@ class RAGSystem:
 
 
 
-            # Boost for key term matches
+            # Boost for key term matches - check both content and headers
             content_lower = doc['content'].lower()
-            term_matches = sum(1 for term in key_terms if term in content_lower)
+            headers_lower = doc.get('block', {}).get('enriched_headers', '').lower()
+            search_text = content_lower + ' ' + headers_lower
+            
+            term_matches = sum(1 for term in key_terms if term in search_text)
             
             if term_matches > 0:
                 similarity += 0.1 * term_matches
 
-                # STRONG boost for regulatory numbers
+            # STRONG boost for regulatory numbers
             for num in regulatory_numbers:
-                if num in content_lower:
+                if num in search_text:
                     similarity += 0.5  # Very strong boost
             
             # EXTRA boost for full regulatory references
             for term in regulatory_terms:
-                if term in content_lower:
+                if term in search_text:
                     similarity += 0.7  # Even stronger boost
 
 

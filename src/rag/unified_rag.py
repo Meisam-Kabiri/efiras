@@ -324,22 +324,30 @@ class UnifiedRAGSystem:
         for doc in self.vector_db:
             similarity = cosine_similarity([query_embedding], [doc['embedding']])[0][0]
 
-            # Boost for key term matches
+            # Boost for key term matches - check both content and headers
             content_lower = doc['content'].lower()
-            term_matches = sum(1 for term in key_terms if term in content_lower)
+            headers_lower = doc.get('block', {}).get('enriched_headers', '').lower()
+            search_text = content_lower + ' ' + headers_lower
+            
+            term_matches = sum(1 for term in key_terms if term in search_text)
             
             if term_matches > 0:
                 similarity += 0.1 * term_matches
 
             # STRONG boost for regulatory numbers
             for num in regulatory_numbers:
-                if num in content_lower:
+                if num in search_text:
                     similarity += 0.5  # Very strong boost
             
             # EXTRA boost for full regulatory references
             for term in regulatory_terms:
-                if term in content_lower:
+                if term in search_text:
                     similarity += 0.7  # Even stronger boost
+                    
+            # SUPER boost for exact regulatory references in headers (like "Article 409")
+            for term in regulatory_terms:
+                if term in headers_lower:
+                    similarity += 1.0  # Super strong boost for header matches
 
             similarities.append({'document': doc, 'similarity': similarity})
         
@@ -374,8 +382,14 @@ class UnifiedRAGSystem:
         seen_sections = set()
         
         for chunk in relevant_chunks:
+            # Include headers to provide context about which article/section this is
+            headers = chunk['block'].get('enriched_headers', '')
             content = chunk['content']
-            enhanced_context.append(content)
+            
+            if headers:
+                enhanced_context.append(f"[{headers}]\n{content}")
+            else:
+                enhanced_context.append(content)
             
             # Extract section information
             headers = chunk['block'].get('enriched_headers', '')

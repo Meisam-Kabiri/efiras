@@ -114,34 +114,95 @@ class block_processor():
                 return True
             
     def _extract_headers(self, blocks):
-        # Header patterns with hierarchy levels (lower number = higher priority)
-        # ^ ensures pattern matches at start of text
+        """Generic hierarchical header detection for any regulatory document"""
+        # Generic patterns for regulatory documents (lower number = higher hierarchy)
         patterns = {
-            1: r'(?i)^(?:part|chapter)\s+[ivx\d]+\b',
-            2: r'(?i)^sub-?chapter\s+[\d.]+\b',
-            3: r'(?i)^section\s+\d+\b',          # Section 4
-            4: r'(?i)^section\s+\d+\.\d+\b',     # Section 4.1  
-            5: r'(?i)^section\s+\d+\.\d+\.\d+\b', # Section 4.1.1
-            6: r'(?i)^sub-?section\s+[\d.]+\b'
+            # High-level structural elements
+            1: r'(?i)^(?:title|book|part)\s+[ivxlcdm\d]+\b',           # TITLE II, PART I
+            2: r'(?i)^(?:chapter|division)\s+[ivxlcdm\d]+\b',          # CHAPTER III
+            3: r'(?i)^(?:section|sub-?part)\s+[ivxlcdm\d]+(?:\.\d+)*\b', # SECTION 4, Section 4.1
+            
+            # Medium-level elements  
+            4: r'(?i)^(?:article|art\.?)\s+\d+\b',                     # Article 405, Art. 166
+            5: r'(?i)^(?:sub-?section|subsection)\s+[\d.]+\b',         # Sub-section 4.1
+            
+            # Low-level elements
+            6: r'^\(\d+\)',                                            # (60) - Numbered paragraphs
+            7: r'^\d+\.\s*$',                                          # 1., 2. - Numbered points  
+            8: r'^[a-z]\)\s*$',                                        # a), b) - Lettered points
+            
+            # Content headers (descriptive titles)
+            9: r'^[A-Z][A-Z\s]{8,100}$',                               # ALL CAPS SECTION TITLES
+            10: r'^[A-Z][a-z\s]{8,100}$',                             # Title Case Section Headers
         }
         
         current_headers = {}  # level -> header text
         
-        for block in blocks:
-            text = block['text']
+        for i, block in enumerate(blocks):
+            text = block['text'].strip()
+            text_length = len(text)
             
             # Check for headers in current block
+            header_found = False
             for level, pattern in patterns.items():
-                if re.search(pattern, text):
+                match = re.search(pattern, text)
+                if match:
                     # Clear lower priority headers and update current level
                     current_headers = {k: v for k, v in current_headers.items() if k < level}
-                    current_headers[level] = re.search(pattern, text).group()
+                    
+                    # Smart header text extraction
+                    header_text = self._extract_smart_header_text(text, match, level, i, blocks)
+                    current_headers[level] = header_text
+                    header_found = True
                     break
             
-            # Assign accumulated headers to block
-            block['headers'] = ', '.join(current_headers.values())
+            # Build meaningful header path (avoid overly long paths)
+            header_path = self._build_header_path(current_headers)
+            block['headers'] = header_path
         
         return blocks
+    
+    def _extract_smart_header_text(self, text, match, level, block_index, blocks):
+        """Extract smart header text with potential next-block title merging"""
+        matched_text = match.group().strip()
+        
+        # For structural elements (Articles, Sections), check if next block is a title
+        if level in [1, 2, 3, 4, 5] and block_index + 1 < len(blocks):
+            next_block = blocks[block_index + 1]
+            next_text = next_block['text'].strip()
+            next_length = len(next_text)
+            
+            # Check if next block is likely a descriptive title
+            if (20 < next_length < 150 and  # Reasonable title length
+                not re.match(r'^\d+\.', next_text) and  # Not a numbered paragraph
+                not re.match(r'^\([0-9]+\)', next_text) and  # Not a numbered item
+                not next_text.islower()):  # Not all lowercase (likely not content)
+                
+                # Clean the title text
+                clean_title = re.sub(r'\n+', ' ', next_text).strip()
+                return f"{matched_text} > {clean_title}"
+        
+        return matched_text
+    
+    def _build_header_path(self, current_headers):
+        """Build meaningful header path avoiding overly verbose paths"""
+        if not current_headers:
+            return ''
+        
+        # Sort by hierarchy level and select most meaningful ones
+        sorted_headers = sorted(current_headers.items())
+        
+        # For efficiency, limit to maximum 3 hierarchy levels
+        selected_headers = []
+        for level, header in sorted_headers:
+            # Skip overly long descriptive headers in middle of path
+            if len(selected_headers) > 0 and len(header) > 80:
+                continue
+            selected_headers.append(header)
+            if len(selected_headers) >= 3:
+                break
+        
+        return ' > '.join(selected_headers)
     
     def _extract_toc(self, blocks):
         toc = []

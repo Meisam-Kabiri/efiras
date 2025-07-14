@@ -71,7 +71,7 @@ from src.rag.unified_rag import UnifiedRAGSystem
 
 def main():
     # Configuration
-    # input_pdf = "data/regulatory_documents/eu/Basel  III.pdf"
+    # input_pdf = "data/regulatory_documents/eu/Basel _III.pdf"
     input_pdf = "data/regulatory_documents/lu/Lux_cssf18_698eng.pdf"
     output_dir = Path("data_processed")
     output_dir.mkdir(exist_ok=True)
@@ -158,12 +158,29 @@ def main():
     
     # Step 6: Query the document
     print("6. Querying the document...")
-    
-    # Example queries
+
+    # Example queries from lu document
     queries = [
         "What monitoring elements must IFM implement for central administration delegation?",
         ]
     
+    # Example queries from Basel III
+    # queries = [
+    #     "Article 409 disclosure requirements",
+    #     "What does Article 409 say?",
+    #     "Article 409"
+    # ]
+    # page 60-62 basel III
+    # queries = ["What is the hierarchy of methods for ABCP programmes in Article 259?",
+    #            "What methods are available for calculating risk weights in asset-backed commercial paper programmes?",
+    #            "How do institutions handle unrated securitisation positions?",
+    #            "What are the requirements for using inferred ratings in securitisation?",
+    #            "What underwriting standards apply to commercial paper programmes?"
+    #            ]
+    
+    # queries = ["What are the requirements for using the Internal Assessment Approach for ABCP programmes?"
+    #            ]
+
     for i, query in enumerate(queries, 1):
         print(f"\n   Query {i}: {query}")
         print( "-" * 50)
@@ -172,11 +189,7 @@ def main():
         result = rag.answer_with_sources(query, top_k=3)
         
         print(f" \n   Answer: {result['answer']} \n")
-        print( "." * 50)
-        print(f"   Confidence: {result['confidence']:.2f}")
-        print( "." * 50)
         print(f"   Sources found: {len(result['sources'])}")
-
         print( "-" * 50)
         
         # Show top source

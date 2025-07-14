@@ -189,6 +189,42 @@ Source: Page 73, Chapter 6: Specific organisational arrangements, Sub-chapter 6.
 
 This example shows the system successfully processing a 96-page Luxembourg regulatory document and providing comprehensive, accurate answers for compliance and regulatory questions.
 
+---
+
+## Advanced Example: Basel III Regulatory Analysis
+
+**Document:** Basel III - Capital Requirements Regulation (337 pages)
+
+**Query:** "What are the requirements for using the Internal Assessment Approach for ABCP programmes?"
+
+**System Response:**
+```
+The requirements for using the Internal Assessment Approach (IAA) for Asset-Backed Commercial Paper (ABCP) programmes are outlined in Article 259 of Title II, Chapter 5 of the Capital Requirements for Credit Risk. The following conditions must be met:
+
+1. **Rated Positions**: The commercial paper issued from the ABCP programme must be rated positions (Article 259, paragraph 3(a)).
+
+2. **Permission from Competent Authorities**: Institutions must obtain permission from competent authorities to use the IAA (Article 259, paragraph 3).
+
+3. **Alternative to Unrated Positions**: As an alternative to point (b), for unrated positions in ABCP programmes, the institution may use the IAA if the competent authorities have permitted it to do so (Article 259, paragraph (c)).
+
+4. **Regular Reviews**: Regular reviews of the internal assessment process and the quality of the internal assessments of the credit quality of the institution's exposures to an ABCP programme must be performed. These reviews can be conducted by internal or external auditors, an External Credit Assessment Institution (ECAI), or the institution's internal credit review or risk management function (Article 259, paragraph (g)).
+
+5. **Independence of Review Functions**: If the institution's internal audit, credit review, or risk management functions perform the review, these functions must be independent of the ABCP programme business line, as well as the customer relationship (Article 259, paragraph (g)).
+
+6. **Hierarchy of Methods**: For a rated position or a position in respect of which an inferred rating may be used, the Ratings Based Method set out in Article 261 must be used to calculate the risk-weighted exposure amount (Article 259, paragraph 1(a)).
+
+Source: Basel III, Article 259, Page 161
+```
+
+**Advanced Features Demonstrated:**
+- ✅ **Complex financial terminology** handling (ABCP, IAA, ECAI, risk-weighted exposure)
+- ✅ **Multi-layered regulatory synthesis** from Basel III's intricate article structure
+- ✅ **Professional regulatory formatting** with proper article citations and paragraph references
+- ✅ **Comprehensive requirement analysis** covering operational, compliance, and methodological aspects
+- ✅ **Perfect source attribution** with exact page and article references for regulatory compliance
+
+This demonstrates the system's capability to handle sophisticated banking regulations and provide actionable guidance for financial institutions implementing Basel III requirements.
+
 ## Requirements
 
 ### For Document Processing:
