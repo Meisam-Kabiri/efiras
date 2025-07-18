@@ -206,5 +206,3 @@ if __name__ == "__main__":
     # Basic usage example
     main()
     
-    # Uncomment to run advanced features demo
-    # demonstrate_advanced_features()

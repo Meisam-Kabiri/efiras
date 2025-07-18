@@ -43,14 +43,9 @@ class block_processor():
                 ]
         
 
-
-        blocks = self._merge_blocks_with_colon_pattern(blocks)
-
-        
-        
-
         self._enrich_blocks_with_titles(blocks, toc)
         self.reattach_split_paragraphs_across_pages(blocks)
+        blocks = self._merge_blocks_with_colon_pattern(blocks)
 
         self._save_processed_blocks(
             filename=filename,
@@ -301,6 +296,7 @@ class block_processor():
                 "processor": "PyMuPDF",
                 "filename_without_ext": filename_without_ext
             },
+            "filename_without_ext": filename_without_ext,
             "table_of_contents": toc,
             "blocks": blocks
         }

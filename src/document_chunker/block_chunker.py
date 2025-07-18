@@ -10,6 +10,8 @@ from pathlib import Path
 from typing import Any
 import logging
 import json
+from src.utils.text_utils import extract_paragraphs, extract_sentences
+
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
@@ -17,20 +19,17 @@ logger = logging.getLogger(__name__)
 
 class RegulatoryChunkingSystem:
     def __init__(self, 
-                 min_chunk_size: int = 100,
-                 max_chunk_size: int = 500,
-                 overlap_percentage: float = 0.15,
-                 semantic_model: str = "all-MiniLM-L6-v2"):
+                 min_chunk_size: int = 75,
+                 max_chunk_size: int = 512,
+                 model: str = "all-mpnet-base-v2"):
         
         self.min_chunk_size = min_chunk_size
         self.max_chunk_size = max_chunk_size
-        self.chunk_overlap_size = int(max_chunk_size * overlap_percentage)
-        self.overlap_percentage = overlap_percentage
-        self.semantic_model = SentenceTransformer(semantic_model)
+        self.tokenizer = SentenceTransformer(model).tokenizer
         
 
 
-    def chunk_blocks(self, pdf_content: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+    def chunk_blocks(self, pdf_content: Dict[str, Any]) -> List[Dict[str, Any]]:
         """
         Chunk text blocks into regulatory chunks based on size constraints.
         
@@ -45,7 +44,9 @@ class RegulatoryChunkingSystem:
         
         for block in blocks:
             text = block.get('text', '').strip()
-            if not text or len(text) < self.min_chunk_size:
+            tokens = self.tokenizer.tokenize(text)
+            token_size = len(tokens)+2
+            if not text or token_size < self.min_chunk_size:
                 continue
                 
             if len(text) <= self.max_chunk_size:
@@ -54,13 +55,60 @@ class RegulatoryChunkingSystem:
                 chunks.append(chunk)
             else:
                 # Split oversized text into chunks with overlap
-                split_texts = self._split_large_text(text)
+                paragraphs = extract_paragraphs(text)
+                current_chunk_text = ""
+                chunk_id = 0
                 
-                for i, split_chunk in enumerate(split_texts):
-                    # Create new chunk preserving all original metadata
-                    chunk = block.copy()  # Copy all original keys
-                    chunk['text'] = split_chunk['text']  # Update with split text
-                    chunk['chunk_id'] = i  # Add chunk identifier
+                for paragraph in paragraphs:
+                    # Check if adding this paragraph would exceed max_chunk_size
+                    test_text = current_chunk_text + ("\n\n" if current_chunk_text else "") + paragraph
+                    test_tokens = self.tokenizer.tokenize(test_text)
+                    
+                    if len(test_tokens) + 2 <= self.max_chunk_size:
+                        # Add paragraph to current chunk
+                        current_chunk_text = test_text
+                    else:
+                        # Save current chunk if it has content
+                        if current_chunk_text:
+                            chunk = block.copy()
+                            chunk['text'] = current_chunk_text
+                            chunk['chunk_id'] = chunk_id
+                            chunks.append(chunk)
+                            chunk_id += 1
+                            current_chunk_text = ""
+                        
+                        # Handle the current paragraph - split by sentences if too large
+                        par_tokens = self.tokenizer.tokenize(paragraph)
+                        if len(par_tokens) + 2 <= self.max_chunk_size:
+                            # Paragraph fits as a single chunk
+                            current_chunk_text = paragraph
+                        else:
+                            # Split paragraph into sentences
+                            sentences = extract_sentences(paragraph)
+                            for sentence in sentences:
+                                test_text = current_chunk_text + (" " if current_chunk_text else "") + sentence
+                                test_tokens = self.tokenizer.tokenize(test_text)
+                                
+                                if len(test_tokens) + 2 <= self.max_chunk_size:
+                                    # Add sentence to current chunk
+                                    current_chunk_text = test_text
+                                else:
+                                    # Save current chunk if it has content
+                                    if current_chunk_text:
+                                        chunk = block.copy()
+                                        chunk['text'] = current_chunk_text
+                                        chunk['chunk_id'] = chunk_id
+                                        chunks.append(chunk)
+                                        chunk_id += 1
+                                    
+                                    # Start new chunk with current sentence
+                                    current_chunk_text = sentence
+                
+                # Save final chunk if it has content
+                if current_chunk_text:
+                    chunk = block.copy()
+                    chunk['text'] = current_chunk_text
+                    chunk['chunk_id'] = chunk_id
                     chunks.append(chunk)
 
 
@@ -75,23 +123,7 @@ class RegulatoryChunkingSystem:
 
         return chunks
 
-    def _split_large_text(self, text: str) -> List[Dict[str, str]]:
-        """Split large text into overlapping chunks."""
-        chunks = []
-        start = 0
-        
-        while start < len(text):
-            end = min(start + self.max_chunk_size, len(text))
-            chunk = text[start:end].strip()
-            
-            if chunk:
-                chunks.append({'text': chunk})
-            
-            # Move start position with overlap consideration
-            start = end - self.chunk_overlap_size if end < len(text) else len(text)
-        
-        return chunks
-    
+
 
 
 # if __name__ == "__main__":
