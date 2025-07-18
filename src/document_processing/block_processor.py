@@ -33,6 +33,7 @@ class block_processor():
             return []
         
         toc = self._extract_toc(blocks)  # Extract TOC if needed
+        blocks = [block for block in blocks if not block.get('is_toc', False)] #remove the toc from blocks
 
         # [print(f"{key}: {value}") for d in toc for key, value in d.items()]
 
@@ -43,9 +44,14 @@ class block_processor():
                 ]
         
 
+
+        blocks = self._merge_blocks_with_colon_pattern(blocks)
+
+        
+        
+
         self._enrich_blocks_with_titles(blocks, toc)
         self.reattach_split_paragraphs_across_pages(blocks)
-        blocks = self._merge_blocks_with_colon_pattern(blocks)
 
         self._save_processed_blocks(
             filename=filename,
@@ -92,12 +98,44 @@ class block_processor():
 
             # Merge if block ends with a colon
             if text.endswith(": \n") or text.endswith(":"):
-                blocks[i]['text'] += "\n" + blocks[i + 1]['text']
+                next_text = blocks[i + 1]['text']
+                # Add \n\n if next block starts a new paragraph (numbered items, letters, capitals)
+                if re.match(r'^(\d+[\.\)]|[a-z][\.\)]|\([a-z]\)|\(\d+\)|[A-Z])', next_text.strip()):
+                    blocks[i]['text'] += "\n\n" + next_text
+                else:
+                    blocks[i]['text'] += next_text
                 del blocks[i + 1]
             else:
                 i += 1
 
         return blocks
+    
+    def _split_definition_blocks(self, blocks: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+        """Split blocks that contain multiple definitions into separate blocks"""
+        new_blocks = []
+        
+        for block in blocks:
+            text = block['text']
+            
+            # Split on numbered definitions, but only when they start with space/whitespace (not in "Article 101(4)")
+            parts = re.split(r'(\s+\d+\)\s*")', text)
+            
+            if len(parts) > 1:  # Multiple definitions found
+                combined_text = parts[0]  # Start with first part
+                for i in range(1, len(parts), 2):  # Every other part starting from 1
+                    if i + 1 < len(parts):
+                        definition_start = parts[i]  # The space + number)
+                        definition_content = parts[i + 1]  # The content
+                        combined_text += '\n\n' + definition_start.strip() + definition_content
+                
+                new_block = block.copy()
+                new_block['text'] = combined_text
+                new_blocks.append(new_block)
+            else:
+                # Keep block as-is
+                new_blocks.append(block)
+        
+        return new_blocks
    
     def _identify_header_footer_blocks(self, height, block: Dict[str, Any]) -> bool:
             """Remove header and footer blocks based on their position."""
@@ -209,19 +247,23 @@ class block_processor():
             # Detect TOC start (only happens once)
             if not in_toc and 'table of contents' in text.lower():
                 in_toc = True
+                block['is_toc'] = True
                 continue
                 
-            # Extract TOC entries once we're in TOC mode
-            if in_toc:
-                # Pattern: title + separators + page number
-                # match = re.search(r'^(.*?)\s*[.\-_\s]{2,}\s*(\d+)$', text)
-                match = re.search(r'^((?:Part|Chapter|Section|Sub-chapter)\s+[ivxlcdm\d.]+)\.?\s*(.*?)\s*[.\-_\s]{3,}\s*(\d+)\s*$', text, re.IGNORECASE | re.DOTALL)
-                if match:
-                    # print(f"\n: {match.group()}")
-                    header, title, page_num = match.groups()
+            match = re.search(
+                r'^((?:Part|Chapter|Section|Sub-chapter|Sub-section|ANNEX)\s+[ivxlcdm\d.]+)\.?\s*(.*?)\s*(?:[.\-_\s]{3,})?\s*(\d+)\s*$',
+                text, re.IGNORECASE | re.DOTALL
+            )
+
+            if match:
+                header, title, page_num = match.groups()
+
+                # Check that after the page number there's only whitespace or end of string
+                page_end_pos = text.rfind(page_num) + len(page_num)
+                remaining_text = text[page_end_pos:].strip()
+
+                if remaining_text == "":
                     header = header.strip()
-                    
-                    # Determine level
                     if header.startswith('Part'):
                         level = 1
                     elif header.startswith('Chapter'):
@@ -234,17 +276,44 @@ class block_processor():
                         level = 5
                     else:
                         level = 1
-                    
-                    
+
                     toc_dict = {
                         "page": int(page_num), 
                         "level": level,
-                        "header": header.strip(),
+                        "header": header,
                         "title": title
                     }
+                    block['is_toc'] = True
                     toc.append(toc_dict)
-        # Sort TOC by page number                        
+
+            else:
+                # Fallback: TOC-style entries like "1. General section.............. 87"
+                match2 = re.search(
+                    r'^(.*?)\s*[.\-_\s]{3,}\s*(\d+)\s*$',
+                    text, re.IGNORECASE | re.DOTALL
+                )
+
+                if match2:
+                    title, page_num = match2.groups()
+                    # Minimal heuristic for level based on numbering
+                    header = title.strip().split()[0]
+                    if header.lower().startswith(('part', 'chapter', 'section')):
+                        level = 2
+                    elif re.match(r'\d+(\.\d+)*', header):  # e.g., "2", "1.1"
+                        level = 4
+                    else:
+                        level = 1
+
+                    toc_dict = {
+                        "page": int(page_num),
+                        "level": level,
+                        "header": header,
+                        "title": title.strip()
+                    }
+                    block['is_toc'] = True
+                    toc.append(toc_dict)
         return toc
+
     
     def _clean_text(self,blocks):
         for block in blocks:
@@ -332,7 +401,7 @@ class block_processor():
     
     def _enrich_blocks_with_titles(self, blocks: List[Dict[str, Any]], toc: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
         """
-        Enrich blocks by appending TOC titles to each header segment.
+        Enrich blocks by appending TOC titles to header segments found in TOC.
 
         Args:
             blocks: List of parsed document blocks with 'headers'
@@ -342,23 +411,38 @@ class block_processor():
             List of enriched blocks with 'enriched_headers' added
         """
         enriched_blocks = blocks.copy()
+        
+        # If no TOC, just copy headers to enriched_headers
+        if not toc:
+            for block in enriched_blocks:
+                block['enriched_headers'] = block.get('headers', '')
+            return enriched_blocks
+        
         for block in enriched_blocks:
+            original_header = block.get('headers', '')
+            if not original_header:
+                block['enriched_headers'] = ''
+                continue
+            
+            # Split hierarchical header by " > "
+            header_parts = [part.strip() for part in original_header.split(' > ')]
             enriched_parts = []
-            block['enriched_headers'] = ''  # Initialize enriched headers
-            for header in block.get('headers', '').split(','):
-                header = header.strip()
-                if not header:
-                    continue
-
-                toc_entry = self._find_toc_match(header, toc)
-                if toc_entry:
-                    enriched = f"{header}: {toc_entry.get('title', '')}"
+            
+            for part in header_parts:
+                # Look up this part in TOC
+                toc_entry = self._find_toc_match(part, toc)
+                if toc_entry and toc_entry.get('title'):
+                    # Enrich with TOC title and clean up newlines
+                    title = toc_entry.get('title', '').replace('\n', ' ').strip()
+                    enriched_part = f"{part}. {title}"
                 else:
-                    enriched = header  # fallback to original if no match
-
-                enriched_parts.append(enriched)
-
-            block['enriched_headers'] = ', '.join(enriched_parts)
+                    # Keep original if not found in TOC, but clean newlines
+                    enriched_part = part.replace('\n', ' ').strip()
+                
+                enriched_parts.append(enriched_part)
+            
+            # Rebuild the hierarchical header
+            block['enriched_headers'] = ' > '.join(enriched_parts)
 
         return enriched_blocks
 
@@ -474,7 +558,11 @@ class block_processor():
                 # Remove hyphen and join without space
                 return current_text[:-1] + next_text
             
-            # Regular merge with space
+            # Add \n\n only for standalone numbered definitions (e.g., "17) definition...")
+            if re.match(r'^\d+\)\s*"', next_text.strip()):
+                return current_text + '\n\n' + next_text
+            
+            # Regular merge without any separator
             return current_text + ' ' + next_text
         
         merged_blocks = []
