@@ -10,7 +10,7 @@ from pathlib import Path
 from typing import Any
 import logging
 import json
-from src.utils.text_utils import extract_paragraphs, extract_sentences
+from src.utils.text_utils import extract_paragraphs, extract_sentences, remove_newlines
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -41,7 +41,8 @@ class RegulatoryChunkingSystem:
         """
         blocks = pdf_content['blocks']
         chunks = []
-        
+        chunk_id = 0
+
         for block in blocks:
             text = block.get('text', '').strip()
             tokens = self.tokenizer.tokenize(text)
@@ -52,12 +53,13 @@ class RegulatoryChunkingSystem:
             if len(text) <= self.max_chunk_size:
                 # Preserve all metadata from original block
                 chunk = block.copy()  # Copy all original keys
+                chunk['chunk_id'] = chunk_id  # Single chunk from this block
+                chunk_id += 1
                 chunks.append(chunk)
             else:
                 # Split oversized text into chunks with overlap
                 paragraphs = extract_paragraphs(text)
                 current_chunk_text = ""
-                chunk_id = 0
                 
                 for paragraph in paragraphs:
                     # Check if adding this paragraph would exceed max_chunk_size
@@ -71,7 +73,7 @@ class RegulatoryChunkingSystem:
                         # Save current chunk if it has content
                         if current_chunk_text:
                             chunk = block.copy()
-                            chunk['text'] = current_chunk_text
+                            chunk['text'] = remove_newlines(current_chunk_text)
                             chunk['chunk_id'] = chunk_id
                             chunks.append(chunk)
                             chunk_id += 1
@@ -96,7 +98,7 @@ class RegulatoryChunkingSystem:
                                     # Save current chunk if it has content
                                     if current_chunk_text:
                                         chunk = block.copy()
-                                        chunk['text'] = current_chunk_text
+                                        chunk['text'] = remove_newlines(current_chunk_text)
                                         chunk['chunk_id'] = chunk_id
                                         chunks.append(chunk)
                                         chunk_id += 1
@@ -109,6 +111,7 @@ class RegulatoryChunkingSystem:
                     chunk = block.copy()
                     chunk['text'] = current_chunk_text
                     chunk['chunk_id'] = chunk_id
+                    chunk_id += 1
                     chunks.append(chunk)
 
 
