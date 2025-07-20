@@ -305,7 +305,7 @@ if __name__ == "__main__":
     
     # Load chunks from file 
     file_path = "data_processed/Lux_cssf18_698eng_chunked_blocks.json"
-    file_path ="data_processed/Basel _III_chunked_blocks.json"
+    file_path ="data_processed/Basel_III_chunked_blocks.json"
     
     
     # Load chunks list

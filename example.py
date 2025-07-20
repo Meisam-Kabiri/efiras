@@ -71,8 +71,8 @@ from src.rag.unified_rag import UnifiedRAGSystem
 
 def main():
     # Configuration
-    # input_pdf = "data/regulatory_documents/eu/Basel _III.pdf"
-    input_pdf = "data/regulatory_documents/lu/Lux_cssf18_698eng.pdf"
+    input_pdf = "data/regulatory_documents/eu/Basel_III.pdf"
+    # input_pdf = "data/regulatory_documents/lu/Lux_cssf18_698eng.pdf"
     output_dir = Path("data_processed")
     output_dir.mkdir(exist_ok=True)
     
@@ -117,7 +117,7 @@ def main():
     
     # Step 4: Create manageable chunks
     print("4. Creating manageable chunks...")
-    chunker = RegulatoryChunkingSystem(max_chunk_size=1500)
+    chunker = RegulatoryChunkingSystem(max_chunk_size=512)
     chunked_blocks = chunker.chunk_blocks(processed_data)
     
     # # Update processed data with chunked blocks

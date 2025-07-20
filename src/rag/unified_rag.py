@@ -1,97 +1,3 @@
-"""
-Unified RAG (Retrieval-Augmented Generation) System
-
-This module provides a flexible, unified interface for document-based question-answering using various
-embedding models, language models, and vector storage backends. It supports both local and cloud-based
-processing with seamless switching between different configurations.
-
-Key Features:
-============
-1. Multi-Backend Support:
-   - Local embeddings (sentence-transformers) for offline processing
-   - OpenAI embeddings for high-quality cloud-based embeddings
-   - Azure OpenAI integration for enterprise environments
-   - Azure AI Search for scalable vector storage
-
-2. Flexible Model Configuration:
-   - Supports both OpenAI and Azure OpenAI language models
-   - Configurable embedding models (local or cloud)
-   - Automatic fallback mechanisms for robust operation
-
-3. Advanced Search Capabilities:
-   - Vector similarity search using cosine similarity
-   - Hybrid search with Azure AI Search (vector + text)
-   - Configurable retrieval parameters (top_k, filters)
-   - Context-aware document ranking
-
-4. Enterprise Features:
-   - Environment variable configuration
-   - Embedding caching for performance optimization
-   - Batch processing for large document sets
-   - Comprehensive error handling and logging
-
-5. Document Processing Integration:
-   - Seamless integration with document chunking systems
-   - Metadata preservation and enrichment
-   - Support for hierarchical document structures
-   - TOC-aware chunking and retrieval
-
-Architecture:
-============
-The UnifiedRAGSystem class serves as the main interface, coordinating between:
-- Embedding generation (local or cloud-based)
-- Vector storage (in-memory or Azure AI Search)
-- Language model inference (OpenAI or Azure OpenAI)
-- Document preprocessing and chunking
-
-Configuration Options:
-=====================
-Environment Variables:
-- GPT_API_KEY: OpenAI API key
-- AZURE_OPENAI_API_KEY: Azure OpenAI API key
-- AZURE_OPENAI_ENDPOINT: Azure OpenAI endpoint
-- AZURE_SEARCH_API_KEY: Azure AI Search API key
-- AZURE_SEARCH_ENDPOINT: Azure AI Search endpoint
-
-Embedding Models:
-- Local: sentence-transformers models (e.g., 'all-MiniLM-L6-v2')
-- OpenAI: text-embedding-ada-002, text-embedding-3-small, text-embedding-3-large
-- Azure: Azure OpenAI embedding deployments
-
-Language Models:
-- OpenAI: gpt-3.5-turbo, gpt-4, gpt-4-turbo
-- Azure: Azure OpenAI deployment names
-
-Usage Examples:
-==============
-# Basic local setup
-rag = UnifiedRAGSystem(use_local_embeddings=True)
-
-# Azure OpenAI with local embeddings
-rag = UnifiedRAGSystem(
-    use_local_embeddings=True,
-    use_azure=True,
-    model="gpt-35-turbo"
-)
-
-# Full Azure integration with AI Search
-rag = UnifiedRAGSystem(
-    use_local_embeddings=False,
-    use_azure=True,
-    model="gpt-35-turbo",
-    online_embedding_model="text-embedding-ada-002",
-    use_azure_search=True
-)
-
-Performance Considerations:
-==========================
-- Local embeddings: Faster for small datasets, no API costs
-- Cloud embeddings: Higher quality, better for large-scale applications
-- Azure AI Search: Scalable for enterprise workloads, supports hybrid search
-- Embedding caching: Significantly improves performance for repeated operations
-
-"""
-
 import os
 import json
 from typing import List, Dict, Any, Optional
@@ -499,7 +405,7 @@ Please provide a comprehensive answer that includes all relevant requirements, e
             "answer": answer,
             "sources": sources,
             "regulatory_references": regulations,
-            "confidence": len(relevant_chunks) / top_k
+            # "confidence": len(relevant_chunks) / top_k
         }
     
     def stats(self) -> Dict[str, Any]:

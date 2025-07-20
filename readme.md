@@ -225,6 +225,113 @@ Source: Basel III, Article 259, Page 161
 
 This demonstrates the system's capability to handle sophisticated banking regulations and provide actionable guidance for financial institutions implementing Basel III requirements.
 
+## Embedding Training Pipeline
+
+The EFIRAS system includes a comprehensive training pipeline for fine-tuning embedding models specifically for regulatory and financial documents. This specialized training improves retrieval accuracy and domain-specific understanding.
+
+### Training Overview
+
+The training pipeline consists of two main components:
+1. **Dataset Creation**: Generates training pairs from processed regulatory documents
+2. **Model Fine-tuning**: Trains sentence transformers with contrastive learning for improved regulatory text understanding
+
+### Quick Start Training
+
+```bash
+# Interactive training pipeline (recommended)
+python train_embeddings.py
+
+# Choose from menu:
+# 1. Create MNRL dataset with hierarchy preservation
+# 2. Fine-tune embedding model with batch-aware training  
+# 3. Full pipeline (dataset creation + fine-tuning)
+```
+
+### Training Pipeline Components
+
+#### 1. Dataset Preparation
+Creates training datasets using the **MNRL (Multiple Negatives Ranking Loss)** approach:
+
+```bash
+# Create dataset only
+python -m src.training.embedding_dataset_preparation
+```
+
+**Features:**
+- **Hierarchical Awareness**: Preserves document structure and TOC relationships
+- **Fixed-size Batches**: Generates consistent batch sizes (default: 8) for stable training
+- **Diverse Sampling**: Creates similar/dissimilar pairs across different document sections
+- **Regulatory Focus**: Optimized for financial and regulatory document characteristics
+
+**Output:** Training datasets saved to `training_data/mnrl_fixed_batch_dataset_*.json`
+
+#### 2. Model Fine-tuning
+Fine-tunes sentence transformer models with regulatory-specific training:
+
+```bash
+# Fine-tune model only (requires existing dataset)
+python -m src.training.embedding_fine_tuning
+```
+
+**Training Configuration:**
+- **Base Model**: `intfloat/e5-base-v2` (optimized for fine-tuning)
+- **Alternative**: `sentence-transformers/all-mpnet-base-v2` (good without fine-tuning)
+- **Epochs**: 3 (configurable)
+- **Batch Size**: 8 (matches dataset structure)
+- **Learning Rate**: 2e-5 with warmup
+- **Loss Function**: Multiple Negatives Ranking Loss (MNRL)
+
+**Output:** Fine-tuned models saved to `models/efiras_financial_embeddings/`
+
+### Training Data Flow
+
+```
+Processed Documents → Dataset Builder → Training Pairs → Model Training → Fine-tuned Embeddings
+     (chunked_blocks)        (MNRL)        (batches)       (contrastive)      (specialized)
+```
+
+### Integration with RAG System
+
+Fine-tuned models can be used directly in the RAG system:
+
+```python
+# Use fine-tuned model for embeddings
+rag = UnifiedRAGSystem(
+    use_local_embeddings=True,
+    local_model_path="models/efiras_financial_embeddings"
+)
+```
+
+### Training Benefits
+
+**Improved Performance:**
+- **Domain Specialization**: Better understanding of financial and regulatory terminology
+- **Context Preservation**: Maintains document hierarchy and structure relationships  
+- **Retrieval Accuracy**: Enhanced similarity matching for regulatory queries
+- **Consistency**: Batch-aware training reduces variance in embedding quality
+
+**Benchmarking:**
+- Evaluation metrics saved to `models/efiras_financial_embeddings/eval/`
+- Similarity evaluation results compare fine-tuned vs. base model performance
+- Training checkpoints available in `checkpoints/` for different model iterations
+
+### Advanced Training Options
+
+**Custom Configuration** (edit `train_embeddings.py`):
+```python
+config = {
+    "base_model": "intfloat/e5-base-v2",  # or "all-mpnet-base-v2"
+    "epochs": 3,                          # increase for more training
+    "batch_size": 8,                      # match dataset batch size
+    "learning_rate": 2e-5,               # adjust for convergence
+    "warmup_steps": 100,                 # learning rate warmup
+    "evaluation_steps": 50               # evaluation frequency
+}
+```
+
+**Multi-Document Training:**
+The system automatically combines datasets from multiple processed documents (e.g., Basel III, Luxembourg regulations) for comprehensive training across regulatory domains.
+
 ## Requirements
 
 ### For Document Processing:
