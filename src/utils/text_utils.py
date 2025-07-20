@@ -152,26 +152,72 @@ def extract_paragraphs(text: str) -> List[str]:
     return cleaned_paragraphs
 
 
-# Test function
-def test_functions():
-    """Test the utility functions"""
+# HEADER_KEYWORDS = [
+#     "Title", "Part", "Book", "Volume",
+#     "Chapter", "Subchapter", "Sub-chapter", "Sub-Part",
+#     "Section", "Subsection", "Sub-section", "Heading", "Division",
+#     "Article", "Paragraph", "Clause", "Point", "Item",
+#     "Annex", "Appendix", "Schedule", "Exhibit", "Module", "Standard"
+# ]
+
+HEADER_KEYWORDS = [
+    # Primary structure
+    "Title", "Part", "Chapter", "Sub-chapter", "Subchapter",
+    "Section", "Sub-section", "Subsection", 
+    "Article", "Paragraph",
     
-    # test_text = 'First sentence. Second sentence. 1) First item 2) Second item. (a) sub item'
-    test_text = """
-    1. For the purposes of this circular:\n1) “EBA” means the European Banking Authority. 2) “EIOPA” means the European Insurance and Occupational Pensions Authority. 3) “ESMA” means the European Securities and Markets Authority. 4) “ML/TF” means money laundering and terrorist financing. 5) “Circular CSSF 07/290” means Circular CSSF 07/290, as amended by Circular CSSF 10/451 on the definition of capital ratios pursuant to Article 56 of the Law of 5 April 1993 on the financial sector, as amended, (the circular is currently being updated). 6) “Circular CSSF 17/661” means Circular CSSF 17/661 adopting the joint guidelines issued by the three European Supervisory Authorities (EBA/ESMA/EIOPA) on money laundering and terrorist financing risk factors. 7) “Circular CSSF 11/512” means Circular 11/512 presenting the main regulatory changes in risk management following the publication of CSSF Regulation 10-04 and ESMA clarifications, laying down further clarifications from the CSSF on risk management rules and defining the content and format of the risk management process to be communicated to the CSSF. 8) “CRR” means Regulation (EU) No 575/2013 of 26 June 2013 on prudential requirements for credit institutions and investment firms and amending Regulation (EU) No 648/2012. 9) “delegate” means any third party carrying out on behalf of an IFM: \n one or more functions included in the activity of collective portfolio management as defined in Annex II of the 2010 Law as well as part of the risk management activities in accordance with point 222 or functions included in Annex I of the 2013 Law, respectively. \n for an AIFM, the external valuer. 10) “AIFMD” means Directive 2011/61/EU of the European Parliament and of the Council of 8 June 2011 on Alternative Investment Fund Managers. 11) “UCITS Directive” means Directive 2009/65/EC of the European Parliament and of the Council of 13 July 2009 on the coordination of laws, regulations and administrative provisions relating to undertakings for collective investment in transferable securities (UCITS). 12) “FTE” means full-time equivalent. 13) “AIF” means an alternative investment fund as defined in Article 1 of the 2013 Law including the European long-term investment fund (ELTIF), the European social entrepreneurship fund (EuSEF) and the European venture capital fund (EuVECA). 14) “FIAAG” means a self-managed alternative investment fund: internally managed AIF within the meaning of point (b) of Article 4(1) of the 2013 Law. 15) “key functions” means functions included in the activity of collective portfolio management as defined in Annex II of the 2010 Law or functions included in Annex I of the 2013 Law, respectively, including monitoring delegates of the above-mentioned functions, permanent compliance, risk management and internal audit functions as well as, the valuation function for the AIFM. 16) “required own funds” means \n the own funds required under Articles 101(4) and 102(1)(a) of the 2010 Law as well as Article 8 of the 2013 Law. \n where appropriate, the own funds referred to in Articles 12 to 15 of Delegated Regulation (EU) 231/2013 for an AIFM. \n where the IFM is also authorised to provide the services referred to in Article 101(3) of the 2010 Law and/or in Article 5(4) of the 2013 Law, the own funds required under Circular CSSF 07/290. 17) “AIFM” means an alternative investment fund manager authorised under Chapter 2 of the 2013 Law.
-    """
+    # Common supplementary
+    "Annex", "Appendix", "Schedule"
+]
 
-    # test_text = "hello my name is: Meisam 1)this is the fist item \n and here I am"
-    
-    # print("Test text:", test_text)
-    # print("Sentences:", extract_sentences(test_text))
-    # print("Is '1) item' a list item:", is_list_item('1) item'))
-    # print("Is '1) \"word\"' a definition:", is_definition('1) "word"'))
+keyword_pattern = "|".join(HEADER_KEYWORDS)
 
-    sentences = extract_sentences(test_text)
-    for i, sentence in enumerate(sentences):
-        print(f"{i}th sentence is: {sentence} \n -------------------------------------- \n")
+def extract_header_title_from_block(text:str):
+    main_header_patterns = [
+    # Keyword-based headers (legal style)
+    rf"^(?i)({keyword_pattern})\s+[A-Z\d.ivxlcdmIVXLCDM\-]+(?:\s*[-:\–])?\s+.+$",
 
+    # # Multi-level numeric headings (1.2.3.4.5)
+    r'^\d+\.\d+(?:\.\d+)*\s+[A-Z].*$',
+
+    # # Optional: All-caps titles (some standards use them for hierarchy)
+    r"^[A-Z][A-Z\s\-]{3,}$",  # INTRODUCTION, GENERAL PRINCIPLES
+    ]
+
+    for pattern in main_header_patterns:
+        match = re.match(pattern, text)
+        if match:
+            return match.group()
+    return None
+
+
+def extract_header_identifier(header_text:str):
+      """Extract just the structural part (Section 3.2.3, Part I, etc.) from headers"""
+
+      identifier_patterns = [
+          # Keyword + Roman numerals (Part I, Chapter IV)
+          rf'^((?:{keyword_pattern})\s+[IVXLCDM]+)',
+
+          # Keyword + numbers with dots (Section 3.2.3) 
+          rf'^((?:{keyword_pattern})\s+\d+(?:\.\d+)*)',
+
+          # Keyword + simple number (Part 1, Annex 2)
+          rf'^((?:{keyword_pattern})\s+\d+)',
+
+          # Just numbers with dots (3.2.3)
+          r'^(\d+(?:\.\d+)+)',
+
+          # ANNEX with number
+          r'^(ANNEX\s+\d+)',
+      ]
+
+      for pattern in identifier_patterns:
+          match = re.search(pattern, header_text.strip(), re.IGNORECASE)
+          if match:
+              return match.group(1)
+          
+
+      return None
 
 if __name__ == "__main__":
     test_functions()

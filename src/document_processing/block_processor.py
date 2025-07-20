@@ -297,10 +297,8 @@ class block_processor():
                     title, page_num = match2.groups()
                     # Minimal heuristic for level based on numbering
                     header = title.strip().split()[0]
-                    if header.lower().startswith(('part', 'chapter', 'section')):
+                    if re.match(r'\d+(\.\d+)*', header):  # e.g., "2", "1.1"
                         level = 2
-                    elif re.match(r'\d+(\.\d+)*', header):  # e.g., "2", "1.1"
-                        level = 4
                     else:
                         level = 1
 
