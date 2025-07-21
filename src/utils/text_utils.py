@@ -220,4 +220,14 @@ def extract_header_identifier(header_text:str):
       return None
 
 if __name__ == "__main__":
-    test_functions()
+    import json
+    with open("data_processed/Lux_cssf18_698eng_chunked_blocks.json", 'r') as f:
+        chunks = json.load(f)
+
+    for chunk in chunks:
+        if len(chunk['text']) > 200:
+            s = extract_sentences(chunk['text'])
+            for i, ss in enumerate(s):
+                print(i)
+                print(ss)
+                print("-"*50)

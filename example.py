@@ -71,8 +71,8 @@ from src.rag.unified_rag import UnifiedRAGSystem
 
 def main():
     # Configuration
-    input_pdf = "data/regulatory_documents/eu/Basel_III.pdf"
-    # input_pdf = "data/regulatory_documents/lu/Lux_cssf18_698eng.pdf"
+    # input_pdf = "data/regulatory_documents/eu/Basel_III.pdf"
+    input_pdf = "data/regulatory_documents/lu/Lux_cssf18_698eng.pdf"
     output_dir = Path("data_processed")
     output_dir.mkdir(exist_ok=True)
     
@@ -205,4 +205,3 @@ def main():
 if __name__ == "__main__":
     # Basic usage example
     main()
-    

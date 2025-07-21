@@ -5,6 +5,7 @@ Fine-tune Sentence Transformers for Regulatory Document Embeddings
 
 import json
 import torch
+import random
 from sentence_transformers import SentenceTransformer, InputExample, losses, evaluation
 # from torch.utils.data import DataLoader  # No need as we defiend owr own custom class 
 from typing import List, Dict, Tuple
@@ -28,6 +29,11 @@ class DiverseBatchDataLoader:
             
     def __len__(self):
         return len(self.batch_examples)
+    
+        # ADD THIS - sentence-transformers might expect it
+    @property 
+    def batch_size(self):
+        return len(self.batch_examples[0]) if self.batch_examples else 8
             
 
 class RegulatoryEmbeddingTrainer:
@@ -42,7 +48,71 @@ class RegulatoryEmbeddingTrainer:
         logger.info(f"Loaded base model: {base_model}")
         logger.info(f"Model device: {self.model.device}")
     
-    
+    def fine_tune_contrastive(self, 
+                         contrastive_pairs: List[Dict],
+                         epochs: int = 5,
+                         learning_rate: float = 5e-5,
+                         warmup_steps: int = 100,
+                         batch_size: int = 16):
+        """Fine-tune using Contrastive Loss"""
+        from torch.utils.data import DataLoader
+        
+        logger.info(f"Creating contrastive training with {len(contrastive_pairs)} pairs")
+        
+        # Create InputExamples with explicit labels
+        train_examples = []
+        for pair in contrastive_pairs:
+            example = InputExample(
+                texts=[pair['anchor'], pair['positive']], 
+                label=float(pair['label'])  # ContrastiveLoss needs float labels
+            )
+            train_examples.append(example)
+        
+        # Split train/validation
+        random.shuffle(train_examples)
+        split_point = int(0.8 * len(train_examples))
+        train_data = train_examples[:split_point]
+        val_data = train_examples[split_point:]
+
+
+
+
+
+        # Create simple evaluator
+        evaluator = evaluation.EmbeddingSimilarityEvaluator.from_input_examples(
+            val_data, name="contrastive_eval"
+        ) if val_data else None
+
+
+
+        
+        # Check balance
+        positive_count = sum(1 for ex in train_data if ex.label == 1.0)
+        negative_count = len(train_data) - positive_count
+        logger.info(f"Training: {len(train_data)} pairs (Pos: {positive_count}, Neg: {negative_count})")
+        
+        # Create standard DataLoader (no custom batching needed)
+        train_dataloader = DataLoader(train_data, shuffle=True, batch_size=batch_size)
+        
+        # Use Contrastive Loss instead of MNRL
+        train_loss = losses.ContrastiveLoss(self.model)
+        logger.info("Using Contrastive Loss with explicit positive/negative pairs")
+        
+        # Train (same as before, just different loss)
+        self.model.fit(
+            train_objectives=[(train_dataloader, train_loss)],
+            epochs=epochs,
+            evaluator=evaluator,  # Skip evaluation
+            warmup_steps=warmup_steps,
+            output_path=self.output_path,
+            save_best_model=True,
+            optimizer_params={'lr': learning_rate},
+            scheduler='WarmupLinear'
+        )
+        
+        logger.info(f"✅ Contrastive fine-tuning complete! Model saved to: {self.output_path}")
+
+
     def fine_tune_with_diverse_batches(self, 
                                       diverse_batches: List[List[Dict]],
                                       epochs: int = 5,
@@ -58,6 +128,7 @@ class RegulatoryEmbeddingTrainer:
         logger.info("✅ Using your exact batch structure - NO FLATTENING!")
         
         # Split batches (not examples) for train/validation 80/20 percent
+        random.shuffle(diverse_batches)  # Shuffle all batches first
         split_point = int(0.8 * len(diverse_batches))
         train_batches = diverse_batches[:split_point]
         val_batches = diverse_batches[split_point:]
@@ -104,11 +175,11 @@ class RegulatoryEmbeddingTrainer:
             epochs=epochs,
             evaluator=evaluator,
             evaluation_steps=100,
-            warmup_steps=warmup_steps,
+            # warmup_steps=warmup_steps,
             output_path=self.output_path,
             save_best_model=True,
             optimizer_params={'lr': learning_rate},
-            scheduler='WarmupLinear'
+            # scheduler='WarmupLinear'
         )
         
         logger.info(f"✅ Diverse batch fine-tuning complete! Model saved to: {self.output_path}")

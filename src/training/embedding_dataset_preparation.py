@@ -10,7 +10,55 @@ import re
 from pathlib import Path
 from typing import List, Tuple, Dict, Any
 from itertools import combinations, cycle
-from src.utils.text_utils import extract_header_identifier
+from src.utils.text_utils import extract_header_identifier, extract_sentences
+
+from sentence_transformers import SentenceTransformer
+from sklearn.metrics.pairwise import cosine_similarity
+
+import re
+
+def extract_sentences_for_positive_pairs(chunk_text):
+   # Step 1: Split by periods, but be careful with abbreviations
+   sentences = re.split(r'\.(?=\s+[A-Z])', chunk_text)
+   
+   # Step 2: Handle special cases
+   sentences = clean_regulatory_sentences(sentences)
+   
+   # Step 3: Filter quality sentences
+   quality_sentences = []
+   for sent in sentences:
+       if is_valid_sentence(sent):
+           quality_sentences.append(sent.strip())
+   
+   return quality_sentences
+
+def clean_regulatory_sentences(sentences):
+   cleaned = []
+   for sent in sentences:
+       # Remove bullet point artifacts
+       sent = re.sub(r'^[•\-\*]\s*', '', sent)
+       
+       # Handle line breaks in middle of sentences
+       sent = re.sub(r'\n+', ' ', sent)
+       
+       # Clean up spacing
+       sent = re.sub(r'\s+', ' ', sent).strip()
+       
+       # Skip pure enumeration items
+       if not re.match(r'^[a-z]\)\s*$', sent.strip()) and sent.strip():
+           cleaned.append(sent)
+   
+   return cleaned
+
+def is_valid_sentence(sentence):
+   # Filter criteria
+   word_count = len(sentence.split())
+   return (
+       word_count >= 10 and  # Skip very short sentences
+       word_count <= 100 and  # Skip overly long sentences
+       not sentence.strip().endswith(':') and  # Skip header-like sentences
+       not re.match(r'^\d+\.\s*$', sentence.strip())  # Skip numbered items only
+   )
 
 class AdaptiveMNRLDatasetBuilder:
     def __init__(self):
@@ -103,43 +151,109 @@ class AdaptiveMNRLDatasetBuilder:
 
         return level_groups
     
-    
-    def create_pairs_within_group(self, chunks: List[Dict], group_key: str) -> List[Dict]:
-        """Create positive pairs within a homogeneous group"""
-        pairs = []
-        
-        if len(chunks) < 2:
-            return pairs
-        
-        # Determine pairing strategy based on group size
-        if len(chunks) <= 5:
-            # Small groups: pair everything with everything
-            max_distance = len(chunks)
-        else:
-            # Large groups: limit to nearby chunks (more efficient)
-            max_distance = 3
-        
-        pairs_created = 0
-        max_pairs = len(chunks) * 2  # Reasonable limit
-        
-        for i in range(len(chunks) - 1):
-            if pairs_created >= max_pairs:
-                break
+    def create_sentence_level_pairs(self, chunks: List[Dict], group_key: str = '') -> List[Dict]:
+        all_pairs = {}
+        for chunk in chunks:
+            content = chunk['text']
+            sentence_list = extract_sentences_for_positive_pairs(content)
+            sentences = clean_regulatory_sentences(sentence_list)
+            sentences = [sent for sent in sentences if is_valid_sentence(sent)]
+
+            n = len(sentences) 
+            if n < 2:
+                continue
+            
+            header = self.extract_lowest_level_key(chunk['enriched_headers'])
+            # Debug unknown headers
+            if header == 'unknown':
+                print(f"UNKNOWN HEADER FOUND:")
+                print(f"Raw header: '{chunk['enriched_headers']}'")
+                print(f"Chunk ID: {chunk.get('chunk_id', 'N/A')}")
+                print(f"Text preview: {chunk['text'][:100]}...")
+                print("-" * 50)
+            if header not in all_pairs.keys():
+                all_pairs[header] = []
+            # Adjacent pairs (always)
+
+            for i in range(n - 1):
+                all_pairs[header].append((sentences[i], sentences[i + 1]))
+            # First-last pair (if 3+ sentences)  
+            if n >= 3:
+                all_pairs[header].append((sentences[0], sentences[-1]))
+            
+            # Skip-one pairs (if 4+ sentences)
+            if n >= 4:
+                for i in range(n - 2):
+                    all_pairs[header].append((sentences[i], sentences[i + 2]))
+
+                # if len(sentences)<2:
+                    #     continue
+                    # else:
+                    #     # pair = (sentences[0], sentences[1])
+                    #     model_transfomer =  SentenceTransformer('all-mpnet-base-v2', cache_folder='./models/')  # or your preferred model
+                    #     # embd1 = model_transfomer.encode(pair[0])
+                    #     # embd2 = model_transfomer.encode(pair[1])
+                    #     # similarity = cosine_similarity([embd1], [embd2])[0][0]
+                    #     # if similarity < 1:
+                    #     #     print(f"1):{pair[0]}\n ----------------------\n 2:{pair[1]}")
+                    #     #     print(f"cosine simalrty score is: {similarity} \n %%%%%%%%%%%%%%%%%%%%%%%\n")
+
+        print(all_pairs.keys())
+        return all_pairs
+
+    def create_contrastive_positive_negative_pairs(self, chunks):
+        contrastive_positive_pairs = []
+        flattened_pairs = []
+        all_pairs = self.create_sentence_level_pairs(chunks)
+        for k, val in all_pairs.items():
+            for v in val:
+                contrastive_positive_pairs.append({
+                    'anchor': v[0],
+                    'positive': v[1],
+                    'label': 1.0 # float: 1.0 for similar, 0.0 for dissimilar
+                  })
                 
-            for j in range(i + 1, min(i + max_distance, len(chunks))):
-                chunk1, chunk2 = chunks[i], chunks[j]
-                pairs.append({
-                    'anchor': chunk1['text'][:500],
-                    'positive': chunk2['text'][:500],
-                    'group_key': group_key,
-                    'hierarchy_level': self.determine_hierarchy_level(group_key)
-                })
-                pairs_created += 1
-                
-                if pairs_created >= max_pairs:
-                    break
+                flattened_pairs.append(v[0])
+                flattened_pairs.append(v[1])
         
-        return pairs
+        
+        def extract_pairs_with_min_diff(index_list, min_diff=5):
+                x = index_list.copy()  # Avoid modifying input list
+                pairs = []  # Store pairs as list of tuples
+                
+                while len(x) > 1:
+                        random.shuffle(x)
+                        if len(x) >= 2 and abs(x[0] - x[1]) >= min_diff:
+                                a = x.pop(0)
+                                b = x.pop(0)
+                                pairs.append((a, b))
+                        else:
+                                found = False
+                                for i in range(len(x)):
+                                        for j in range(i + 1, len(x)):
+                                                if abs(x[i] - x[j]) >= min_diff:
+                                                        found = True
+                                                        break
+                                        if found:
+                                                break
+                                if not found:
+                                        # Pair remaining elements
+                                        while len(x) >= 2:
+                                                a = x.pop(0)
+                                                b = x.pop(0)
+                                                pairs.append((a, b))
+                
+                return pairs, x  # Return pairs and remaining elements
+        
+        random.shuffle(flattened_pairs)
+        random_index_pair_for_negative, x_rest = extract_pairs_with_min_diff (list(range(0, len(flattened_pairs))), 20)
+        contrastive_negative_pairs = [{'anchor': flattened_pairs[i[0]], 'positive': flattened_pairs[i[1]], 'label': 0} for i in random_index_pair_for_negative]
+
+        print(f"create contrastive positive pairs: {len(contrastive_positive_pairs)}")
+        print(f"create contrastive negative pairs: {len(contrastive_negative_pairs)}")
+        return contrastive_positive_pairs, contrastive_negative_pairs
+
+ 
     
     def determine_hierarchy_level(self, group_key: str) -> int:
         """Determine hierarchy level from group key for correct sorting"""
@@ -182,17 +296,17 @@ class AdaptiveMNRLDatasetBuilder:
                               key=lambda x: (self.determine_hierarchy_level(x), x))
         
         # Create ordered dict to maintain hierarchy order
-        grouped_chunks = {group: all_pairs[group].copy() for group in sorted_groups if all_pairs[group]}
+        ordered_grouped_pairs = {group: all_pairs[group].copy() for group in sorted_groups if all_pairs[group]}
         
         print(f"Creating fixed-size batches maintaining hierarchy order")
-        print(f"Initial groups: {list(grouped_chunks.keys())}")
+        print(f"Initial groups: {list(ordered_grouped_pairs.keys())}")
         
         batches = []
         
         # Continue until no more complete batches can be formed
         while True:
             # Get available groups (those with chunks remaining)
-            available_groups = {k: v for k, v in grouped_chunks.items() if v}
+            available_groups = {k: v for k, v in ordered_grouped_pairs.items() if v}
             
             if len(available_groups) < 2:  # Need at least 2 groups for diversity
                 break
@@ -213,15 +327,15 @@ class AdaptiveMNRLDatasetBuilder:
             # Create batch by taking one chunk from each selected group
             batch = []
             for key in selected_keys:
-                if grouped_chunks[key]:
-                    chunk = grouped_chunks[key].pop(0)
+                if ordered_grouped_pairs[key]:
+                    chunk = ordered_grouped_pairs[key].pop(0)
                     batch.append(chunk)
             
             # Only add batch if it's complete
             if len(batch) == batch_size:
                 batches.append(batch)
                 if len(batches) % 20 == 0:
-                    remaining_groups = len([k for k, v in grouped_chunks.items() if v])
+                    remaining_groups = len([k for k, v in ordered_grouped_pairs.items() if v])
                     print(f"Created {len(batches)} batches, {remaining_groups} groups still active")
             else:
                 break
@@ -262,20 +376,9 @@ class AdaptiveMNRLDatasetBuilder:
             return []
         
         # Step 1: Group by lowest level only (eliminates overlap at source)
-        level_groups = self.group_by_lowest_level(blocks)
         
-        # Step 2: Create pairs within each homogeneous group
-        all_pairs = {}
-        total_pairs = 0
-        
-        for group_key, group_chunks in level_groups.items():
-            pairs = self.create_pairs_within_group(group_chunks, group_key)
-            if pairs:
-                all_pairs[group_key] = pairs
-                total_pairs += len(pairs)
-                print(f"Group '{group_key}': {len(pairs)} pairs")
-        
-        print(f"Total pairs generated: {total_pairs}")
+
+        all_pairs = self.create_sentence_level_pairs(chunks)
         
         # Step 3: Create fixed-size batches using cyclic sampling
         fixed_batches = self.create_fixed_size_batches(all_pairs, batch_size)
@@ -286,8 +389,8 @@ class AdaptiveMNRLDatasetBuilder:
             mnrl_batch = []
             for pair in batch:
                 mnrl_batch.append({
-                    'anchor': pair['anchor'],
-                    'positive': pair['positive']
+                    'anchor': pair[0],
+                    'positive': pair[1]
                 })
             mnrl_batches.append(mnrl_batch)
         
@@ -301,11 +404,14 @@ class AdaptiveMNRLDatasetBuilder:
 
 if __name__ == "__main__":
     # Create dataset builder
+    # Add this at the start of your script
+    import torch
+    torch.cuda.empty_cache()    
     builder = AdaptiveMNRLDatasetBuilder()
     
     # Load chunks from file 
     file_path = "data_processed/Lux_cssf18_698eng_chunked_blocks.json"
-    file_path ="data_processed/Basel_III_chunked_blocks.json"
+    # file_path ="data_processed/Basel_III_chunked_blocks.json"
     
     
     # Load chunks list
@@ -313,20 +419,25 @@ if __name__ == "__main__":
         chunks = json.load(f)
     
     print(f"Loaded {len(chunks)} chunks from {file_path}")
+
+    # builder.create_sentence_level_pairs(chunks)
+    a, b = builder.create_contrastive_positive_negative_pairs(chunks)
+
+
     
-    # Create fixed-size MNRL dataset with correct hierarchy (RECOMMENDED)
-    print("=== Creating Fixed-Size MNRL Dataset ===")
-    mnrl_batches = builder.generate_fixed_size_mnrl_batches(chunks, batch_size=8)
+    # # Create fixed-size MNRL dataset with correct hierarchy (RECOMMENDED)
+    # print("=== Creating Fixed-Size MNRL Dataset ===")
+    # mnrl_batches = builder.generate_fixed_size_mnrl_batches(chunks, batch_size=8)
     
-    if mnrl_batches:
-        # Save fixed-size MNRL dataset
-        output_file = f"training_data/mnrl_fixed_batch_dataset_{Path(file_path).stem.replace('_chunked_blocks', '')}.json"
-        with open(output_file, 'w', encoding='utf-8') as f:
-            json.dump(mnrl_batches, f, indent=2, ensure_ascii=False)
-        print(f"Fixed-size MNRL dataset saved to {output_file}")
+    # if mnrl_batches:
+    #     # Save fixed-size MNRL dataset
+    #     output_file = f"training_data/mnrl_fixed_batch_dataset_{Path(file_path).stem.replace('_chunked_blocks', '')}.json"
+    #     with open(output_file, 'w', encoding='utf-8') as f:
+    #         json.dump(mnrl_batches, f, indent=2, ensure_ascii=False)
+    #     print(f"Fixed-size MNRL dataset saved to {output_file}")
         
-        total_pairs = sum(len(batch) for batch in mnrl_batches)
-        print(f"Generated {len(mnrl_batches)} batches with {total_pairs} total training pairs")
-        print("✅ Dataset optimized for fixed-size batch MNRL training with correct hierarchy")
-    else:
-        print("No dataset created - check your input chunks!")
+    #     total_pairs = sum(len(batch) for batch in mnrl_batches)
+    #     print(f"Generated {len(mnrl_batches)} batches with {total_pairs} total training pairs")
+    #     print("✅ Dataset optimized for fixed-size batch MNRL training with correct hierarchy")
+    # else:
+    #     print("No dataset created - check your input chunks!")
