@@ -209,6 +209,9 @@ def extract_header_identifier(header_text:str):
 
           # ANNEX with number
           r'^(ANNEX\s+\d+)',
+
+          # Keyword + space then number (article 34)
+          rf'(Article\s*\d+)'
       ]
 
       for pattern in identifier_patterns:
@@ -217,17 +220,57 @@ def extract_header_identifier(header_text:str):
               return match.group(1)
           
 
+ 
       return None
+
+def collect_unique_meaningful_headers_from_chunks(chunks:str):
+    header_set_primary = set()
+    cleaned_header_list=[]
+    for chunk in chunks:
+        full_headers = chunk['enriched_headers']
+        headers_list = full_headers.split('>')
+        header_set_primary.update(set(headers_list))
+    
+    for s in header_set_primary:
+        s = s.strip()
+        header = extract_header_identifier(s)
+        if header:
+            s = s.replace(header, ' ')
+        if len(s)>5:
+              cleaned = s.strip().lstrip('.')
+              cleaned_header_list.append(cleaned)
+
+    header_set = set(cleaned_header_list)
+
+    return header_set  
 
 if __name__ == "__main__":
     import json
-    with open("data_processed/Lux_cssf18_698eng_chunked_blocks.json", 'r') as f:
-        chunks = json.load(f)
+    path = "data_processed/Lux_cssf18_698eng_chunked_blocks.json"
+    # # path = "data_processed/Basel_III_chunked_blocks.json"
+    # with open(path, 'r') as f:
+    
+    #     chunks = json.load(f)
 
-    for chunk in chunks:
-        if len(chunk['text']) > 200:
-            s = extract_sentences(chunk['text'])
-            for i, ss in enumerate(s):
-                print(i)
-                print(ss)
-                print("-"*50)
+    chunks = []
+    
+    text = "Part II. Conditions for obtaining and maintaining the authorisation of an authorised  investment fund manager (IFM) who engages solely in the activity of management of UCIs as  laid down in Article 101(2) of the 2010 Law and Article 5(2) of the 2013 Law > Chapter 1. Basic principles > Section 5.3.2. Permanent compliance function > Sub-section 5.3.2.1. General principles > Sub-section 5.3.2.6. Obligations regarding the drawing-up of reports"
+    a ={'enriched_headers': text}
+    chunks.append(a)
+    ss = collect_unique_meaningful_headers_from_chunks(chunks)
+    for s in ss:
+        print(s, "\n=======================\n")
+
+    # for s  in ss:
+    #     # if extract_header_identifier(s) and 'Article 358' in extract_header_identifier(s):
+    #     if extract_header_identifier(s):
+    #       print("============================================\n")
+    #       print(extract_header_identifier(s), '\n+++++++++++++++++++++++++++++++++++\n')
+    #       print(s.replace(extract_header_identifier(s), ''))
+    # for chunk in chunks:
+    #     if len(chunk['text']) > 200:
+    #         s = extract_sentences(chunk['text'])
+    #         for i, ss in enumerate(s):
+    #             print(i)
+    #             print(ss)
+    #             print("-"*50)
