@@ -274,3 +274,29 @@ if __name__ == "__main__":
     #             print(i)
     #             print(ss)
     #             print("-"*50)
+
+
+
+#     Cross-Encoder Explained:
+# A cross-encoder takes a query-document pair as input and outputs a relevance score. 
+# Unlike bi-encoders (regular embeddings) that encode query and document separately, 
+# cross-encoders process them together with attention mechanisms
+    
+#     Best way to fuse BM25 + Embeddings:
+# Reciprocal Rank Fusion (RRF) is the most robust:
+# re-ranking
+
+# Complete pipeline:
+
+# Stage 1: BM25 + embeddings → RRF → top 100 candidates
+# Stage 2: Cross-encoder reranking → top 10 results
+# Stage 3: Feed to LLM for answer generation
+
+
+# Hypothetical Document Embeddings (HDE)
+# HDE (Hypothetical Document Embeddings): Instead of embedding your raw query directly, 
+# use an LLM to first generate a hypothetical answer document 
+# (e.g., query "diabetes causes" → generate "Diabetes is caused by insufficient insulin production..."), 
+# then embed that generated text and use it for vector search - this works because the hypothetical answer is semantically 
+# richer and more likely to match relevant documents in your knowledge base, 
+# solving the problem of short/ambiguous queries that don't embed well for retrieval.
