@@ -64,9 +64,9 @@ from src.document_readers.base import DocumentProcessor, ProcessorConfig, Proces
 
 from src.document_processing.block_processor import block_processor
 from src.document_chunker.block_chunker import RegulatoryChunkingSystem
-from src.rag.rag_simple import RAGSystem
+
 from src.document_processing.manager import *
-from src.rag.azure_openai_rag import AzureOpenAIRAGSystem
+
 from src.rag.unified_rag import UnifiedRAGSystem
 
 def main():
@@ -132,7 +132,7 @@ def main():
     print("5. Building searchable knowledge base...")
     
     # Option A: Use OpenAI with local embeddings
-    rag = UnifiedRAGSystem(use_local_embeddings=True, use_azure=False)
+    rag = UnifiedRAGSystem(use_local_embeddings=False, use_azure=False, use_cached_embeddings = True)
 
     # Option B: Use Azure OpenAI with local embeddings  
     # rag = UnifiedRAGSystem(use_local_embeddings=True, use_azure=True, model="gpt-35-turbo")

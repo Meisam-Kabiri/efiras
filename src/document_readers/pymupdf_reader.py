@@ -6,7 +6,7 @@ import logging
 import re
 
 
-from .base import DocumentProcessor, ProcessorConfig, ProcessorType
+from base import DocumentProcessor, ProcessorConfig, ProcessorType
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -98,12 +98,25 @@ class PyMuPDFProcessor(DocumentProcessor):
                 for page_num in range(doc.page_count):
                     page = doc[page_num]
                     block_list = page.get_text("blocks")
+                    dict_data = page.get_text("dict")
                     
-                    for block in block_list:
+                    for i, block in enumerate(block_list):
+                                              # Check if this block has bold text
+                        is_bold = False
+                        if i < len(dict_data["blocks"]) and "lines" in dict_data["blocks"][i]:
+                            for line in dict_data["blocks"][i]["lines"]:
+                                for span in line["spans"]:
+                                    if span["flags"] & 16:  # Bold flag
+                                        is_bold = True
+                                        break
+                                if is_bold:
+                                    break
+                              
                         blocks.append({
                             'page': page_num + 1,
                             'bbox': block[:4],
-                            'text': block[4]
+                            'text': block[4],
+                            'is_bold':is_bold 
                         })
                 
                 doc.close()
@@ -154,17 +167,50 @@ class PyMuPDFProcessor(DocumentProcessor):
 
             logger.info(f"Data saved to {file_path}")
 
-# if __name__ == "__main__":
-#     config = ProcessorConfig(
-#         chunk_size=1000,
-#         overlap=200,
-#         extract_tables=True,
-#         ocr_fallback=True
-#     )
+if __name__ == "__main__":
+    config = ProcessorConfig(
+        chunk_size=1000,
+        overlap=200,
+        extract_tables=True,
+        ocr_fallback=True
+    )
     
-#     processor = PyMuPDFProcessor(config)
+    processor = PyMuPDFProcessor(config)
     
-#     if processor.is_available():
-#         result = processor.extract_blocks("data/regulatory_documents/lu/Lux_cssf18_698eng.pdf")
-#     else:
-#         print("PyMuPDF is not available. Please install the required library.")
+    if processor.is_available():
+        result = processor.extract_blocks("data/regulatory_documents/eu/Basel_III.pdf")
+        result2 = processor.extract_text("data/regulatory_documents/lu/Lux_cssf18_698eng.pdf")
+    else:
+        print("PyMuPDF is not available. Please install the required library.")
+
+
+
+
+
+    # import fitz
+
+    # doc = fitz.open("data/regulatory_documents/eu/Basel_III.pdf")
+    # bold_blocks = []
+
+    # for page in doc:
+    #   for block in page.get_text("dict")["blocks"]:
+    #       if "lines" in block:
+    #           full_block_text = ""
+    #           block_has_bold = False
+              
+    #           # Collect ALL text from ALL lines in this block
+    #           for line in block["lines"]:
+    #               for span in line["spans"]:
+    #                   full_block_text += span["text"] + " "
+    #                   if span["flags"] & 16:
+    #                       block_has_bold = True
+              
+    #           # Only add if block has bold text
+    #           if block_has_bold and len(full_block_text.strip()) > 10:
+    #               # Clean up spacing and line breaks
+    #               clean_text = " ".join(full_block_text.split())
+    #               bold_blocks.append(clean_text)
+
+
+
+    # open("bold.txt", "w").write("\n".join(bold_blocks))

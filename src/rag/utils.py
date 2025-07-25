@@ -9,14 +9,28 @@ import faiss
 import numpy as np
 import json
 import re
-from elasticsearch import Elasticsearch
+
+
+import numpy as np
+from rank_bm25 import BM25Okapi
+from sklearn.metrics.pairwise import cosine_similarity
+from nltk.corpus import stopwords
+from nltk.tokenize import word_tokenize
+from langdetect import detect
+from sklearn.metrics.pairwise import cosine_similarity
+from sentence_transformers import SentenceTransformer
+import faiss
+import numpy as np
+
+
+from langdetect import detect
+# import torch
+# torch.cuda.empty_cache()  # Clear GPU memory
+
 
 
 load_dotenv()  # Load environment variables from .env file
 openai_api_key = os.getenv("GPT_API_KEY")
-
-
-
 
 def call_gpt(prompt: str) -> str:
     client = OpenAI(api_key=openai_api_key)
@@ -26,10 +40,123 @@ def call_gpt(prompt: str) -> str:
     )
     return completion.choices[0].message.content
 
-from sklearn.metrics.pairwise import cosine_similarity
-from sentence_transformers import SentenceTransformer
-import faiss
-import numpy as np
+
+
+def smart_tokenize(text):
+    try:
+        lang = detect(text)
+        if lang == 'en':
+            stop_words = set(stopwords.words('english'))
+        elif lang == 'fr':
+            stop_words = set(stopwords.words('french'))
+        else:
+            stop_words = set()  # No stopwords for unknown languages
+    except:
+        stop_words = set()  # Fallback to no stopwords
+    
+    tokens = word_tokenize(text.lower())
+    return [token for token in tokens if token.isalnum() and token not in stop_words]
+
+def minimal_tokenize(text):
+    # Just remove punctuation, keep most words
+    tokens = word_tokenize(text.lower())
+    return [token for token in tokens if token.isalnum() and len(token) > 1]
+
+def better_tokenize(text):
+    import re
+    # Keep important terms together
+    text = re.sub(r'\n+', ' ', text)  # Remove newlines
+    text = re.sub(r'\s+', ' ', text)  # Multiple spaces to single
+    # Don't split "non-compliance" - keep as one term
+    tokens = text.lower().split()
+    return [token.strip('.,') for token in tokens if len(token) > 2]
+
+def hybrid_search_rrf(query, query_embedding, vector_db,  top_k=5, k=60):
+   # 1. Vector search using existing embeddings
+   chunk_embeddings = np.array([chunk["embedding"] for chunk in vector_db])
+   vector_scores = cosine_similarity([query_embedding], chunk_embeddings)[0]
+   
+   # 2. BM25 search using BM25 library
+   texts = [chunk["content"] for chunk in vector_db]
+   tokenized_texts = [better_tokenize(text) for text in texts]
+   bm25 = BM25Okapi(tokenized_texts)
+   bm25_scores = bm25.get_scores(better_tokenize(query))
+   
+   # 3. RRF combination (no normalization needed)
+   def rrf_combine(vector_scores, bm25_scores, k=60):
+       vector_ranked = np.argsort(vector_scores)[::-1] 
+       bm25_ranked = np.argsort(bm25_scores)[::-1]
+       
+       combined_scores = np.zeros(len(vector_scores))
+       
+       for rank, idx in enumerate(vector_ranked):
+           combined_scores[idx] += (1 / (k + rank + 1))
+       
+       for rank, idx in enumerate(bm25_ranked):
+           combined_scores[idx] += (1 / (k + rank + 1))
+       
+       return combined_scores
+   
+   # 4. Combine using RRF
+   combined_scores = rrf_combine(vector_scores, bm25_scores, k)
+   
+   # 5. Get top results
+   top_indices = np.argsort(combined_scores)[::-1][:top_k]
+   
+   return [vector_db[i]["content"] for i in top_indices], top_indices
+
+
+def hybrid_search_simple_comb(query, query_embedding, vector_db, weights = [0.7, 0.3],  top_k=5):
+    # 1. Vector search using existing embeddings
+    chunk_embeddings = np.array([chunk["embedding"] for chunk in vector_db])
+    vector_scores = cosine_similarity([query_embedding], chunk_embeddings)[0]
+    
+    # 2. BM25 search using proper BM25 library
+    texts = [chunk["content"] for chunk in vector_db]
+    # tokenized_texts = [text.split() for text in texts]
+    tokenized_texts = [minimal_tokenize(text) for text in texts]
+    bm25 = BM25Okapi(tokenized_texts)
+    bm25_scores = bm25.get_scores(query.split())
+    
+    # 3. Normalize BM25 scores to 0-1 range (to match cosine similarity)
+    if bm25_scores.max() > 0:
+        bm25_scores = bm25_scores / bm25_scores.max()
+    
+    # 4. Combine scores
+    combined_scores = weights[0] * vector_scores + weights[1] * bm25_scores
+    
+    # 5. Get top results
+    top_indices = np.argsort(combined_scores)[::-1][:top_k]
+    
+    return [vector_db[i]["content"] for i in top_indices], top_indices
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 # Initialize model once
 model = SentenceTransformer('all-mpnet-base-v2')
@@ -91,60 +218,8 @@ def faiss_similarity(chunks:List[dict], query:str, k=5):
 
 
 
-class BM25:
-    """Simple BM25 implementation"""
-    def __init__(self, corpus, k1=1.5, b=0.75):
-        self.k1 = k1
-        self.b = b
-        self.corpus = corpus
-        self.corpus_size = len(corpus)
-        
-        # Tokenize and calculate document frequencies
-        self.doc_freqs = []
-        self.idf = {}
-        self.doc_lens = []
-        
-        # Tokenize all documents
-        tokenized_corpus = []
-        for doc in corpus:
-            tokens = self.tokenize(doc)
-            tokenized_corpus.append(tokens)
-            self.doc_lens.append(len(tokens))
-            self.doc_freqs.append(Counter(tokens))
-        
-        self.tokenized_corpus = tokenized_corpus
-        self.avgdl = sum(self.doc_lens) / len(self.doc_lens)
-        
-        # Calculate IDF for each term
-        df = Counter()
-        for doc_freq in self.doc_freqs:
-            for term in doc_freq.keys():
-                df[term] += 1
-        
-        for term, freq in df.items():
-            self.idf[term] = math.log((self.corpus_size - freq + 0.5) / (freq + 0.5))
-    
-    def tokenize(self, text):
-        """Simple tokenization"""
-        # Convert to lowercase, remove special chars, split on whitespace
-        text = re.sub(r'[^\w\s]', ' ', text.lower())
-        return text.split()
-    
-    def score(self, query, doc_idx):
-        """Calculate BM25 score for a document"""
-        query_tokens = self.tokenize(query)
-        doc_freqs = self.doc_freqs[doc_idx]
-        doc_len = self.doc_lens[doc_idx]
-        
-        score = 0.0
-        for term in query_tokens:
-            if term in doc_freqs:
-                tf = doc_freqs[term]
-                idf = self.idf.get(term, 0)
-                score += idf * (tf * (self.k1 + 1)) / (tf + self.k1 * (1 - self.b + self.b * doc_len / self.avgdl))
-        
-        return score
-    
+
+
 
 # Example usage
 if __name__ == "__main__":

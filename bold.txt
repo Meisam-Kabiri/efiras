@@ -1,0 +1,676 @@
+REGULATION (EU) No 575/2013 OF THE EUROPEAN PARLIAMENT AND OF THE COUNCIL
+of 26 June 2013
+on prudential requirements for credit institutions and investment firms and amending Regulation (EU) No 648/2012
+(Text with EEA relevance)
+GENERAL PROVISIONS
+SUBJECT MATTER, SCOPE AND DEFINITIONS
+Supervisory powers
+Application of stricter requirements by institutions
+Definitions
+Definitions specific to capital requirements for credit risk
+LEVEL OF APPLICATION OF REQUIREMENTS
+Application of requirements on an individual basis
+General principles
+Derogation to the application of prudential requirements on an individual basis
+Derogation to the application of liquidity requirements on an individual basis
+Individual consolidation method
+Waiver for credit institutions permanently affiliated to a central body
+Prudential consolidation
+A p p l i c a t i o n o f r e q u i r e m e n t s o n a c o n s o l i d a t e d b a s i s
+General treatment
+Financial holding company or mixed financial holding company with both a subsidiary credit institution and a subsidiary investment firm
+Application of disclosure requirements on a consolidated basis
+Application of requirements of Part Five on a consolidated basis
+Derogation to the application of own funds requirements on a consolidated basis for groups of investment firms
+Derogation to the application of the leverage ratio requirements on a consolidated basis for groups of investment firms
+Supervision of investment firms waived from the application of own funds requirements on a consolidated basis
+M e t h o d s f o r p r u d e n t i a l c o n s o l i d a t i o n
+Methods for prudential consolidation
+S c o p e o f p r u d e n t i a l c o n s o l i d a t i o n
+Entities excluded from the scope of prudential consolidation
+Joint decisions on prudential requirements
+Joint decisions on the level of application of liquidity requirements
+Sub-consolidation in cases of entities in third countries
+Undertakings in third countries
+Valuation of assets and off-balance sheet items
+ELEMENTS OF OWN FUNDS
+Tier 1 capital
+Tier 1 capital
+Common Equity Tier 1 capital
+C o m m o n e q u i t y t i e r 1 i t e m s a n d i n s t r u m e n t s
+Common Equity Tier 1 items
+Capital instruments of mutuals, cooperative societies, savings institutions or similar institutions in Common Equity Tier 1 items
+Common Equity Tier 1 instruments
+Capital instruments issued by mutuals, cooperative societies, savings institutions and similar institutions
+Consequences of the conditions for Common Equity Tier 1 instruments ceasing to be met
+Capital instruments subscribed by public authorities in emergency situations
+P r u d e n t i a l f i l t e r s
+Securitised assets
+Cash flow hedges and changes in the value of own liabilities
+Additional value adjustments
+Unrealised gains and losses measured at fair value
+D e d u c t i o n s f r o m c o m m o n e q u i t y t i e r 1 i t e m s , e x e m p t i o n s a n d a l t e r n a t i v e s
+D e d u c t i o n s f r o m C o m m o n E q u i t y T i e r 1 i t e m s
+Deductions from Common Equity Tier 1 items
+Deduction of intangible assets
+Deduction of deferred tax assets that rely on future profitability
+Tax overpayments, tax loss carry backs and deferred tax assets that do not rely on future profitability
+Deduction of negative amounts resulting from the calculation of expected loss amounts
+Deduction of defined benefit pension fund assets
+Deduction of holdings of own Common Equity Tier 1 instruments
+Significant investment in a financial sector entity
+Deduction of holdings of Common Equity Tier 1 instruments of financial sector entities and where an institution has a reciprocal cross holding designed artificially to inflate own funds
+Deduction of holdings of Common Equity Tier 1 instruments of financial sector entities
+Deduction of holdings of Common Equity Tier 1 instruments where an institution does not have a significant investment in a financial sector entity
+Deduction of holdings of Common Equity Tier 1 instruments where an institution has a significant investment in a financial sector entity
+E x e m p t i o n s f r o m a n d a l t e r n a t i v e s t o d e d u c t i o n f r o m C o m m o n E q u i t y T i e r 1 i t e m s
+Threshold exemptions from deduction from Common Equity Tier 1 items
+Requirement for deduction where consolidation, supplementary supervision or institutional protection schemes are applied
+C o m m o n e q u i t y t i e r 1 c a p i t a l
+Common Equity Tier 1 capital
+Additional Tier 1 capital
+A d d i t i o n a l t i e r 1 i t e m s a n d i n s t r u m e n t s
+Additional Tier 1 items
+Additional Tier 1 instruments
+Restrictions on the cancellation of distributions on Additional Tier 1 instruments and features that could hinder the recapitalisation of the institution
+Write down or conversion of Additional Tier 1 instruments
+Consequences of the conditions for Additional Tier 1 instruments ceasing to be met
+D e d u c t i o n s f r o m a d d i t i o n a l t i e r 1 i t e m s
+Deductions from Additional Tier 1 items
+Deductions of holdings of own Additional Tier 1 instruments
+Deduction of holdings of Additional Tier 1 instruments of financial sector entities and where an institution has a reciprocal cross holding designed artificially to inflate own funds
+Deduction of holdings of Additional Tier 1 instruments of financial sector entities
+Deduction of holdings of Additional Tier 1 instruments where an institution does not have a significant investment in a financial sector entity
+A d d i t i o n a l T i e r 1 c a p i t a l
+Additional Tier 1 capital
+Tier 2 capital
+T i e r 2 i t e m s a n d i n s t r u m e n t s
+Tier 2 items
+Tier 2 instruments
+Amortisation of Tier 2 instruments
+Consequences of the conditions for Tier 2 instruments ceasing to be met
+D e d u c t i o n s f r o m t i e r 2 i t e m s
+Deductions from Tier 2 items
+Deductions of holdings of own Tier 2 instruments
+Deduction of holdings of Tier 2 instruments of financial sector entities and where an institution has a reciprocal cross holding designed artificially to inflate own funds
+Deduction of holdings of Tier 2 instruments of financial sector entities
+Deduction of Tier 2 instruments where an institution does not have a significant investment in a relevant entity
+T i e r 2 c a p i t a l
+Tier 2 capital
+General requirements
+Distributions on own funds instruments
+Holdings of capital instruments issued by regulated financial sector entities that do not qualify as regulatory capital
+Deduction and maturity requirements for short positions
+Index holdings of capital instruments
+Conditions for reducing own funds
+Supervisory permission for reducing own funds
+Temporary waiver from deduction from own funds
+Continuing review of quality of own funds
+MINORITY INTEREST AND ADDITIONAL TIER 1 AND TIER 2 INSTRUMENTS ISSUED BY SUBSIDIARIES
+Minority interests that qualify for inclusion in consolidated Common Equity Tier 1 capital
+Qualifying Additional Tier 1, Tier 1, Tier 2 capital and qualifying own funds
+Qualifying Additional Tier 1 and Tier 2 capital issued by a special purpose entity
+Minority interests included in consolidated Common Equity Tier 1 capital
+Qualifying Tier 1 instruments included in consolidated Tier 1 capital
+Qualifying Tier 1 capital included in consolidated Additional Tier 1 capital
+Qualifying own funds included in consolidated own funds
+Qualifying own funds instruments included in consolidated Tier 2 capital
+QUALIFYING HOLDINGS OUTSIDE THE FINANCIAL SECTOR
+Risk weighting and prohibition of qualifying holdings outside the financial sector
+Alternative to 1 250 % risk weight
+CAPITAL REQUIREMENTS
+GENERAL REQUIREMENTS, VALUATION AND REPORTING
+Required level of own funds
+O w n f u n d s r e q u i r e m e n t s f o r i n s t i t u t i o n s
+Own funds requirements
+Initial capital requirement on going concern
+Derogation for small trading book business
+O w n f u n d s r e q u i r e m e n t s f o r i n v e s t m e n t f i r m s w i t h l i m i t e d a u t h o r i s a t i o n t o p r o v i d e i n v e s t m e n t s e r v i c e s
+Own funds requirements for investment firms with limited authorisation to provide investment services
+Own funds requirements for investment firms which hold initial capital as laid down in Article 28(2) of Directive 2013/36/EU
+Own Funds based on Fixed Overheads
+Own funds for investment firms on a consolidated basis
+Calculation and reporting requirements
+Reporting on own funds requirements and financial information
+Additional reporting requirements
+Specific reporting obligations
+Trading book
+Requirements for the Trading Book
+Management of the trading book
+Inclusion in the Trading Book
+Requirements for Prudent Valuation
+Internal Hedges
+CAPITAL REQUIREMENTS FOR CREDIT RISK
+General principles
+Approaches to credit risk
+Use of credit risk mitigation technique under the Standardised Approach and the IRB Approach
+Treatment of securitised exposures under the Standardised Approach and the IRB Approach
+Treatment of credit risk adjustment
+Standardised Approach
+G e n e r a l p r i n c i p l e s
+Exposure value
+Exposure classes
+Calculation of risk weighted exposure amounts
+R i s k w e i g h t s
+Exposures to central governments or central banks
+Exposures to regional governments or local authorities
+Exposures to public sector entities
+Exposures to multilateral development banks
+Exposures to international organisations
+Exposures to institutions
+Exposures to rated institutions
+Exposures to unrated institutions
+Exposures to corporates
+Retail exposures
+Exposures secured by mortgages on immovable property
+Exposures fully and completely secured by mortgages on residential property
+Exposures fully and completely secured by mortgages on commercial immovable property
+Exposures in default
+Items associated with particular high risk
+Exposures in the form of covered bonds
+Items representing securitisation positions
+Exposures to institutions and corporates with a short-term credit assessment
+Exposures in the form of units or shares in CIUs
+Equity exposures
+Other items
+R e c o g n i t i o n a n d m a p p i n g o f c r e d i t r i s k a s s e s s m e n t
+R e c o g n i t i o n o f E C A I s
+Use of credit assessments by ECAIs
+M a p p i n g o f E C A I ' s c r e d i t a s s e s s m e n t s
+Mapping of ECAI's credit assessments
+U s e o f c r e d i t a s s e s s m e n t s b y E x p o r t C r e d i t A g e n c i e s
+Use of credit assessments by Export Credit Agencies
+U s e o f t h e e c a i c r e d i t a s s e s s m e n t s f o r t h e d e t e r m i n a t i o n o f r i s k w e i g h t s
+General requirements
+Issuer and issue credit assessment
+Long-term and short-term credit assessments
+Domestic and foreign currency items
+Internal Ratings Based Approach
+P e r m i s s i o n b y c o m p e t e n t a u t h o r i t i e s t o u s e t h e i r b a p p r o a c h
+Definitions
+Permission to use the IRB Approach
+Competent authorities' assessment of an application to use an IRB Approach
+Prior experience of using IRB approaches
+Measures to be taken where the requirements of this Chapter cease to be met
+Methodology to assign exposure to exposures classes
+Conditions for implementing the IRB Approach across different classes of exposure and business units
+Conditions to revert to the use of less sophisticated approaches
+Conditions for permanent partial use
+C a l c u l a t i o n o f r i s k w e i g h t e d e x p o s u r e a m o u n t s
+T r e a t m e n t b y t y p e o f e x p o s u r e c l a s s
+Treatment by exposure class
+Treatment of exposures in the form of units or shares in CIUs
+C a l c u l a t i o n o f r i s k w e i g h t e d e x p o s u r e a m o u n t s f o r c r e d i t r i s k
+Risk weighted exposure amounts for exposures to corporates, institutions and central governments and central banks
+Risk weighted exposure amounts for retail exposures
+Risk weighted exposure amounts for equity exposures
+Risk weighted exposure amounts for other non credit- obligation assets
+C a l c u l a t i o n o f r i s k w e i g h t e d e x p o s u r e a m o u n t s f o r d i l u t i o n r i s k o f p u r c h a s e d r e c e i v a b l e s
+Risk weighted exposure amounts for dilution risk of purchased receivables
+E x p e c t e d l o s s a m o u n t s
+Treatment by exposure type
+Treatment of expected loss amounts
+P D , L G D a n d m a t u r i t y
+E x p o s u r e s t o c o r p o r a t e s , i n s t i t u t i o n s a n d c e n t r a l g o v e r n m e n t s a n d c e n t r a l b a n k s
+Probability of default (PD)
+Loss Given Default (LGD)
+R e t a i l e x p o s u r e s
+Probability of default (PD)
+Loss Given Default (LGD)
+E q u i t y e x p o s u r e s s u b j e c t t o P D / L G D m e t h o d
+Equity exposures subject to the PD/LGD method
+E x p o s u r e v a l u e
+Exposures to corporates, institutions, central governments and central banks and retail exposures
+Equity exposures
+Other non credit-obligation assets
+R e q u i r e m e n t s f o r t h e I R B a p p r o a c h
+R a t i n g s y s t e m s
+General principles
+Structure of rating systems
+Assignment to grades or pools
+Assignment of exposures
+Integrity of assignment process
+Use of models
+Documentation of rating systems
+Data maintenance
+Stress tests used in assessment of capital adequacy
+R i s k q u a n t i f i c a t i o n
+Default of an obligor
+Overall requirements for estimation
+Requirements specific to PD estimation
+Requirements specific to own-LGD estimates
+Requirements specific to own-conversion factor estimates
+Requirements for assessing the effect of guarantees and credit derivatives for exposures to corporates, institutions and central governments and central banks where own estimates of LGD are used and retail exposures
+Requirements for purchased receivables
+V a l i d a t i o n o f i n t e r n a l e s t i m a t e s
+Validation of internal estimates
+R e q u i r e m e n t s f o r e q u i t y e x p o s u r e s u n d e r t h e i n t e r n a l m o d e l s a p p r o a c h
+Own funds requirement and risk quantification
+Risk management process and controls
+Validation and documentation
+I n t e r n a l g o v e r n a n c e a n d o v e r s i g h t
+Corporate Governance
+Credit risk control
+Internal Audit
+Credit risk mitigation
+D e f i n i t i o n s a n d g e n e r a l r e q u i r e m e n t s
+Definitions
+Principles for recognising the effect of credit risk mitigation techniques
+Principles governing the eligibility of credit risk mitigation techniques
+E l i g i b l e f o r m s o f c r e d i t r i s k m i t i g a t i o n
+F u n d e d c r e d i t p r o t e c t i o n
+On-balance sheet netting
+Master netting agreements covering repurchase transactions or securities or commodities lending or borrowing transactions or other capital market-driven transactions
+Eligibility of collateral under all approaches and methods
+Additional eligibility of collateral under the Financial Collateral Comprehensive Method
+Additional eligibility for collateral under the IRB Approach
+Other funded credit protection
+U n f u n d e d c r e d i t p r o t e c t i o n
+Eligibility of protection providers under all approaches
+Eligibility of protection providers under the IRB Approach which qualify for the treatment set out in Article 153(3)
+Eligibility of guarantees as unfunded credit protection
+T y p e s o f d e r i v a t i v e s
+Eligible types of credit derivatives
+R e q u i r e m e n t s
+F u n d e d c r e d i t p r o t e c t i o n
+Requirements for on-balance sheet netting agreements other than master netting agreements referred to in Article 206
+Requirements for master netting agreements covering repurchase transactions or securities or commodities lending or borrowing transactions or other capital market driven transactions
+Requirements for financial collateral
+Requirements for immovable property collateral
+Requirements for receivables
+Requirements for other physical collateral
+Requirements for treating lease exposures as collateralised
+Requirements for other funded credit protection
+U n f u n d e d c r e d i t p r o t e c t i o n a n d c r e d i t l i n k e d n o t e s
+Requirements common to guarantees and credit derivatives
+Sovereign and other public sector counter-guarantees
+Additional requirements for guarantees
+Additional requirements for credit derivatives
+Requirements to qualify for the treatment set out in Article 153(3)
+C a l c u l a t i n g t h e e f f e c t s o f c r e d i t r i s k m i t i g a t i o n
+F u n d e d c r e d i t p r o t e c t i o n
+Credit linked notes
+On-balance sheet netting
+Using the Supervisory Volatility Adjustments Approach or the Own Estimates Volatility Adjustments Approach for master netting agreements
+Using the Internal Models Approach for Master netting agreements
+Financial Collateral Simple Method
+Financial Collateral Comprehensive Method
+Supervisory volatility adjustment under the Financial Collateral Comprehensive Method
+Other collateral or exposure types
+Volatility adjustment for currency mismatch
+Own estimates of volatility adjustments under the Financial Collateral Comprehensive Method
+Scaling up of volatility adjustment under the Financial Collateral Comprehensive method
+Conditions for applying a 0 % volatility adjustment under the Financial Collateral Comprehensive method
+Calculating risk-weighted exposure amounts and expected loss amounts under the Financial Collateral Comprehensive method
+Valuation principles for other eligible collateral under the IRB Approach
+Calculating risk-weighted exposure amounts and expected loss amounts for other eligible collateral under the IRB Approach
+Minimum LGD for secured parts of exposures
+Calculating risk-weighted exposure amounts and expected loss amounts in the case of mixed pools of collateral
+Other funded credit protection
+U n f u n d e d c r e d i t p r o t e c t i o n
+Calculating risk-weighted exposure amounts and expected loss amounts in the event of partial protection and tranching
+Calculating risk-weighted exposure amounts under the Standardised Approach
+Calculating risk-weighted exposure amounts and expected loss amounts under the IRB Approach
+M a t u r i t y m i s m a t c h e s
+Maturity mismatch
+Maturity of credit protection
+Valuation of protection
+B a s k e t C R M t e c h n i q u e s
+First-to-default credit derivatives
+Nth-to-default credit derivatives
+Securitisation
+D e f i n i t i o n s
+Definitions
+R e c o g n i t i o n o f s i g n i f i c a n t r i s k t r a n s f e r
+Traditional securitisation
+Synthetic securitisation
+C a l c u l a t i o n o f t h e r i s k w e i g h t e d e x p o s u r e a m o u n t s
+P r i n c i p l e s
+Calculation of risk-weighted exposure amounts
+Exposure value
+Recognition of credit risk mitigation for securitisation positions
+Implicit support
+O r i g i n a t o r i n s t i t u t i o n s ' c a l c u l a t i o n o f r i s k - w e i g h t e d e x p o s u r e a m o u n t s s e c u r i t i s e d i n a s y n t h e t i c s e c u r i t i s a t i o n
+General treatment
+Treatment of maturity mismatches in synthetic securiti­ sations
+C a l c u l a t i o n o f r i s k - w e i g h t e d e x p o s u r e a m o u n t s u n d e r t h e S t a n d a r d i s e d A p p r o a c h
+Risk-weights
+Originator and sponsor institutions
+Treatment of unrated positions
+Treatment of securitisation positions in a second loss tranche or better in an ABCP programme
+Treatment of unrated liquidity facilities
+Additional own funds requirements for securitisations of revolving exposures with early amortisation provisions
+Credit risk mitigation for securitisation positions subject to the Standardised Approach
+Reduction in risk-weighted exposure amounts
+C a l c u l a t i o n o f r i s k - w e i g h t e d e x p o s u r e a m o u n t s u n d e r t h e I R B A p p r o a c h
+Hierarchy of methods
+Maximum risk-weighted exposure amounts
+Ratings Based Method
+Supervisory Formula Method
+Liquidity Facilities
+Credit risk mitigation for securitisation positions subject to the IRB Approach
+Additional own funds requirements for securitisations of revolving exposures with early amortisation provisions
+Reduction in risk-weighted exposure amounts
+E x t e r n a l c r e d i t a s s e s s m e n t s
+Use of Credit Assessments by ECAIs
+Requirements to be met by the credit assessments of ECAIs
+Use of credit assessments
+Counterparty credit risk
+D e f i n i t i o n s
+Determination of the exposure value
+Definitions
+M e t h o d s f o r c a l c u l a t i n g t h e e x p o s u r e v a l u e
+Methods for calculating the exposure value
+M a r k – t o – m a r k e t M e t h o d
+Mark-to-market Method
+O r i g i n a l E x p o s u r e M e t h o d
+Original Exposure Method
+S t a n d a r d i s e d M e t h o d
+Standardised Method
+Transactions with a linear risk profile
+Transactions with a non-linear risk profile
+Treatment of Collateral
+Calculation of risk positions
+Interest rate risk positions
+Hedging sets
+I n t e r n a l M o d e l M e t h o d
+Permission to use the Internal Model Method
+Exposure value
+Exposure value for netting sets subject to a margin agreement
+Management of CCR – Policies, processes and systems
+Organisation structures for CCR management
+Review of CCR management system
+Stress testing
+Wrong-Way Risk
+Integrity of the modelling process
+Requirements for the risk management system
+Validation requirements
+C o n t r a c t u a l n e t t i n g
+Recognition of contractual netting as risk-reducing
+Recognition of contractual netting agreements
+Obligations of institutions
+Effects of recognition of netting as risk-reducing
+I t e m s i n t h e t r a d i n g b o o k
+Items in the trading book
+O w n f u n d s r e q u i r e m e n t s f o r e x p o s u r e s t o a c e n t r a l c o u n t e r p a r t y
+Definitions
+Material scope
+Monitoring of exposures to CCPs
+Treatment of clearing members' exposures to CCPs
+Treatment of clearing members' exposures to clients
+Treatment of clients' exposures
+Own funds requirements for trade exposures
+Own funds requirements for pre-funded contributions to the default fund of a CCP
+Own funds requirements for pre-funded contributions to the default fund of a Q CCP
+Own funds requirements for pre-funded contributions to the default fund of a non-qualifying CCP and for unfunded contributions to a non-qualifying CCP
+Alternative calculation of own funds requirement for exposures to a Q CCP
+Own funds requirements for exposures to CCPs that cease to meet certain conditions
+OWN FUNDS REQUIREMENTS FOR OPERATIONAL RISK
+General principles governing the use of the different approaches
+Permission and notification
+Reverting to the use of less sophisticated approaches
+Combined use of different approaches
+Basic indicator approach
+Own funds requirement
+Relevant indicator
+Standardised Approach
+Own funds requirement
+Principles for business line mapping
+Alternative Standardised Approach
+Criteria for the Standardised Approach
+Advanced measurement approaches
+Qualitative standards
+Quantitative Standards
+Impact of insurance and other risk transfer mechanisms
+Loss event type classification
+OWN FUNDS REQUIREMENTS FOR MARKET RISK
+General Provisions
+Allowances for consolidated requirements
+Own funds requirements for position risk
+G e n e r a l p r o v i s i o n s a n d s p e c i f i c i n s t r u m e n t s
+Own funds requirements for position risk
+Interest rate futures and forwards
+Options and warrants
+Interest rate risk on derivative instruments
+Credit Derivatives
+Securities sold under a repurchase agreement or lent
+D e b t i n s t r u m e n t s
+Net positions in debt instruments
+S p e c i f i c r i s k
+Cap on the own funds requirement for a net position
+Own funds requirement for non-securitisation debt instruments
+Own funds requirement for securitisation instruments
+Own funds requirement for the correlation trading portfolio
+G e n e r a l r i s k
+Maturity-based calculation of general risk
+Duration-based calculation of general risk
+E q u i t i e s
+Net positions in equity instruments
+Specific risk of equity instruments
+General risk of equity instruments
+Stock indices
+U n d e r w r i t i n g
+Reduction of net positions
+S p e c i f i c r i s k o w n f u n d s r e q u i r e m e n t s f o r p o s i t i o n s h e d g e d b y c r e d i t d e r i v a t i v e s
+Allowance for hedges by credit derivatives
+Allowance for hedges by first and nth-to default credit derivatives
+O w n f u n d s r e q u i r e m e n t s f o r C I U s
+Own funds requirements for CIUs
+General criteria for CIUs
+Specific methods for CIUs
+Own funds requirements for foreign-exchange risk
+De minimis and weighting for foreign exchange risk
+Calculation of the overall net foreign exchange position
+Foreign exchange risk of CIUs
+Closely correlated currencies
+Own funds requirements for commodities risk
+Choice of method for commodities risk
+Ancillary commodities business
+Positions in commodities
+Particular instruments
+Maturity ladder approach
+Simplified approach
+Extended maturity ladder approach
+Use of internal models to calculate own funds requirements
+P e r m i s s i o n a n d o w n f u n d s r e q u i r e m e n t s
+Specific and general risks
+Permission to use internal models
+Own funds requirements when using internal models
+G e n e r a l r e q u i r e m e n t s
+VaR and stressed VaR Calculation
+Regulatory back testing and multiplication factors
+Requirements on risk measurement
+Qualitative requirements
+Internal Validation
+R e q u i r e m e n t s p a r t i c u l a r t o s p e c i f i c r i s k m o d e l l i n g
+Requirements for modelling specific risk
+Exclusions from specific risk models
+I n t e r n a l m o d e l f o r i n c r e m e n t a l d e f a u l t a n d m i g r a t i o n r i s k
+Requirement to have an internal IRC model
+Scope of the internal IRC model
+Parameters of the internal IRC model
+Recognition of hedges in the internal IRC model
+Particular requirements for the internal IRC model
+I n t e r n a l m o d e l f o r c o r r e l a t i o n t r a d i n g
+Requirements for an internal model for correlation trading
+OWN FUNDS REQUIREMENTS FOR SETTLEMENT RISK
+Settlement/delivery risk
+Free deliveries
+Capital treatment for free deliveries
+OWN FUNDS REQUIREMENTS FOR CREDIT VALUATION ADJUSTMENT RISK
+Meaning of Credit Valuation Adjustment
+Advanced method
+Standardised method
+Alternative to using CVA methods to calculating own funds requirements
+Eligible hedges
+LARGE EXPOSURES
+Subject matter
+Negative Scope
+Calculation of the exposure value
+Definition of an institution for large exposures purposes
+Definition of a large exposure
+Capacity to identify and manage large exposures
+Reporting requirements
+Limits to large exposures
+Compliance with large exposures requirements
+Calculating additional own funds requirements for large exposures in the trading book
+Procedures to prevent institutions from avoiding the additional own funds requirement
+Eligible credit mitigation techniques
+Calculating the effect of the use of credit risk mitigation techniques
+Exposures arising from mortgage lending
+Substitution approach
+EXPOSURES TO TRANSFERRED CREDIT RISK
+GENERAL PROVISIONS FOR THIS PART
+Scope of application
+REQUIREMENTS FOR INVESTOR INSTITUTIONS
+Retained interest of the issuer
+Due diligence
+Additional risk weight
+REQUIREMENTS FOR SPONSOR AND ORIGINATOR INSTITUTIONS
+Criteria for credit granting
+Disclosure to investors
+Uniform condition of application
+DEFINITIONS AND LIQUIDITY COVERAGE REQUIREMENT
+Definitions
+Liquidity coverage requirement
+Stable Funding
+Compliance with liquidity requirements
+LIQUIDITY REPORTING
+Reporting obligation and reporting format
+Reporting on liquid assets
+Operational requirements for holdings of liquid assets
+Valuation of liquid assets
+Currencies with constraints on the availability of liquid assets
+Liquidity outflows
+Outflows on retail deposits
+Outflows on other liabilities
+Additional Outflows
+Outflows from credit and liquidity facilities
+Updating Future liquidity requirements
+REPORTING ON STABLE FUNDING
+Items providing stable funding
+Items requiring stable funding
+Calculation of the leverage ratio
+Reporting requirement
+DISCLOSURE BY INSTITUTIONS
+GENERAL PRINCIPLES
+Scope of disclosure requirements
+Non-material, proprietary or confidential information
+Frequency of disclosure
+Means of disclosures
+TECHNICAL CRITERIA ON TRANSPARENCY AND DISCLOSURE
+Risk management objectives and policies
+Scope of application
+Capital requirements
+Exposure to counterparty credit risk
+Capital buffers
+Indicators of global systemic importance
+Credit risk adjustments
+Unencumbered assets
+Use of ECAIs
+Exposure to market risk
+Operational risk
+Exposures in equities not included in the trading book
+Exposure to interest rate risk on positions not included in the trading book
+Exposure to securitisation positions
+Remuneration policy
+QUALIFYING REQUIREMENTS FOR THE USE OF PARTICULAR INSTRUMENTS OR METHODOLOGIES
+Use of the IRB Approach to credit risk
+Use of credit risk mitigation techniques
+Use of the Advanced Measurement Approaches to operational risk
+Use of Internal Market Risk Models
+DELEGATED AND IMPLEMENTING ACTS
+Delegated acts
+Technical adjustments and corrections
+Macroprudential or systemic risk identified at the level of a Member State
+Prudential requirements
+Review of the phasing-in of the liquidity coverage requirement
+Exercise of the delegation
+Objections to regulatory technical standards
+European Banking Committee
+TRANSITIONAL PROVISIONS, REPORTS, REVIEWS AND AMENDMENTS
+TRANSITIONAL PROVISIONS
+Own funds requirements, unrealised gains and losses measured at fair value and deductions
+O w n f u n d s r e q u i r e m e n t s
+Own funds requirements
+First time application of International Financial Reporting Standards
+U n r e a l i s e d g a i n s a n d l o s s e s m e a s u r e d a t f a i r v a l u e
+Unrealised losses measured at fair value
+Unrealised gains measured at fair value
+D e d u c t i o n s
+D e d u c t i o n s f r o m C o m m o n E q u i t y T i e r 1 i t e m s
+Deductions from Common Equity Tier 1 items
+Exemption from deduction from Common Equity Tier 1 items
+Exemption from Deduction of Equity Holdings in Insurance Companies from Common Equity Tier 1 Items
+Items not deducted from Common Equity Tier 1
+Introduction of amendments to IAS 19
+D e d u c t i o n s f r o m A d d i t i o n a l T i e r 1 i t e m s
+Deductions from Additional Tier 1 items
+Items not deducted from Additional Tier 1 items
+D e d u c t i o n s f r o m T i e r 2 i t e m s
+Deductions from Tier 2 items
+Deductions from Tier 2 items
+A p p l i c a b l e p e r c e n t a g e s f o r d e d u c t i o n
+Applicable percentages for deduction from Common Equity Tier 1, Additional Tier 1 and Tier 2 items
+M i n o r i t y i n t e r e s t a n d A d d i t i o n a l T i e r 1 a n d T i e r 2 i n s t r u m e n t s i s s u e d b y s u b s i d i a r i e s
+Recognition in consolidated Common Equity Tier 1 capital of instruments and items that do not qualify as minority interests
+Recognition in consolidated own funds of minority interests and qualifying Additional Tier 1 and Tier 2 capital
+A d d i t i o n a l f i l t e r s a n d d e d u c t i o n s
+Additional filters and deductions
+Scope of application for derivatives transactions with pension funds
+Grandfathering of capital instruments
+I n s t r u m e n t s c o n s t i t u t i n g S t a t e a i d
+Grandfathering of State aid instruments
+I n s t r u m e n t s n o t c o n s t i t u t i n g s t a t e a i d
+G r a n d f a t h e r i n g e l i g i b i l i t y a n d l i m i t s
+Eligibility for grandfathering of items that qualified as own funds under national transposition measures for Directive 2006/48/EC
+Eligibility for inclusion in the Common Equity Tier 1 of share premium accounts related to items that qualified as own funds under national transposition measures for Directive 2006/48/EC
+Limits for grandfathering of items within Common Equity Tier 1, Additional Tier 1 and Tier 2 items
+Items excluded from grandfathering in Common Equity Tier 1 or Additional Tier 1 items in other elements of own funds
+Amortisation of items grandfathered as Tier 2 items
+I n c l u s i o n o f i n s t r u m e n t s w i t h a c a l l a n d i n c e n t i v e t o r e d e e m i n A d d i t i o n a l T i e r 1 a n d T i e r 2 i t e m s
+Hybrid instruments with a call and incentive to redeem
+Tier 2 items with an incentive to redeem
+Effective maturity
+Transitional provisions for disclosure of own funds
+Disclosure of own funds
+Large exposures, own funds requirements, leverage and the Basel I floor
+Transitional provisions for large exposures
+Transitional provisions for eligible capital
+Treatment of equity exposures under the IRB Approach
+Own funds requirements for covered bonds
+Own funds requirements for exposures to CCPs
+Exemption for Commodities dealers
+Transitional provisions – Basel I floor
+Capital requirements deduction for credit risk on exposures to SMEs
+REPORTS AND REVIEWS
+Cyclicality of capital requirements
+Own funds requirements for exposures in the form of covered bonds
+Capital instruments subscribed by public authorities in emergency situations
+Review of long-term financing
+Credit risk – definition of default
+Large exposures
+Level of application
+Liquidity requirements
+Net Stable Funding Requirements
+Exposures to transferred credit risk
+Macroprudential rules
+Counterparty Credit Risk and the Original Exposure Method
+Monitoring and evaluation
+Long-term financing
+Definition of eligible capital
+Review of capital instruments which may be written down or converted at the point of non-viability
+Deduction of defined benefit pension fund assets from Common Equity Tier 1 items
+Amendment of Regulation (EU) No 648/2012
+Calculations and reporting for the purposes of Regulation (EU) No 575/2013
+Calculation of K CCP
+i max f EBRM i – IM i – DF i ; 0 g · RW · captial ratio
+General rules for the calculation of K CCP
+Reporting of information
+Calculation of specific items to be reported by the CCP
+FINAL PROVISIONS
+Entry into force and date of application
+Classification of off-balance sheet items
+Types of derivatives
+Items subject to supplementary reporting of liquid assets
+Correlation table

@@ -31,7 +31,10 @@ class UnifiedRAGSystem:
                  azure_search_endpoint: Optional[str] = None,
                  azure_search_key: Optional[str] = None,
                  azure_search_index: str = "documents",
+                 use_cached_embeddings: bool = True,
+                 cached_local_model:  bool = False,
                  use_managed_identity: bool = False):
+        
         """Initialize unified RAG system
         
         Args:
@@ -57,6 +60,10 @@ class UnifiedRAGSystem:
         self.online_embedding_model = online_embedding_model
         self.use_azure_search = use_azure_search
         self.vector_db = []
+        self.use_cached_embeddings = use_cached_embeddings
+        self.cached_local_model= cached_local_model
+        
+
         
         # Initialize Azure Search backend if requested
         if use_azure_search:
@@ -104,7 +111,7 @@ class UnifiedRAGSystem:
         # Initialize local embedding model if needed
         if use_local_embeddings:
             from sentence_transformers import SentenceTransformer
-            self.local_model = SentenceTransformer(local_embedding_model)
+            self.local_model = SentenceTransformer(local_embedding_model, local_files_only = self.cached_local_model)
     
     def enrich_text_with_headers(self, block: Dict[str, Any]) -> str:
         """Enrich block text with hierarchical headers"""
@@ -139,7 +146,7 @@ class UnifiedRAGSystem:
     def embed_blocks(self, blocks: List[Dict[str, Any]], cache_path: str) -> List[Dict[str, Any]]:
         """Embed blocks with caching"""
         # Try loading from cache
-        if os.path.exists(cache_path):
+        if self.use_cached_embeddings and os.path.exists(cache_path):
             with open(cache_path, 'r') as f:
                 cached = json.load(f)
                 print(f"Loaded {len(cached)} embeddings from cache")
@@ -258,6 +265,7 @@ class UnifiedRAGSystem:
             similarities.append({'document': doc, 'similarity': similarity})
         
         similarities.sort(key=lambda x: x['similarity'], reverse=True)
+        
         return [item['document'] for item in similarities[:top_k]]
     
     def _extract_specific_regulations(self, context: str, query: str) -> List[str]:

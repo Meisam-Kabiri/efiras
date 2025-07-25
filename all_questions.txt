@@ -1,0 +1,792 @@
+Chunk ID: 1
+Question: What is the purpose of Circular CSSF 12/546, as amended, concerning investment fund managers?
+--------------------------------------------------
+Chunk ID: 9
+Question: How should the scope of responsibility of an AIFM be assessed in relation to the functions performed for each managed AIF?
+--------------------------------------------------
+Chunk ID: 10
+Question: What conditions must be met for the CSSF to grant authorisation to an Investment Fund Manager (IFM)?
+--------------------------------------------------
+Chunk ID: 11
+Question: What are the five assessment criteria used to evaluate the sound and prudent management of an IFM?
+--------------------------------------------------
+Chunk ID: 12
+Question: What information must be included in the authorisation request regarding the group structure of the IFM?
+--------------------------------------------------
+Chunk ID: 13
+Question: What specific information must shareholders intending to have a qualifying holding provide in the authorisation request?
+--------------------------------------------------
+Chunk ID: 14
+Question: What justification must the authorisation file provide regarding the structure of the Luxembourg IFM?
+--------------------------------------------------
+Chunk ID: 15
+Question: What are the financing conditions that shareholders must adhere to when incorporating the IFM?
+--------------------------------------------------
+Chunk ID: 16
+Question: What is the purpose of a lettre de patronage in the context of an IFM's authorisation?
+--------------------------------------------------
+Chunk ID: 17
+Question: What notification is required from a ManCo when a qualifying holding is acquired or disposed of?
+--------------------------------------------------
+Chunk ID: 18
+Question: What documents must be included in the notification file when a new shareholder intends to redirect the strategy of the IFM?
+--------------------------------------------------
+Chunk ID: 19
+Question: In what situations must an IFM inform the CSSF regarding changes in its shareholding structure?
+--------------------------------------------------
+Chunk ID: 20
+Question: What are the two amounts that an IFM must prove as own funds based on the value of its managed portfolios?
+--------------------------------------------------
+Chunk ID: 21
+Question: What approach must the IFM use to calculate the fixed overheads of the preceding year?
+--------------------------------------------------
+Chunk ID: 22
+Question: What provision allows an IFM to avoid providing up to 50% of additional own funds related to managed portfolios?
+--------------------------------------------------
+Chunk ID: 24
+Question: What are the two methods an AIFM can use to cover potential professional liability risks?
+--------------------------------------------------
+Chunk ID: 25
+Question: What is the minimum additional amount of own funds required for an AIFM covering liability risks through additional funds?
+--------------------------------------------------
+Chunk ID: 26
+Question: What obligation does an AIFM have regarding its professional indemnity insurance according to Article 15 of Delegated Regulation (EU) 231/2013?
+--------------------------------------------------
+Chunk ID: 27
+Question: What types of capital are included in the composition of eligible capital according to the CRR?
+--------------------------------------------------
+Chunk ID: 28
+Question: What does the CSSF require regarding the maintenance of minimum required own funds by the IFM?
+--------------------------------------------------
+Chunk ID: 29
+Question: What policy must the IFM implement concerning treasury management?
+--------------------------------------------------
+Chunk ID: 30
+Question: What key components must be included in the file related to an acquisition?
+--------------------------------------------------
+Chunk ID: 31
+Question: What financial information is the CSSF requesting from the IFM to enhance compliance with prudential requirements?
+--------------------------------------------------
+Chunk ID: 32
+Question: What qualifications must the members of the management body/governing body possess to meet their responsibilities?
+--------------------------------------------------
+Chunk ID: 33
+Question: What personal qualities must the members of the management body/governing body demonstrate in their roles?
+--------------------------------------------------
+Chunk ID: 34
+Question: Can a member of the management body/governing body also hold the position of Compliance Officer? Under what conditions?
+--------------------------------------------------
+Chunk ID: 35
+Question: What is the requirement for members of the management body/governing body regarding other professional occupations?
+--------------------------------------------------
+Chunk ID: 36
+Question: What is expected of each member of the management body/governing body in terms of time commitment to their duties?
+--------------------------------------------------
+Chunk ID: 37
+Question: How does the CSSF evaluate the number of mandates held by candidates in relation to managed UCIs?
+--------------------------------------------------
+Chunk ID: 38
+Question: What must a candidate include in their authorization request if they exceed certain thresholds for mandates?
+--------------------------------------------------
+Chunk ID: 39
+Question: How frequently must the management body/governing body meet to effectively perform its duties?
+--------------------------------------------------
+Chunk ID: 41
+Question: What is the minimum requirement for the number of conducting officers that an IFM must employ in Luxembourg?
+--------------------------------------------------
+Chunk ID: 42
+Question: What conditions apply to IFMs managing portfolios exceeding EUR 1.5 billion regarding the mandates of conducting officers?
+--------------------------------------------------
+Chunk ID: 43
+Question: What must a person demonstrate to the CSSF if they are performing more than one mandate as conducting officer?
+--------------------------------------------------
+Chunk ID: 45
+Question: What is the minimum number of full-time employees that every IFM must have at its head office in Luxembourg?
+--------------------------------------------------
+Chunk ID: 46
+Question: What are the main responsibilities of the executive committee under the management body of the IFM?
+--------------------------------------------------
+Chunk ID: 47
+Question: What steps must the executive committee take to ensure that the investment policy and strategy are compliant with the prospectus and relevant regulations?
+--------------------------------------------------
+Chunk ID: 49
+Question: How should the composition of the executive committee be adapted according to the size and complexity of the IFM's activities?
+--------------------------------------------------
+Chunk ID: 50
+Question: Why is it important to organize the distribution of tasks between conducting officers to avoid conflicts of interest?
+--------------------------------------------------
+Chunk ID: 51
+Question: What is the required frequency of meetings for the conducting officers of the executive committee?
+--------------------------------------------------
+Chunk ID: 52
+Question: What specific documents must be included with the notification to the CSSF as per point 105?
+--------------------------------------------------
+Chunk ID: 53
+Question: What is the deadline for the IFM to submit the updated table listing professional activities and mandates to the CSSF?
+--------------------------------------------------
+Chunk ID: 54
+Question: What restrictions are placed on members of the board of directors of a ManCo with a one-tier system regarding their involvement with the depositary of UCITS?
+--------------------------------------------------
+Chunk ID: 55
+Question: What are some key elements that the administrative centre of the IFM must ensure according to the text?
+--------------------------------------------------
+Chunk ID: 56
+Question: What key functions must the IFM have in place in Luxembourg as part of its central administration?
+--------------------------------------------------
+Chunk ID: 57
+Question: Under what conditions can the CSSF grant a derogation regarding staff secondments?
+--------------------------------------------------
+Chunk ID: 58
+Question: What is the principle of segregation of duties, and why is it important for the IFM?
+--------------------------------------------------
+Chunk ID: 59
+Question: What specific information must the organisation chart include upon request from the CSSF?
+--------------------------------------------------
+Chunk ID: 60
+Question: What procedures must an IFM implement for the identification and management of IT risks?
+--------------------------------------------------
+Chunk ID: 61
+Question: What is required of an IFM when it seeks to use the services of a third party for IT systems?
+--------------------------------------------------
+Chunk ID: 63
+Question: What must an IFM ensure when using services from its parent company or a subsidiary?
+--------------------------------------------------
+Chunk ID: 64
+Question: How does the organisational structure of an IFM differ when it performs functions itself versus when it delegates them?
+--------------------------------------------------
+Chunk ID: 65
+Question: What are the options available to an IFM regarding the organisation of its accounting function?
+--------------------------------------------------
+Chunk ID: 66
+Question: What written procedures must the accounting function of an IFM operate based on?
+--------------------------------------------------
+Chunk ID: 67
+Question: What does the concept of central administration imply for an IFM?
+--------------------------------------------------
+Chunk ID: 68
+Question: What functions are included in the second line of an IFM's governance structure?
+--------------------------------------------------
+Chunk ID: 69
+Question: What areas are covered by the internal governance arrangements as outlined in CSSF Regulation 10-4?
+--------------------------------------------------
+Chunk ID: 70
+Question: What are the key components that must be included in the internal governance arrangements of an IFM?
+--------------------------------------------------
+Chunk ID: 71
+Question: What are the three distinct internal control functions mentioned in relation to risk management, compliance, and audit?
+--------------------------------------------------
+Chunk ID: 72
+Question: Who is responsible for appointing the managers of the internal control functions?
+--------------------------------------------------
+Chunk ID: 73
+Question: To whom are the persons responsible for the internal control functions accountable?
+--------------------------------------------------
+Chunk ID: 74
+Question: What is the main purpose of the internal control functions as specified in the text?
+--------------------------------------------------
+Chunk ID: 75
+Question: What actions must the persons responsible for internal control functions take when they receive requests for opinions and advice?
+--------------------------------------------------
+Chunk ID: 76
+Question: What restrictions are placed on the performance of compliance and internal audit functions concerning personnel?
+--------------------------------------------------
+Chunk ID: 77
+Question: What situations are deemed incompatible with the independence of the internal control functions?
+--------------------------------------------------
+Chunk ID: 78
+Question: What qualifications must the members of each internal control function possess to ensure effectiveness?
+--------------------------------------------------
+Chunk ID: 79
+Question: What resources must be allocated to ensure the execution of tasks assigned to internal control functions?
+--------------------------------------------------
+Chunk ID: 80
+Question: What principle does the CSSF use to review the functional and hierarchical separation of risk management functions?
+--------------------------------------------------
+Chunk ID: 81
+Question: What are the key responsibilities of the risk management function according to the text?
+--------------------------------------------------
+Chunk ID: 82
+Question: What resources and authority must the permanent risk management function possess to effectively fulfill its functions?
+--------------------------------------------------
+Chunk ID: 83
+Question: What specific information and documents must the IFM submit to the CSSF regarding the person responsible for the permanent risk management function?
+--------------------------------------------------
+Chunk ID: 84
+Question: Under what conditions can a conducting officer of the IFM also be designated as the person responsible for the permanent risk management function?
+--------------------------------------------------
+Chunk ID: 85
+Question: What elements must the risk management policy cover according to CSSF Regulation 10-4 and Delegated Regulation (EU) 231/2013?
+--------------------------------------------------
+Chunk ID: 86
+Question: What does the liquidity risk management procedure for the IFM need to ensure according to the regulations mentioned?
+--------------------------------------------------
+Chunk ID: 87
+Question: How often must the IFM assess, monitor, and review the effectiveness of its risk management policy?
+--------------------------------------------------
+Chunk ID: 88
+Question: What does the person responsible for the permanent risk management function need to report on regarding the risk management process?
+--------------------------------------------------
+Chunk ID: 89
+Question: When must the written report assessing the adequacy and effectiveness of the risk management be submitted to the CSSF?
+--------------------------------------------------
+Chunk ID: 90
+Question: What must the IFM communicate to the CSSF regarding its risk management policy?
+--------------------------------------------------
+Chunk ID: 91
+Question: What does Circular CSSF 11/512 specify regarding risk management for ManCos?
+--------------------------------------------------
+Chunk ID: 92
+Question: What is required in the RMP format for AIFMs according to Annex 1 of the circular?
+--------------------------------------------------
+Chunk ID: 93
+Question: What are the requirements that the RMP must comply with according to the text?
+--------------------------------------------------
+Chunk ID: 94
+Question: What must new IFMs include in their authorisation file for submission to the CSSF?
+--------------------------------------------------
+Chunk ID: 95
+Question: What must an IFM ensure before launching a new UCI regarding the RMP?
+--------------------------------------------------
+Chunk ID: 96
+Question: What must the procedure cover at all times concerning the managed UCIs?
+--------------------------------------------------
+Chunk ID: 97
+Question: How does the CSSF differentiate between the RMP and the risk management policy?
+--------------------------------------------------
+Chunk ID: 98
+Question: What information must a ManCo provide to the CSSF in its annual report?
+--------------------------------------------------
+Chunk ID: 99
+Question: Under what conditions may risk management tasks be delegated to a third-party expert?
+--------------------------------------------------
+Chunk ID: 100
+Question: What must an IFM ensure when delegating risk management activities according to the relevant regulations?
+--------------------------------------------------
+Chunk ID: 101
+Question: What information must be communicated to the CSSF regarding the third party to whom risk management activities are delegated?
+--------------------------------------------------
+Chunk ID: 102
+Question: What is the primary aim of the compliance function within an IFM?
+--------------------------------------------------
+Chunk ID: 103
+Question: What principle must the compliance function adhere to in order to properly identify compliance risks?
+--------------------------------------------------
+Chunk ID: 104
+Question: What are the key characteristics that the compliance charter must define regarding the compliance function?
+--------------------------------------------------
+Chunk ID: 105
+Question: What is required for updates to the compliance charter?
+--------------------------------------------------
+Chunk ID: 106
+Question: What responsibilities must the compliance function cover according to the outlined aspects?
+--------------------------------------------------
+Chunk ID: 107
+Question: How should compliance risks linked to other functions be managed to avoid duplication of controls?
+--------------------------------------------------
+Chunk ID: 108
+Question: How often must the compliance function verify adherence to its policies and procedures?
+--------------------------------------------------
+Chunk ID: 109
+Question: What types of documents must the compliance function examine to gather information on compliance risks?
+--------------------------------------------------
+Chunk ID: 110
+Question: What are the required qualifications for the Compliance Officer appointed by an IFM according to CSSF Regulation 10-4?
+--------------------------------------------------
+Chunk ID: 111
+Question: Under what circumstances can a Compliance Officer be appointed on a part-time basis?
+--------------------------------------------------
+Chunk ID: 112
+Question: What is the process for an IFM to delegate its compliance function to a third party?
+--------------------------------------------------
+Chunk ID: 113
+Question: What criteria should the senior management consider when selecting third parties for compliance work?
+--------------------------------------------------
+Chunk ID: 114
+Question: What responsibilities must the designated Compliance Officer maintain when third-party experts are used?
+--------------------------------------------------
+Chunk ID: 116
+Question: What are the key components that the Compliance Officer must include in their regular reports to senior management?
+--------------------------------------------------
+Chunk ID: 117
+Question: How frequently must the Compliance Officer prepare a summary report of their activities?
+--------------------------------------------------
+Chunk ID: 118
+Question: What information is recommended to be included in an IFM’s compliance function summary report?
+--------------------------------------------------
+Chunk ID: 119
+Question: What types of non-compliance issues are identified that the Compliance Officer should monitor?
+--------------------------------------------------
+Chunk ID: 120
+Question: What is the primary purpose of the internal audit function within the IFM?
+--------------------------------------------------
+Chunk ID: 121
+Question: What principles must the internal audit function comply with to operate independently?
+--------------------------------------------------
+Chunk ID: 122
+Question: What key characteristics should be defined in the internal audit charter?
+--------------------------------------------------
+Chunk ID: 124
+Question: What specific aspects does the internal audit function need to assess regarding the IFM’s central administration and internal governance?
+--------------------------------------------------
+Chunk ID: 125
+Question: Why must the internal audit function be independent from other internal control functions?
+--------------------------------------------------
+Chunk ID: 126
+Question: What information must the IFM provide to the CSSF regarding the responsible person for the internal audit function?
+--------------------------------------------------
+Chunk ID: 127
+Question: Under what circumstances may the IFM delegate the internal audit function to an external expert?
+--------------------------------------------------
+Chunk ID: 128
+Question: What does the principle of proportionality allow regarding the delegation of the internal audit function?
+--------------------------------------------------
+Chunk ID: 129
+Question: What criteria must the senior management use to select third parties for internal audit work?
+--------------------------------------------------
+Chunk ID: 130
+Question: What must an IFM submit to the CSSF when delegating the internal audit function?
+--------------------------------------------------
+Chunk ID: 131
+Question: What is the role of the designated employee when an IFM delegates the internal audit function to an external expert?
+--------------------------------------------------
+Chunk ID: 132
+Question: Who must be responsible for the internal audit function in an IFM, regardless of delegation?
+--------------------------------------------------
+Chunk ID: 133
+Question: What is the purpose of the internal audit plan, and how long is it generally intended to cover?
+--------------------------------------------------
+Chunk ID: 134
+Question: What steps must be taken for the internal audit plan after it is drawn up?
+--------------------------------------------------
+Chunk ID: 135
+Question: What responsibilities does an external expert have when conducting internal audit work for an IFM?
+--------------------------------------------------
+Chunk ID: 136
+Question: What are the key components that must be included in the reports prepared by the person responsible for the internal audit function?
+--------------------------------------------------
+Chunk ID: 137
+Question: Who are the intended recipients of the written reports from the internal auditor?
+--------------------------------------------------
+Chunk ID: 138
+Question: What specific information should be included in the annual summary report prepared by the person responsible for the internal audit function?
+--------------------------------------------------
+Chunk ID: 139
+Question: What categories of information are recommended to be included in the summary report of an IFM's internal audit function over a period of several years?
+--------------------------------------------------
+Chunk ID: 140
+Question: What are the four cases identified in Section 5.4.2 regarding the relationship between IFMs and marketing intermediaries?
+--------------------------------------------------
+Chunk ID: 141
+Question: What laws and regulations are IFMs subject to in relation to money laundering and terrorist financing?
+--------------------------------------------------
+Chunk ID: 143
+Question: What measures must an IFM take to identify and assess ML/TF risks?
+--------------------------------------------------
+Chunk ID: 144
+Question: What is the requirement for IFMs regarding the designation of an AML/CFT Compliance Officer?
+--------------------------------------------------
+Chunk ID: 145
+Question: What qualifications and characteristics must the AML/CFT Compliance Officers possess according to the regulations?
+--------------------------------------------------
+Chunk ID: 146
+Question: What information must an IFM provide to the CSSF regarding the AML/CFT Compliance Officers?
+--------------------------------------------------
+Chunk ID: 147
+Question: What is the frequency of the report that the AML/CFT compliance officer at the management level must prepare?
+--------------------------------------------------
+Chunk ID: 149
+Question: What key elements must be included in the AML/CFT compliance report as outlined in the text?
+--------------------------------------------------
+Chunk ID: 151
+Question: What is the role of the internal audit function in relation to the IFM’s policies and procedures?
+--------------------------------------------------
+Chunk ID: 152
+Question: What due diligence measures must the IFM implement concerning intermediaries?
+--------------------------------------------------
+Chunk ID: 153
+Question: What internal policies and procedures must the IFM establish according to the AML/CFT Law?
+--------------------------------------------------
+Chunk ID: 154
+Question: What periodic reviews must the IFM conduct regarding its relationships with intermediaries?
+--------------------------------------------------
+Chunk ID: 155
+Question: What ongoing monitoring operations are necessary for intermediaries that market on behalf of clients?
+--------------------------------------------------
+Chunk ID: 156
+Question: What documents must the IFM collect when entering into a business relationship with direct investors?
+--------------------------------------------------
+Chunk ID: 157
+Question: What specific obligations must the IFM adhere to when delegating the registrar agent function?
+--------------------------------------------------
+Chunk ID: 158
+Question: What obligations regarding information sharing are established in the contract between the IFM and the registrar agent?
+--------------------------------------------------
+Chunk ID: 159
+Question: What provisions must the IFM comply with when delegating the registrar agent function?
+--------------------------------------------------
+Chunk ID: 160
+Question: What obligations does the contract between the parties impose regarding the sharing of information necessary for AML/CFT compliance?
+--------------------------------------------------
+Chunk ID: 161
+Question: What must the AIFM ensure regarding compliance with the provisions of points 323 to 331?
+--------------------------------------------------
+Chunk ID: 162
+Question: What areas must the Management Information cover according to the text?
+--------------------------------------------------
+Chunk ID: 163
+Question: What must every IFM ensure regarding the information received from delegates for effective control?
+--------------------------------------------------
+Chunk ID: 164
+Question: What must every IFM establish to ensure effective internal reporting and communication of information?
+--------------------------------------------------
+Chunk ID: 165
+Question: What type of reports must the senior management of the IFM receive, and how often?
+--------------------------------------------------
+Chunk ID: 166
+Question: What must the initial due diligence and ongoing monitoring ensure regarding the delegates' continuity plans?
+--------------------------------------------------
+Chunk ID: 167
+Question: What arrangements must every IFM implement to identify and assess risks, particularly ML/TF risks?
+--------------------------------------------------
+Chunk ID: 168
+Question: What is the IFM's responsibility during the product approval process concerning marketing intermediaries?
+--------------------------------------------------
+Chunk ID: 169
+Question: What does the manual of procedures for the IFM need to describe?
+--------------------------------------------------
+Chunk ID: 170
+Question: What must every IFM establish in accordance with Article 15 of CSSF Regulation 16-07?
+--------------------------------------------------
+Chunk ID: 171
+Question: What information is the conducting officer responsible for complaint handling required to communicate to the CSSF annually?
+--------------------------------------------------
+Chunk ID: 172
+Question: What must the IFM ensure when delegating activities to third parties according to CSSF Regulation 10-4?
+--------------------------------------------------
+Chunk ID: 173
+Question: What must an IFM confirm regarding personal transactions at the time of its authorization?
+--------------------------------------------------
+Chunk ID: 174
+Question: What is the primary requirement for the structure and organization of a ManCo as per Article 109(1)(b) of the 2010 Law?
+--------------------------------------------------
+Chunk ID: 175
+Question: What steps must an AIFM take to identify conflicts of interest according to Article 13 of the 2013 Law?
+--------------------------------------------------
+Chunk ID: 176
+Question: According to Article 11(1)(d) of the 2013 Law, what actions must an AIFM take to manage conflicts of interest?
+--------------------------------------------------
+Chunk ID: 177
+Question: What are the requirements for an IFM's conflicts of interest policy under CSSF Regulation 10-4?
+--------------------------------------------------
+Chunk ID: 178
+Question: What record must an IFM maintain concerning conflicts of interest as per CSSF Regulation 10-4?
+--------------------------------------------------
+Chunk ID: 179
+Question: What must an IFM inform investors about concerning the management of conflicts of interest?
+--------------------------------------------------
+Chunk ID: 180
+Question: What are the key compliance obligations that an IFM must implement regarding investment decisions on behalf of managed UCIs?
+--------------------------------------------------
+Chunk ID: 181
+Question: What must an IFM confirm regarding its procedures, arrangements, and policies at the moment of its authorisation?
+--------------------------------------------------
+Chunk ID: 182
+Question: According to CSSF Regulation 10-4 and Delegated Regulation (EU) 231/2013, what is the IFM required to develop regarding the exercise of voting rights?
+--------------------------------------------------
+Chunk ID: 185
+Question: What obligations does EMIR impose on UCIs that qualify as financial or non-financial counterparties regarding OTC derivative contracts?
+--------------------------------------------------
+Chunk ID: 186
+Question: How does EMIR aim to limit counterparty risk and operational risk for UCIs taking positions in OTC derivative contracts?
+--------------------------------------------------
+Chunk ID: 187
+Question: What specific procedures and arrangements must the IFM have to ensure compliance with EMIR regarding OTC derivative contracts?
+--------------------------------------------------
+Chunk ID: 188
+Question: What obligations must an IFM comply with when managing UCIs that qualify as money market funds according to the MMFR?
+--------------------------------------------------
+Chunk ID: 189
+Question: What specific compliance obligations must the IFM ensure regarding the investment policies of money market funds?
+--------------------------------------------------
+Chunk ID: 190
+Question: What are the components that must be included in the risk management policy and procedures established by the permanent risk management function?
+--------------------------------------------------
+Chunk ID: 191
+Question: What provisions must an IFM comply with when delegating functions to third parties?
+--------------------------------------------------
+Chunk ID: 192
+Question: What types of functions can an IFM delegate according to the text?
+--------------------------------------------------
+Chunk ID: 193
+Question: Which functions may an IFM delegate according to Section 5.3.2 and 5.3.3 of the circular?
+--------------------------------------------------
+Chunk ID: 194
+Question: What criteria are used to assess whether an entity qualifies as a letter-box entity?
+--------------------------------------------------
+Chunk ID: 195
+Question: Which specific activities must an IFM perform and are not allowed to be delegated to third parties?
+--------------------------------------------------
+Chunk ID: 196
+Question: What requirements must be followed when an IFM delegates functions related to collective portfolio management?
+--------------------------------------------------
+Chunk ID: 197
+Question: What are the obligations of an IFM if the delegate sub-delegates functions that were originally delegated to it?
+--------------------------------------------------
+Chunk ID: 198
+Question: What information must an IFM submit to the CSSF when updating its program of activity regarding delegation?
+--------------------------------------------------
+Chunk ID: 199
+Question: What must an IFM do if it changes its delegate or wishes to take over functions previously delegated?
+--------------------------------------------------
+Chunk ID: 200
+Question: What information must the IFM provide to investors before they invest in an AIF?
+--------------------------------------------------
+Chunk ID: 201
+Question: What rights do the persons conducting the business of the IFM have regarding the delegation of functions?
+--------------------------------------------------
+Chunk ID: 202
+Question: What access rights does the IFM have regarding documents related to transactions carried out by the delegate?
+--------------------------------------------------
+Chunk ID: 203
+Question: What rights does the IFM have regarding on-site visits to the delegate?
+--------------------------------------------------
+Chunk ID: 204
+Question: What responsibilities does the IFM have in monitoring and controlling the delegated tasks?
+--------------------------------------------------
+Chunk ID: 205
+Question: What must the procedure describe to ensure effective ongoing monitoring of the delegated business?
+--------------------------------------------------
+Chunk ID: 206
+Question: Why is it important that the monitoring of delegated activities cannot be delegated?
+--------------------------------------------------
+Chunk ID: 207
+Question: How can the IFM utilize specific skills within its group when selecting delegates?
+--------------------------------------------------
+Chunk ID: 208
+Question: What is the purpose of the initial due diligence conducted by the IFM regarding the delegate?
+--------------------------------------------------
+Chunk ID: 209
+Question: What must the IFM analyze about the organizational structure of the delegate?
+--------------------------------------------------
+Chunk ID: 210
+Question: What criteria must the IFM consider when assessing the quality of a contemplated delegate?
+--------------------------------------------------
+Chunk ID: 211
+Question: What is the purpose of the initial due diligence conducted by the IFM?
+--------------------------------------------------
+Chunk ID: 212
+Question: What key components must be included in the written due diligence report?
+--------------------------------------------------
+Chunk ID: 213
+Question: What must the conclusions of the due diligence report indicate if the delegation is approved?
+--------------------------------------------------
+Chunk ID: 214
+Question: What are the ongoing monitoring responsibilities of the IFM regarding its delegates?
+--------------------------------------------------
+Chunk ID: 216
+Question: What information must be included in the detailed reports received by conducting officers regarding control arrangements?
+--------------------------------------------------
+Chunk ID: 217
+Question: What written policies and procedures must every IFM establish concerning investment decisions?
+--------------------------------------------------
+Chunk ID: 218
+Question: What additional compliance requirements must AIFMs follow according to Delegated Regulation (EU) 231/2013?
+--------------------------------------------------
+Chunk ID: 219
+Question: What arrangements must the IFM make regarding IT systems for managing portfolio transactions?
+--------------------------------------------------
+Chunk ID: 220
+Question: What are the recommended conditions for the establishment of a portfolio management committee by the IFM?
+--------------------------------------------------
+Chunk ID: 221
+Question: What procedure must the IFM define and implement when using the services of investment advisers?
+--------------------------------------------------
+Chunk ID: 222
+Question: What is required for the "white list" of financial instruments proposed by the adviser before the IFM can use it?
+--------------------------------------------------
+Chunk ID: 225
+Question: What types of research must the IFM ensure are the basis for its investment decisions?
+--------------------------------------------------
+Chunk ID: 226
+Question: What ongoing monitoring responsibilities does the IFM have regarding its delegates' IT systems?
+--------------------------------------------------
+Chunk ID: 227
+Question: What elements should the IFM include in its due diligence assessment when delegating portfolio management?
+--------------------------------------------------
+Chunk ID: 228
+Question: What ongoing monitoring operations should the IFM perform regarding the assets of the managed UCI?
+--------------------------------------------------
+Chunk ID: 229
+Question: What accounting policies and procedures must every IFM establish and maintain according to the regulations?
+--------------------------------------------------
+Chunk ID: 230
+Question: What must an IFM do to exercise activities under the UCI administration function according to the 2010 and 2013 Laws?
+--------------------------------------------------
+Chunk ID: 231
+Question: What is the requirement for an IFM that intends to delegate tasks related to UCI administration?
+--------------------------------------------------
+Chunk ID: 232
+Question: What systems must an IFM establish for the proper recording of subscription or redemption orders in UCI administration?
+--------------------------------------------------
+Chunk ID: 233
+Question: What are the obligations of a Luxembourg IFM when managing UCIs established outside of Luxembourg?
+--------------------------------------------------
+Chunk ID: 234
+Question: What accounting procedures and policies must the third party in charge of UCI administration employ according to the IFM's due diligence measures?
+--------------------------------------------------
+Chunk ID: 235
+Question: What ongoing monitoring responsibilities does an IFM have when it has delegated UCI administration to third parties?
+--------------------------------------------------
+Chunk ID: 237
+Question: What elements should the IFM include in its due diligence assessment when delegating the UCI administration function?
+--------------------------------------------------
+Chunk ID: 238
+Question: What elements must the IFM's control and monitoring system cover when delegating the central administration function?
+--------------------------------------------------
+Chunk ID: 239
+Question: What procedures must an IFM implement to ensure compliance when marketing UCIs?
+--------------------------------------------------
+Chunk ID: 240
+Question: What specific due diligence requirements must the IFM cover in its marketing procedures according to Section 6.2.3?
+--------------------------------------------------
+Chunk ID: 241
+Question: What aspects must the procedure address when UCIs are marketed in the European Union according to point 521?
+--------------------------------------------------
+Chunk ID: 242
+Question: What are the elements that the IFM must include in its ongoing monitoring of marketing intermediaries?
+--------------------------------------------------
+Chunk ID: 243
+Question: What specific points must the valuation policies and procedures address according to Article 67(2) of Delegated Regulation (EU) 231/2013?
+--------------------------------------------------
+Chunk ID: 244
+Question: What escalation measures must be described in the valuation policies in case of asset value discrepancies?
+--------------------------------------------------
+Chunk ID: 245
+Question: What details regarding valuation models must be included in the arrangements for their use?
+--------------------------------------------------
+Chunk ID: 246
+Question: Why is it recommended for AIFMs managing complex and illiquid financial instruments to separate risk management and valuation functions?
+--------------------------------------------------
+Chunk ID: 247
+Question: Under what circumstances might the CSSF require an external valuer to check the valuation procedures of the AIFM?
+--------------------------------------------------
+Chunk ID: 248
+Question: What qualifications should the members of the valuation committee possess according to the recommendations?
+--------------------------------------------------
+Chunk ID: 249
+Question: What operational arrangements concerning the valuation committee must be documented by the AIFM?
+--------------------------------------------------
+Chunk ID: 250
+Question: What is the deadline for the IFM to transmit the audited annual accounts and comments from the approved statutory auditor after the general meeting?
+--------------------------------------------------
+Chunk ID: 251
+Question: Who must ensure that relevant information is made available to the depositary by the IFM and its delegates?
+--------------------------------------------------
+Chunk ID: 252
+Question: How does the role of the prime broker relate to the depositary of the AIF?
+--------------------------------------------------
+Chunk ID: 253
+Question: What key components must be included in the programme of activity for the next three financial years?
+--------------------------------------------------
+Chunk ID: 255
+Question: What must the AIFM submit to extend its authorization for new AIF investment strategies?
+--------------------------------------------------
+Chunk ID: 256
+Question: What additional requirements apply to the IFM managing portfolios on a client-by-client basis?
+--------------------------------------------------
+Chunk ID: 257
+Question: What type of information is required in the programme of activity concerning client types and assets under management?
+--------------------------------------------------
+Chunk ID: 258
+Question: Which regulations from MiFID II apply to the IFM providing discretionary management services?
+--------------------------------------------------
+Chunk ID: 259
+Question: What is the extent of the IFM's responsibility under EMIR regarding derivative contracts?
+--------------------------------------------------
+Chunk ID: 260
+Question: What must every IFM whose authorisation covers specific services in Luxembourg participate in?
+--------------------------------------------------
+Chunk ID: 261
+Question: What type of notification must an IFM submit to the CSSF when it plans to establish a branch in another Member State?
+--------------------------------------------------
+Chunk ID: 262
+Question: What should the description of the risk management process be based on in relation to the branch's activities?
+--------------------------------------------------
+Chunk ID: 263
+Question: What information is required from an AIFM when notifying the CSSF about establishing a branch under the AIFMD?
+--------------------------------------------------
+Chunk ID: 264
+Question: What specific documents and information must be included regarding branch managers in the notification to the CSSF?
+--------------------------------------------------
+Chunk ID: 265
+Question: What is the responsibility of the person designated by the IFM among its conducting officers?
+--------------------------------------------------
+Chunk ID: 266
+Question: Under what circumstances can an IFM utilize an external expert for internal audit or delegate compliance functions?
+--------------------------------------------------
+Chunk ID: 267
+Question: What key elements must the annual report prepared by the senior management of the IFM include?
+--------------------------------------------------
+Chunk ID: 268
+Question: What versions of the periodic tables must IFMs with branches communicate to the CSSF according to Circular CSSF 10/467?
+--------------------------------------------------
+Chunk ID: 269
+Question: What notification must a ManCo submit to the CSSF when planning to operate in another Member State under the UCITS Directive?
+--------------------------------------------------
+Chunk ID: 271
+Question: What information must be included in the notification submitted to the CSSF by AIFMs providing services under the AIFMD?
+--------------------------------------------------
+Chunk ID: 272
+Question: What is the timeframe for an IFM to notify changes in information related to its operations to the competent authority and the CSSF?
+--------------------------------------------------
+Chunk ID: 273
+Question: What specific documents must a ManCo provide to the competent authorities of the UCITS home Member State when managing a UCITS on a cross-border basis?
+--------------------------------------------------
+Chunk ID: 277
+Question: What are the minimum financial requirements an IFM must meet to obtain and maintain authorization under Article 125-1 of the 2010 Law?
+--------------------------------------------------
+Chunk ID: 278
+Question: What provisions must the IFM comply with regarding the identity of reference shareholders or members?
+--------------------------------------------------
+Chunk ID: 279
+Question: According to Article 127(1) of the 2010 Law, what are the compliance requirements for the IFM discussed in this chapter?
+--------------------------------------------------
+Chunk ID: 280
+Question: What is the minimum share capital required for a SIAG or FIAAG at the time of its authorisation?
+--------------------------------------------------
+Chunk ID: 281
+Question: Which parts of the circular must the SIAG and FIAAG comply with, and which specific point is exempted?
+--------------------------------------------------
+Chunk ID: 282
+Question: What obligation must the FIAAG fulfill regarding professional liability risks according to the 2013 Law?
+--------------------------------------------------
+Chunk ID: 283
+Question: What financial information must every SIAG submit to the CSSF and how often?
+--------------------------------------------------
+Chunk ID: 284
+Question: What elements should be included in the general organisation chart of the risk management function?
+--------------------------------------------------
+Chunk ID: 285
+Question: What must be demonstrated to show the independence of the permanent risk management function according to the relevant articles?
+--------------------------------------------------
+Chunk ID: 286
+Question: What measures should be taken to ensure that third parties involved in risk management activities have the necessary skills?
+--------------------------------------------------
+Chunk ID: 287
+Question: What details should be provided regarding the strategy subject to the specific complementary section?
+--------------------------------------------------
+Chunk ID: 289
+Question: What types of changes require amendments to the articles of incorporation as listed in the text?
+--------------------------------------------------
+Chunk ID: 290
+Question: What changes are subject to notification to the CSSF according to the provided text?
+--------------------------------------------------
+Chunk ID: 291
+Question: What is the deadline for submitting the audited annual report of the IFM?
+--------------------------------------------------
+Chunk ID: 292
+Question: What are the main categories of assets listed in the text?
+--------------------------------------------------
+Chunk ID: 293
+Question: What are the primary sources of total income listed in the text?
+--------------------------------------------------
