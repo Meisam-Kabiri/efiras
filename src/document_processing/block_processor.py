@@ -33,6 +33,10 @@ class block_processor():
             return []
         
         toc = self._extract_toc(blocks)  # Extract TOC if needed
+        if not toc:
+            is_toc = False
+        else:
+            is_toc = True
         blocks = [block for block in blocks if not block.get('is_toc', False)] #remove the toc from blocks
 
         # [print(f"{key}: {value}") for d in toc for key, value in d.items()]
@@ -56,9 +60,12 @@ class block_processor():
         self._save_processed_blocks(
             filename=filename,
             filename_without_ext=filename_without_ext,
+            file_extension = extension,
             pages=pages,
             toc=toc,
-            blocks=blocks)
+            blocks=blocks,
+            is_toc = is_toc,
+            )
         
         return {
                 "height": height,
@@ -68,8 +75,9 @@ class block_processor():
                 "processor": "PyMuPDF",
                 "extension": extension,
                 "pages": pages,
-                "blocks": blocks,
-                "table_of_contents": toc
+                'is_toc': is_toc,
+                "table_of_contents": toc,
+                "blocks": blocks
                     }
        
     def _merge_blocks_with_colon_pattern(self, blocks: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
@@ -151,19 +159,15 @@ class block_processor():
           # Header patterns (lower number = higher hierarchy)
           patterns = {
               1: r'(?i)^(title|book|part)\s+([ivxlcdm\d]+)',
-              2: r'(?i)^(chapter|division)\s+([ivxlcdm\d]+)', 
+              2: r'(?i)^(chapter|sub-?chapter|division)\s+([ivxlcdm\d]+)', 
               3: r'(?i)^(section|sub-?part)\s+([ivxlcdm\d]+(?:\.\d+)*)',
               4: r'(?i)^(article|art\.?)\s+([\d\(\)]+)',
               5: r'(?i)^(sub-?section|subsection)\s+([\d.]+)',
-              6: r'^(\(\d+\))',
-              7: r'^(\d+)\.',
-              8: r'^([a-z])\)',
           }
           
           # Non-hierarchical title patterns
           title_patterns = [
               r'^[A-Z][A-Z\s]{8,100}$',     # ALL CAPS TITLES
-              r'^[A-Z][a-z\s]{8,50}$',      # Title Case Headers
           ]
           
           current_headers = {}
@@ -218,9 +222,10 @@ class block_processor():
               
               if not header_found:
                   # Check for non-hierarchical titles
-                  is_title = (any(re.match(pattern, text) for pattern in title_patterns) or 
-                            (hasattr(block, 'is_diff_format') and block.get('is_diff_format') == 'true'))
+                  # is_title = (any(re.match(pattern, text) for pattern in title_patterns) or 
+                  #           (hasattr(block, 'is_diff_format') and block.get('is_diff_format') == 'true'))
                   
+                  is_title = False
                   # Add header fields to block (don't modify text)
                   block['headers'] = " > ".join(current_headers.values()) if current_headers else ""
                   block['header_identifier'] = " > ".join([self._extract_header_identifier(v) for v in current_headers.values()])
@@ -372,9 +377,11 @@ class block_processor():
         self,
         filename: str,
         filename_without_ext: str,
+        file_extension: str,
         pages: int,
         toc: List[Dict[str, Any]],
-        blocks: List[Dict[str, Any]]
+        blocks: List[Dict[str, Any]], 
+        is_toc: bool
         ) -> None:
         """
         Save extracted document blocks and TOC to a JSON file.
@@ -391,17 +398,16 @@ class block_processor():
         file_path.parent.mkdir(parents=True, exist_ok=True)
 
         output = {
-            "document_info": {
                 "filename": filename,
                 "total_pages": pages,
                 "saved_path": str(file_path),
                 "processor": "PyMuPDF",
-                "filename_without_ext": filename_without_ext
-            },
-            "filename_without_ext": filename_without_ext,
-            "table_of_contents": toc,
-            "blocks": blocks
-        }
+                "filename_without_ext": filename_without_ext,
+                "file_extension": file_extension,
+                "is_toc" : is_toc,
+                "table_of_contents": toc,
+                "blocks": blocks
+                }
 
         with open(file_path, 'w', encoding='utf-8') as f:
             json.dump(output, f, indent=4, ensure_ascii=False)

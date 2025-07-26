@@ -21,8 +21,10 @@ class RegulatoryChunkingSystem:
     def __init__(self, 
                  min_chunk_size: int = 75,
                  max_chunk_size: int = 512,
+                 skip_headers:bool = False,
                  model: str = "all-mpnet-base-v2"):
         
+        self.skip_headers = skip_headers
         self.min_chunk_size = min_chunk_size
         self.max_chunk_size = max_chunk_size
         self.tokenizer = SentenceTransformer(model).tokenizer
@@ -40,10 +42,16 @@ class RegulatoryChunkingSystem:
             List of chunks preserving all original metadata plus chunk_id
         """
         blocks = pdf_content['blocks']
+        chunked_document = {}
+        chunked_document = {k: v for k, v in pdf_content.items() if k != "blocks"}
+
+
         chunks = []
         chunk_id = 0
 
         for block in blocks:
+            if block["is_title"] and self.skip_headers:
+                continue
             text = block.get('text', '').strip()
             tokens = self.tokenizer.tokenize(text)
             token_size = len(tokens)+2
@@ -115,21 +123,23 @@ class RegulatoryChunkingSystem:
                     chunks.append(chunk)
 
 
+
+        chunked_document['chunks'] = chunks
         saving_path = f"data_processed/{pdf_content['filename_without_ext']}_chunked_blocks.json"
         file_path = Path(saving_path)
         file_path.parent.mkdir(parents=True, exist_ok=True)
 
         with open(file_path, 'w', encoding='utf-8') as f:
-            json.dump(chunks, f, indent=4, ensure_ascii=False)
+            json.dump(chunked_document, f, indent=4, ensure_ascii=False)
 
         logger.info(f"Data saved to {file_path}")
 
-        return chunks
+        return chunked_document
 
 
 
 
-# if __name__ == "__main__":
+if __name__ == "__main__":
 #     # load the the list of blocks from a json File
 #     import json
 #     from pathlib import Path
@@ -140,10 +150,16 @@ class RegulatoryChunkingSystem:
 #         block["text"] = block["text"].replace("\n", " ")
 #     print(blocks[4]['text'])
 
-#     chunker = RegulatoryChunkingSystem()
-#     chunks = chunker.chunk_blocks(blocks)
-#     print(f"Created {len(chunks)} chunks")
-#     # Save chunks to a JSON file
-#     clean_chunks = [chunk['text'] for chunk in chunks]
-#     with open("data/chunks/lux_cssf18_698eng_chunks.json", "w") as f:
-#         json.dump(clean_chunks, f, indent=2)
+    chunker = RegulatoryChunkingSystem()
+    
+    path  = "data_processed/Lux_cssf18_698eng_processed_blocks.json"
+    with open (path, 'r') as f:
+        blocks = json.load(f)
+    
+    chunks_doc = chunker.chunk_blocks(blocks)
+    chunks = chunks_doc["chunks"]
+    print(f"Created {len(chunks)} chunks")
+    # Save chunks to a JSON file
+    clean_chunks = [chunk['text'] for chunk in chunks]
+    with open("data_processed/lux_cssf18_698eng_chunks.json", "w") as f:
+        json.dump(clean_chunks, f, indent=2)
