@@ -109,7 +109,7 @@ def main():
     processor = block_processor()
     
     # Process and chunk blocks (includes TOC extraction and header assignment)
-    processed_data = processor.process_and_chunk_blocks(raw_result)
+    processed_data = processor.process_blocks(raw_result)
     
     
     print(f"   - Extracted TOC entries: {len(processed_data['table_of_contents'])}")

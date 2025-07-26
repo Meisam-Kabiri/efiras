@@ -10,7 +10,7 @@ from pathlib import Path
 from typing import Any
 import logging
 import json
-from utils.text_utils import extract_paragraphs, extract_sentences, remove_newlines
+from src.utils.text_utils import extract_paragraphs, extract_sentences, remove_newlines
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -18,14 +18,12 @@ logger = logging.getLogger(__name__)
     
 
 class RegulatoryChunkingSystem:
-    def __init__(self,
-                 pdf_content: Dict[str, Any] = None,
+    def __init__(self, 
                  min_chunk_size: int = 25,
                  max_chunk_size: int = 512,
                  skip_headers:bool = True,
                  model: str = "all-mpnet-base-v2"):
         
-        self.pdf_content = pdf_content
         self.skip_headers = skip_headers
         self.min_chunk_size = min_chunk_size
         self.max_chunk_size = max_chunk_size
@@ -33,7 +31,7 @@ class RegulatoryChunkingSystem:
         
 
 
-    def chunk_blocks(self, pdf_content: Dict[str, Any] = None) -> List[Dict[str, Any]]:
+    def chunk_blocks(self, pdf_content: Dict[str, Any]) -> List[Dict[str, Any]]:
         """
         Chunk text blocks into regulatory chunks based on size constraints.
         
@@ -43,12 +41,9 @@ class RegulatoryChunkingSystem:
         Returns:
             List of chunks preserving all original metadata plus chunk_id
         """
-        if pdf_content:
-            self.pdf_content = pdf_content
-
-        blocks = self.pdf_content['blocks']
+        blocks = pdf_content['blocks']
         chunked_document = {}
-        chunked_document = {k: v for k, v in self.pdf_content.items() if k != "blocks"}
+        chunked_document = {k: v for k, v in pdf_content.items() if k != "blocks"}
 
 
         chunks = []
@@ -130,7 +125,7 @@ class RegulatoryChunkingSystem:
 
 
         chunked_document['chunks'] = chunks
-        saving_path = f"data_processed/{self.pdf_content['filename_without_ext']}_chunks.json"
+        saving_path = f"data_processed/{pdf_content['filename_without_ext']}_chunks.json"
         file_path = Path(saving_path)
         file_path.parent.mkdir(parents=True, exist_ok=True)
 

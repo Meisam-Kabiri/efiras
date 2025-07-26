@@ -11,25 +11,22 @@ logger = logging.getLogger(__name__)
 class block_processor():
     """Fast processor for text-based PDFs"""
     
-    def __init__(self, pdf_content: List[Dict[str, Any]] = None):
-        self.pdf_content = pdf_content
+    def __init__(self):
+        pass
 
-    def process_blocks(self, pdf_content: List[Dict[str, Any]] = None) -> List[Dict[str, Any]]:
+    def process_and_chunk_blocks(self, pdf_content: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
         """
         Process and chunk the extracted blocks of text.
         Merges blocks with colons, identifies headers/footers, and chunks text.
         """
-        if pdf_content:
-            self.pdf_content = pdf_content
-            
-        if self.pdf_content is not None:
-            blocks = self.pdf_content.get("blocks")
-            height = self.pdf_content.get("height", 0)
-            width = self.pdf_content.get("width", 0)
-            filename = self.pdf_content.get("filename", "")
-            filename_without_ext = self.pdf_content.get("filename_without_ext", "")
-            pages = self.pdf_content.get("pages", 0)
-            extension = self.pdf_content.get("extension", "")   
+        if pdf_content is not None:
+            blocks = pdf_content.get("blocks")
+            height = pdf_content.get("height", 0)
+            width = pdf_content.get("width", 0)
+            filename = pdf_content.get("filename", "")
+            filename_without_ext = pdf_content.get("filename_without_ext", "")
+            pages = pdf_content.get("pages", 0)
+            extension = pdf_content.get("extension", "")   
 
         if not blocks:
             logger.warning("No blocks found in the PDF content.")

@@ -105,7 +105,7 @@ async def upload_document(file: UploadFile = File(...)):
         
         # Step 3: Clean and structure the text
         processor = block_processor()
-        processed_data = processor.process_and_chunk_blocks(raw_result)
+        processed_data = processor.process_blocks(raw_result)
         
         print(f"Extracted {len(processed_data['table_of_contents'])} TOC entries")
         print(f"Processed {len(processed_data['blocks'])} blocks")

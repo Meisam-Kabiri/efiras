@@ -6,26 +6,19 @@ import logging
 import re
 
 
-from document_readers.base import DocumentProcessor, ProcessorConfig, ProcessorType
+
+from base import DocumentProcessor, ProcessorConfig, ProcessorType
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-# class PyMuPDFProcessor(DocumentProcessor):
-#     """Fast processor for text-based PDFs"""
-    
-#     def __init__(self, config: ProcessorConfig):
-#         super().__init__(config)
-#         self.processor_type = ProcessorType.PYMUPDF
-
-
-class PyMuPDFProcessor():
+class PyMuPDFProcessor(DocumentProcessor):
     """Fast processor for text-based PDFs"""
     
-    def __init__(self, path:str = ''):
+    def __init__(self, config: ProcessorConfig):
+        super().__init__(config)
         self.processor_type = ProcessorType.PYMUPDF
-        self.file_path = Path(path)
-
+    
     def is_available(self) -> bool:
         try:
             import fitz
@@ -35,25 +28,16 @@ class PyMuPDFProcessor():
     
     def extract_text(self):
         pass
-    def extract_blocks(self, file_path: Union[str, Path]='') -> List[Dict[str, Any]]:
+    def extract_blocks(self, file_path: Union[str, Path]) -> List[Dict[str, Any]]:
             """Extract text blocks from the PDF."""
             try:
                 import fitz
-                if file_path:
-                  self.file_path  = Path(file_path)
-                 
-                if not self.file_path:
-                    print("No file path is given!")
-                    return []
                 
-               
-                doc = fitz.open(self.file_path)
+                doc = fitz.open(str(file_path))
                 pages = doc.page_count
-                path = Path(self.file_path)
+                path = Path(file_path)
                 filename = path.name  # gets the full filename with extension
                 filename_without_ext = path.stem  # gets filename without extension
-                print(filename)
-                print(filename_without_ext)
                 extension = path.suffix  # gets just the extension
                 print (filename, filename_without_ext, extension)
                 normal_font_size, normal_color = self.find_normal_font_size_and_color_whole_doc(doc)
