@@ -170,10 +170,12 @@ class block_processor():
         }
         
         current_headers = {}  # level -> header text
+        curent_pure_headers = {}
         
         for i, block in enumerate(blocks):
             text = block['text'].strip()
             text_length = len(text)
+            
             
             # Check for headers in current block
             header_found = False
@@ -182,22 +184,34 @@ class block_processor():
                 if match:
                     # Clear lower priority headers and update current level
                     current_headers = {k: v for k, v in current_headers.items() if k < level}
+                    curent_pure_headers = {k: v for k, v in curent_pure_headers.items() if k < level}
+
                     
                     # Smart header text extraction
                     header_text = self._extract_smart_header_text(text, match, level, i, blocks)
+                    pure_header = match.group()
                     current_headers[level] = header_text
+                    curent_pure_headers[level] = match.group()
+                    
                     header_found = True
                     break
             
             # Build meaningful header path (avoid overly long paths)
             header_path = self._build_header_path(current_headers)
             block['headers'] = header_path
+            block["pure_header"] = " > ".join(curent_pure_headers.values())
+            
         
         return blocks
     
     def _extract_smart_header_text(self, text, match, level, block_index, blocks):
         """Extract smart header text with potential next-block title merging"""
         matched_text = match.group().strip()
+        remaining_text = text[match.end():].lstrip(":. ").strip()
+        if len(remaining_text) > 10:
+             clean_title = re.sub(r'\n+', ' ', remaining_text).strip()
+             return f"{matched_text} : {clean_title}"
+            
         
         # For structural elements (Articles, Sections), check if next block is a title
         if level in [1, 2, 3, 4, 5] and block_index + 1 < len(blocks):
@@ -206,14 +220,15 @@ class block_processor():
             next_length = len(next_text)
             
             # Check if next block is likely a descriptive title
-            if (20 < next_length < 150 and  # Reasonable title length
-                not re.match(r'^\d+\.', next_text) and  # Not a numbered paragraph
+            if (10 < next_length < 300 and  # Reasonable title length
+                (not re.match(r'^\d+\.', next_text) and  # Not a numbered paragraph
                 not re.match(r'^\([0-9]+\)', next_text) and  # Not a numbered item
-                not next_text.islower()):  # Not all lowercase (likely not content)
+                not next_text.islower() or  # Not all lowercase (likely not content)
+                next_block['is_bold'] == 'true')):  
                 
                 # Clean the title text
                 clean_title = re.sub(r'\n+', ' ', next_text).strip()
-                return f"{matched_text} > {clean_title}"
+                return f"{matched_text} : {clean_title}"
         
         return matched_text
     
@@ -600,6 +615,7 @@ if __name__ == "__main__":
     print("Quick test for PyMuPDFProcessor")
     # load raw blocks from a File 
     file_path = Path('data_processed/Lux_cssf18_698eng_raw_blocks.json')
+    file_path = Path("data_processed/Basel_III_raw_blocks.json")
     with open(file_path, 'r', encoding='utf-8') as f:
         result = json.load(f)
 
