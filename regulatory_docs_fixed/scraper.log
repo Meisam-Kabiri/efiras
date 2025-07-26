@@ -1,0 +1,89 @@
+2025-07-26 13:28:54,155 - INFO - Starting FIXED regulatory document download with verified URLs
+2025-07-26 13:28:54,155 - INFO - Downloading bis_basel: 25 documents
+2025-07-26 13:28:54,253 - INFO - ✓ Downloaded: d522.pdf (99,006 bytes)
+2025-07-26 13:28:54,469 - INFO - ✓ Downloaded: d524.pdf (904,614 bytes)
+2025-07-26 13:28:54,504 - INFO - ✓ Downloaded: d520.pdf (93,809 bytes)
+2025-07-26 13:28:54,638 - INFO - ✓ Downloaded: d519.pdf (398,490 bytes)
+2025-07-26 13:28:54,707 - INFO - ✓ Downloaded: d523.pdf (2,813,904 bytes)
+2025-07-26 13:28:54,884 - INFO - ✓ Downloaded: d517.pdf (859,528 bytes)
+2025-07-26 13:28:54,908 - INFO - ✓ Downloaded: d518.pdf (1,044,887 bytes)
+2025-07-26 13:28:54,941 - INFO - ✓ Downloaded: d516.pdf (251,998 bytes)
+2025-07-26 13:28:54,976 - INFO - ✓ Downloaded: d514.pdf (126,483 bytes)
+2025-07-26 13:28:55,001 - INFO - ✓ Downloaded: d515.pdf (369,678 bytes)
+2025-07-26 13:28:55,086 - INFO - ✓ Downloaded: d513.pdf (534,965 bytes)
+2025-07-26 13:28:55,141 - INFO - ✓ Downloaded: d511.pdf (181,815 bytes)
+2025-07-26 13:28:55,152 - INFO - ✓ Downloaded: d521.pdf (2,544,491 bytes)
+2025-07-26 13:28:55,217 - INFO - ✓ Downloaded: d510.pdf (354,475 bytes)
+2025-07-26 13:28:55,250 - INFO - ✓ Downloaded: d512.pdf (1,101,470 bytes)
+2025-07-26 13:28:55,254 - INFO - ✓ Downloaded: d509.pdf (235,421 bytes)
+2025-07-26 13:28:55,289 - INFO - ✓ Downloaded: d508.pdf (330,378 bytes)
+2025-07-26 13:28:55,329 - INFO - ✓ Downloaded: d507.pdf (353,758 bytes)
+2025-07-26 13:28:55,408 - INFO - ✓ Downloaded: d504.pdf (165,736 bytes)
+2025-07-26 13:28:55,448 - INFO - ✓ Downloaded: d505.pdf (775,427 bytes)
+2025-07-26 13:28:55,464 - INFO - ✓ Downloaded: d503.pdf (178,209 bytes)
+2025-07-26 13:28:55,515 - INFO - ✓ Downloaded: d506.pdf (878,635 bytes)
+2025-07-26 13:28:55,545 - INFO - ✓ Downloaded: d502.pdf (499,219 bytes)
+2025-07-26 13:28:55,581 - INFO - ✓ Downloaded: d501.pdf (471,791 bytes)
+2025-07-26 13:28:55,704 - INFO - ✓ Downloaded: d500.pdf (1,128,175 bytes)
+2025-07-26 13:29:19,281 - INFO - Successfully downloaded 25/25 from bis_basel
+2025-07-26 13:29:22,284 - INFO - Downloading federal_reserve: 5 documents
+2025-07-26 13:29:22,782 - INFO - ✓ Downloaded: pf_2.pdf (2,275,127 bytes)
+2025-07-26 13:29:22,904 - INFO - ✓ Downloaded: pf_1.pdf (1,458,386 bytes)
+2025-07-26 13:29:23,122 - INFO - ✓ Downloaded: pf_3.pdf (3,375,426 bytes)
+2025-07-26 13:29:23,218 - INFO - ✓ Downloaded: pf_4.pdf (565,796 bytes)
+2025-07-26 13:29:23,566 - INFO - ✓ Downloaded: pf_5.pdf (4,788,372 bytes)
+2025-07-26 13:29:27,789 - INFO - Successfully downloaded 5/5 from federal_reserve
+2025-07-26 13:29:30,792 - INFO - Downloading sec_verified: 6 documents
+2025-07-26 13:29:33,963 - ERROR - ✗ Failed to download https://www.sec.gov/files/rules/final/2024/33-11275.pdf: 403 Client Error: Forbidden for url: https://www.sec.gov/files/rules/final/2024/33-11275.pdf
+2025-07-26 13:29:33,980 - ERROR - ✗ Failed to download https://www.sec.gov/files/33-11216-fact-sheet.pdf: 403 Client Error: Forbidden for url: https://www.sec.gov/files/33-11216-fact-sheet.pdf
+2025-07-26 13:29:33,994 - ERROR - ✗ Failed to download https://www.sec.gov/files/rules/final/2024/33-11265.pdf: 403 Client Error: Forbidden for url: https://www.sec.gov/files/rules/final/2024/33-11265.pdf
+2025-07-26 13:29:37,076 - ERROR - ✗ Failed to download https://www.sec.gov/files/33-11265-fact-sheet.pdf: 403 Client Error: Forbidden for url: https://www.sec.gov/files/33-11265-fact-sheet.pdf
+2025-07-26 13:29:37,102 - ERROR - ✗ Failed to download https://www.sec.gov/files/rules/other/2024/33-11263.pdf: 403 Client Error: Forbidden for url: https://www.sec.gov/files/rules/other/2024/33-11263.pdf
+2025-07-26 13:29:37,105 - ERROR - ✗ Failed to download https://www.sec.gov/files/sec-conference-spending-2024.pdf: 403 Client Error: Forbidden for url: https://www.sec.gov/files/sec-conference-spending-2024.pdf
+2025-07-26 13:29:40,081 - INFO - Successfully downloaded 0/6 from sec_verified
+2025-07-26 13:29:43,084 - INFO - Downloading fdic_verified: 6 documents
+2025-07-26 13:29:43,769 - INFO - ✓ Downloaded: 2020-12-15-notice-dis-b-fr.pdf (347,339 bytes)
+2025-07-26 13:29:43,887 - INFO - ✓ Downloaded: consumer-compliance-rating-system.pdf (92,641 bytes)
+2025-07-26 13:29:44,034 - INFO - ✓ Downloaded: section4-5.pdf (277,494 bytes)
+2025-07-26 13:29:44,781 - WARNING - Not a PDF: https://fdic.gov/regulations/safety/manual/section4-1.pdf (content-type: text/html; charset=UTF-8)
+2025-07-26 13:29:45,122 - INFO - ✓ Downloaded: 10c85ad37p.pdf (298,213 bytes)
+2025-07-26 13:29:47,112 - ERROR - ✗ Failed to download https://archive.fdic.gov/view/fdic/6279/fdic_6279_DS1.pdf: 403 Client Error: Forbidden for url: https://archive.fdic.gov/view/fdic/6279/fdic_6279_DS1.pdf
+2025-07-26 13:29:49,777 - INFO - Successfully downloaded 4/6 from fdic_verified
+2025-07-26 13:29:52,781 - INFO - Downloading occ_verified: 4 documents
+2025-07-26 13:29:53,914 - WARNING - Not a PDF: https://www.occ.gov/topics/charters-and-licensing/weekly-bulletin/2024/wb-11252024-11302024.pdf (content-type: text/html)
+2025-07-26 13:29:53,915 - WARNING - Not a PDF: https://www.occ.gov/news-issuances/alerts/2024/alert-2024-3a.pdf (content-type: text/html)
+2025-07-26 13:29:53,918 - WARNING - Not a PDF: https://occ.gov/news-issuances/news-releases/2024/nr-occ-2024-98a.pdf (content-type: text/html)
+2025-07-26 13:29:54,655 - WARNING - Not a PDF: https://occ.gov/topics/charters-and-licensing/weekly-bulletin/2025/wb-03302025-04052025.pdf (content-type: text/html)
+2025-07-26 13:29:57,923 - INFO - Successfully downloaded 0/4 from occ_verified
+2025-07-26 13:30:00,926 - INFO - Downloading eba_working: 1 documents
+2025-07-26 13:30:01,222 - INFO - ✓ Downloaded: EBA GL 2020 06 Final Report on GL on loan origination and monitoring.pdf (799,594 bytes)
+2025-07-26 13:30:02,224 - INFO - Successfully downloaded 1/1 from eba_working
+2025-07-26 13:30:05,228 - INFO - Downloading additional_basel: 15 documents
+2025-07-26 13:30:05,338 - INFO - ✓ Downloaded: d491.pdf (185,514 bytes)
+2025-07-26 13:30:05,367 - INFO - ✓ Downloaded: d492.pdf (260,192 bytes)
+2025-07-26 13:30:05,374 - INFO - ✓ Downloaded: d490.pdf (275,631 bytes)
+2025-07-26 13:30:05,405 - INFO - ✓ Downloaded: d493.pdf (210,784 bytes)
+2025-07-26 13:30:05,466 - INFO - ✓ Downloaded: d495.pdf (307,570 bytes)
+2025-07-26 13:30:05,468 - INFO - ✓ Downloaded: d494.pdf (257,969 bytes)
+2025-07-26 13:30:05,474 - INFO - ✓ Downloaded: d496.pdf (232,525 bytes)
+2025-07-26 13:30:05,522 - INFO - ✓ Downloaded: d498.pdf (163,153 bytes)
+2025-07-26 13:30:05,543 - INFO - ✓ Downloaded: d497.pdf (242,037 bytes)
+2025-07-26 13:30:05,563 - INFO - ✓ Downloaded: d499.pdf (392,194 bytes)
+2025-07-26 13:30:05,678 - INFO - ✓ Downloaded: d501.pdf (471,791 bytes)
+2025-07-26 13:30:05,715 - INFO - ✓ Downloaded: d502.pdf (499,219 bytes)
+2025-07-26 13:30:05,753 - INFO - ✓ Downloaded: d503.pdf (178,209 bytes)
+2025-07-26 13:30:05,870 - INFO - ✓ Downloaded: d500.pdf (1,128,175 bytes)
+2025-07-26 13:30:06,024 - INFO - ✓ Downloaded: d504.pdf (165,736 bytes)
+2025-07-26 13:30:20,356 - INFO - Successfully downloaded 15/15 from additional_basel
+2025-07-26 13:30:23,359 - INFO - Downloading iso_standards: 1 documents
+2025-07-26 13:30:23,726 - INFO - ✓ Downloaded: PUB100426.pdf (1,799,248 bytes)
+2025-07-26 13:30:24,728 - INFO - Successfully downloaded 1/1 from iso_standards
+2025-07-26 13:30:27,731 - INFO - Attempting to scrape additional BIS documents...
+2025-07-26 13:30:27,791 - INFO - ============================================================
+2025-07-26 13:30:27,791 - INFO - FIXED DOWNLOAD COMPLETE
+2025-07-26 13:30:27,791 - INFO - ============================================================
+2025-07-26 13:30:27,791 - INFO - Downloaded: 51 documents
+2025-07-26 13:30:27,791 - INFO - Failed: 7 documents
+2025-07-26 13:30:27,791 - INFO - Success Rate: 87.9%
+2025-07-26 13:30:27,791 - INFO - Duration: 0:01:33.636225
+2025-07-26 13:30:27,791 - INFO - Report saved: regulatory_docs_fixed/fixed_download_report.json
