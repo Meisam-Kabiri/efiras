@@ -110,7 +110,7 @@ class EmbeddingService:
                     chunked_doc: Dict[str, Any],
                     use_local_file: bool =  True,
                     cache_path: str = "data_processed",
-                    cache_filename: str = "embeddings") -> Dict[str, Any]:
+                    cache_filename: str = '') -> Dict[str, Any]:
         """
         Generate embeddings for blocks with caching
         
@@ -125,10 +125,15 @@ class EmbeddingService:
              }
         """
         # Build cache file path
+        if not cache_filename:
+            cache_filename = chunked_doc["filename_without_ext"]
+        
         provider_suffix = self.get_provider_suffix()
-        cache_file = f"{cache_path}/{cache_filename}_{provider_suffix}.json"
+        cache_file = f"{cache_path}/{cache_filename}_embds_{provider_suffix}.json"
         
         # Try loading from cache
+ 
+            
         if self.use_cached_embeddings and use_local_file and os.path.exists(cache_file):
             try:
                 with open(cache_file, 'r') as f:
@@ -139,7 +144,7 @@ class EmbeddingService:
                 print(f"Error loading cache: {e}")
         
         # Generate embeddings
-        print(f"Generating embeddings using {self._get_provider_name()}...")
+        print(f"Generating embeddings using {self.get_provider_name()}...")
         embeddings = []
         metadata = {k:v for k, v in chunked_doc.items() if (v!='chunks' and v!="blocks")}
         chunks = chunked_doc.get('blocks') or chunked_doc.get('chunks', [])
@@ -179,26 +184,34 @@ class EmbeddingService:
         
         return complete_data
     
-    def _get_provider_name(self) -> str:
-        """Get human-readable provider name"""
-        if self.use_local:
-            return f"Local ({self.local_model_name})"
-        elif self.use_azure:
-            return f"Azure OpenAI ({self.online_model})"
-        else:
-            return f"OpenAI ({self.online_model})"
-    
+    def get_provider_name(self) -> str:
+      """Get human-readable provider name"""
+      if self.use_local:
+          name = f"Local ({self.local_model_name})"
+      elif self.use_azure:
+          name = f"Azure OpenAI ({self.online_model})"
+      else:
+          name = f"OpenAI ({self.online_model})"
+      
+      print(f"🔧 Provider: {name}")
+      return name
+
     def get_config(self) -> Dict[str, Any]:
         """Get configuration information"""
-        return {
-            "provider": self._get_provider_name(),
+        config = {
+            "provider": self.get_provider_name(),
             "use_local": self.use_local,
             "model": self.local_model_name if self.use_local else self.online_model,
             "use_azure": self.use_azure,
             "cache_enabled": self.use_cached_embeddings,
             "provider_suffix": self.get_provider_suffix()
         }
-    
+        
+        print("📋 Embedding Service Configuration:")
+        for key, value in config.items():
+            print(f"   {key}: {value}")
+        
+        return config
 
 if __name__ == "__main__":
     
@@ -234,6 +247,8 @@ if __name__ == "__main__":
 
     embd_srv = EmbeddingService()
     embd_srv.embed_all_chunks(chunks_doc)
+    embd_srv.get_provider_name()
+    embd_srv.get_config()
 
   
     
