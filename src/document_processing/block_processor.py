@@ -145,93 +145,113 @@ class block_processor():
             # Check if the block is in the header or footer region
             if y1 < height * 0.05 or (y2 > height * 0.95 and y2-y1 < height * 0.1):
                 return True
-            
     def _extract_headers(self, blocks):
-        """Generic hierarchical header detection for any regulatory document"""
-        # Generic patterns for regulatory documents (lower number = higher hierarchy)
-        patterns = {
-            # High-level structural elements
-            1: r'(?i)^(?:title|book|part)\s+[ivxlcdm\d]+\b',           # TITLE II, PART I
-            2: r'(?i)^(?:chapter|division)\s+[ivxlcdm\d]+\b',          # CHAPTER III
-            3: r'(?i)^(?:section|sub-?part)\s+[ivxlcdm\d]+(?:\.\d+)*\b', # SECTION 4, Section 4.1
-            
-            # Medium-level elements  
-            4: r'(?i)^(?:article|art\.?)\s+\d+\b',                     # Article 405, Art. 166
-            5: r'(?i)^(?:sub-?section|subsection)\s+[\d.]+\b',         # Sub-section 4.1
-            
-            # Low-level elements
-            6: r'^\(\d+\)',                                            # (60) - Numbered paragraphs
-            7: r'^\d+\.\s*$',                                          # 1., 2. - Numbered points  
-            8: r'^[a-z]\)\s*$',                                        # a), b) - Lettered points
-            
-            # Content headers (descriptive titles)
-            9: r'^[A-Z][A-Z\s]{8,100}$',                               # ALL CAPS SECTION TITLES
-            10: r'^[A-Z][a-z\s]{8,100}$',                             # Title Case Section Headers
-        }
-        
-        current_headers = {}  # level -> header text
-        curent_pure_headers = {}
-        
-        for i, block in enumerate(blocks):
-            text = block['text'].strip()
-            text_length = len(text)
-            
-            
-            # Check for headers in current block
-            header_found = False
-            for level, pattern in patterns.items():
-                match = re.search(pattern, text)
-                if match:
-                    # Clear lower priority headers and update current level
-                    current_headers = {k: v for k, v in current_headers.items() if k < level}
-                    curent_pure_headers = {k: v for k, v in curent_pure_headers.items() if k < level}
+          """Extract headers and merge blocks when needed, return modified blocks list"""
+          
+          # Header patterns (lower number = higher hierarchy)
+          patterns = {
+              1: r'(?i)^(title|book|part)\s+([ivxlcdm\d]+)',
+              2: r'(?i)^(chapter|division)\s+([ivxlcdm\d]+)', 
+              3: r'(?i)^(section|sub-?part)\s+([ivxlcdm\d]+(?:\.\d+)*)',
+              4: r'(?i)^(article|art\.?)\s+([\d\(\)]+)',
+              5: r'(?i)^(sub-?section|subsection)\s+([\d.]+)',
+              6: r'^(\(\d+\))',
+              7: r'^(\d+)\.',
+              8: r'^([a-z])\)',
+          }
+          
+          # Non-hierarchical title patterns
+          title_patterns = [
+              r'^[A-Z][A-Z\s]{8,100}$',     # ALL CAPS TITLES
+              r'^[A-Z][a-z\s]{8,50}$',      # Title Case Headers
+          ]
+          
+          current_headers = {}
+          result_blocks = []
+          i = 0
+          
+          while i < len(blocks):
+              block = blocks[i]
+              text = block['text'].strip()
+              header_found = False
+              
+              # Check hierarchical patterns
+              for level, pattern in patterns.items():
+                  match = re.match(pattern, text)
+                  if match:
+                      identifier = match.group().rstrip('.')
+                      remaining = text[match.end():].strip('. ')
+                      
+                      # Determine header text and how many blocks to merge
+                      if remaining and len(remaining) > 5:
+                          # Single block: "Section 1. Title" -> "Section 1 : Title"
+                          header_text = f"{identifier} : {remaining}"
+                          blocks_to_merge = 1
+                          
+                      elif i + 1 < len(blocks) and self._is_title_block(blocks[i + 1]['text'].strip(), blocks[i + 1]):
+                          # Multi-block: "Section 1" + "Title" -> "Section 1 : Title"
+                          next_text = blocks[i + 1]['text'].strip()
+                          header_text = f"{identifier} : {next_text}"
+                          blocks_to_merge = 2
+                          
+                      else:
+                          # Just identifier: "Section 1"
+                          header_text = identifier
+                          blocks_to_merge = 1
+                      
+                      # Update hierarchy
+                      current_headers = {k: v for k, v in current_headers.items() if k < level}
+                      current_headers[level] = header_text
+                      
+                      # Modify the first block with merged content
+                      block['text'] = header_text
+                      block['headers'] = " > ".join(current_headers.values())
+                      block['header_identifier'] = " > ".join([self._extract_header_identifier(v) for v in current_headers.values()])
+                      block['is_hierarchical'] = True
+                      block['is_title'] = True
+                      block['merged_from'] = blocks_to_merge
+                      
+                      result_blocks.append(block)
+                      i += blocks_to_merge  # Skip merged blocks
+                      header_found = True
+                      break
+              
+              if not header_found:
+                  # Check for non-hierarchical titles
+                  is_title = (any(re.match(pattern, text) for pattern in title_patterns) or 
+                            (hasattr(block, 'is_diff_format') and block.get('is_diff_format') == 'true'))
+                  
+                  # Add header fields to block (don't modify text)
+                  block['headers'] = " > ".join(current_headers.values()) if current_headers else ""
+                  block['header_identifier'] = " > ".join([self._extract_header_identifier(v) for v in current_headers.values()])
+                  block['is_hierarchical'] = False
+                  block['is_title'] = is_title
+                  block['merged_from'] = 1
+                  
+                  result_blocks.append(block)
+                  i += 1
+          
+          return result_blocks
 
-                    
-                    # Smart header text extraction
-                    header_text = self._extract_smart_header_text(text, match, level, i, blocks)
-                    pure_header = match.group()
-                    current_headers[level] = header_text
-                    curent_pure_headers[level] = match.group()
-                    
-                    header_found = True
-                    break
-            
-            # Build meaningful header path (avoid overly long paths)
-            header_path = self._build_header_path(current_headers)
-            block['headers'] = header_path
-            block["pure_header"] = " > ".join(curent_pure_headers.values())
-            
-        
-        return blocks
-    
-    def _extract_smart_header_text(self, text, match, level, block_index, blocks):
-        """Extract smart header text with potential next-block title merging"""
-        matched_text = match.group().strip()
-        remaining_text = text[match.end():].lstrip(":. ").strip()
-        if len(remaining_text) > 10:
-             clean_title = re.sub(r'\n+', ' ', remaining_text).strip()
-             return f"{matched_text} : {clean_title}"
-            
-        
-        # For structural elements (Articles, Sections), check if next block is a title
-        if level in [1, 2, 3, 4, 5] and block_index + 1 < len(blocks):
-            next_block = blocks[block_index + 1]
-            next_text = next_block['text'].strip()
-            next_length = len(next_text)
-            
-            # Check if next block is likely a descriptive title
-            if (10 < next_length < 300 and  # Reasonable title length
-                (not re.match(r'^\d+\.', next_text) and  # Not a numbered paragraph
-                not re.match(r'^\([0-9]+\)', next_text) and  # Not a numbered item
-                not next_text.islower() or  # Not all lowercase (likely not content)
-                next_block['is_bold'] == 'true')):  
-                
-                # Clean the title text
-                clean_title = re.sub(r'\n+', ' ', next_text).strip()
-                return f"{matched_text} : {clean_title}"
-        
-        return matched_text
-    
+    def _is_title_block(self, text, block):
+      """Check if block should be treated as a title"""
+      if len(text) < 5 or len(text) > 200:
+          return False
+      
+      if hasattr(block, 'is_diff_format') and block.get('is_diff_format') == 'true':
+          return True
+      
+      return (not re.match(r'^\d+\.', text) and 
+              not re.match(r'^\([0-9]+\)', text) and
+              not text.islower() and
+              len(text.split()) >= 2)
+
+    def _extract_header_identifier(self, header_text):
+        """Extract just the identifier part from header text"""
+        if ' : ' in header_text:
+            return header_text.split(' : ')[0]
+        return header_text
+      
     def _build_header_path(self, current_headers):
         """Build meaningful header path avoiding overly verbose paths"""
         if not current_headers:

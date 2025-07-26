@@ -6,6 +6,7 @@ import logging
 import re
 
 
+
 from base import DocumentProcessor, ProcessorConfig, ProcessorType
 
 logging.basicConfig(level=logging.INFO)
@@ -25,56 +26,8 @@ class PyMuPDFProcessor(DocumentProcessor):
         except ImportError:
             return False
     
-    def extract_text(self, file_path: Union[str, Path]) -> Dict[str, Any]:
-        try:
-            import fitz
-            
-            doc = fitz.open(str(file_path))
-            text = ""
-            page_texts = []
-            
-            for page_num in range(doc.page_count):
-                page = doc[page_num]
-                page_text = page.get_text()
-                page_texts.append(page_text)
-                text += f"\n--- Page {page_num + 1} ---\n{page_text}"
-            
-            metadata = {
-                'page_count': doc.page_count,
-                'title': doc.metadata.get('title', ''),
-                'author': doc.metadata.get('author', ''),
-                'creation_date': doc.metadata.get('creationDate', ''),
-                'processor': self.processor_type.value
-            }
-            
-            doc.close()
-            
-            result = {
-                'text': text,
-                'page_texts': page_texts,
-                'metadata': metadata,
-                'extraction_method': 'text_layer'
-                }
-            
-            file_path = Path('src/cleaning/output_processed_text_pymupdf.json')
-
-            # 1. Create the parent directory if it doesn't exist
-            # file_path.parent gives you the directory part of the path ('src/')
-            # mkdir(parents=True) creates any missing parent directories (e.g., if 'src' itself didn't exist)
-            # exist_ok=True prevents an error if the directory already exists
-            file_path.parent.mkdir(parents=True, exist_ok=True)
-
-            with open(file_path, 'w', encoding='utf-8') as f:
-                json.dump(result, f, indent=4, ensure_ascii=False)
-
-            print(f"Data saved to {file_path}")
-
-            return result
-            
-        except Exception as e:
-            logger.error(f"PyMuPDF extraction failed: {e}")
-            raise
-
+    def extract_text(self):
+        pass
     def extract_blocks(self, file_path: Union[str, Path]) -> List[Dict[str, Any]]:
             """Extract text blocks from the PDF."""
             try:
@@ -87,6 +40,7 @@ class PyMuPDFProcessor(DocumentProcessor):
                 filename_without_ext = path.stem  # gets filename without extension
                 extension = path.suffix  # gets just the extension
                 print (filename, filename_without_ext, extension)
+                normal_font_size, normal_color = self.find_normal_font_size_and_color_whole_doc(doc)
 
 
                 page1 = doc[0]
@@ -102,21 +56,21 @@ class PyMuPDFProcessor(DocumentProcessor):
                     
                     for i, block in enumerate(block_list):
                                               # Check if this block has bold text
-                        is_bold = False
+                        is_diff_format = False
                         if i < len(dict_data["blocks"]) and "lines" in dict_data["blocks"][i]:
                             for line in dict_data["blocks"][i]["lines"]:
-                                for span in line["spans"]:
-                                    if span["flags"] & 16:  # Bold flag
-                                        is_bold = True
+                                for span in line["spans"]:    
+                                    if self.has_different_format(span, normal_font_size, normal_color):  # Bold flag
+                                        is_diff_format = True
                                         break
-                                if is_bold:
+                                if is_diff_format:
                                     break
                               
                         blocks.append({
                             'page': page_num + 1,
                             'bbox': block[:4],
                             'text': block[4],
-                            'is_bold':is_bold 
+                            'is_diff_format':is_diff_format 
                         })
                 
                 doc.close()
@@ -167,6 +121,49 @@ class PyMuPDFProcessor(DocumentProcessor):
 
             logger.info(f"Data saved to {file_path}")
 
+
+    def has_different_format(self, span, normal_font_size, normal_color, size_threshold=1, color_tolerance=10):
+      """Detect if text has different formatting from normal text"""
+      
+      # Bold formatting
+      if span["flags"] & 16:
+          return True
+      
+      # Significantly larger font size
+      if span["size"] > normal_font_size + size_threshold:
+          return True
+      
+      # Color significantly different from normal (with tolerance)
+      color_diff = abs(span["color"] - normal_color)
+      if color_diff > color_tolerance:
+          return True
+
+    def find_normal_font_size_and_color_whole_doc(self, doc):
+          """Find normal font size and color across ALL pages of the document"""
+          font_sizes = []
+          colors = []
+          
+          # Loop through ALL pages
+          for page_num in range(doc.page_count):
+              page = doc[page_num]
+              dict_data = page.get_text("dict")
+              
+              for block in dict_data["blocks"]:
+                  if "lines" in block:
+                      for line in block["lines"]:
+                          for span in line["spans"]:
+                              font_sizes.append(span["size"])
+                              colors.append(span["color"])
+          
+          # Most common across entire document
+          from collections import Counter
+          most_common_size = Counter(font_sizes).most_common(1)
+          normal_size = most_common_size[0][0] if most_common_size else 11
+          
+          most_common_color = Counter(colors).most_common(1)
+          normal_color = most_common_color[0][0] if most_common_color else 0
+          
+          return normal_size, normal_color
 if __name__ == "__main__":
     config = ProcessorConfig(
         chunk_size=1000,
@@ -174,12 +171,26 @@ if __name__ == "__main__":
         extract_tables=True,
         ocr_fallback=True
     )
+
+    
     
     processor = PyMuPDFProcessor(config)
+
+    # import fitz
+    # path = "data/regulatory_documents/eu/Basel_III.pdf"
+    # doc = fitz.open(path)
+    # a, b = PyMuPDFProcessor.find_normal_font_size_and_color_whole_doc(doc)
+    # print(a, '-----------', b)
+
+    # normal_color = 1644572
+    # r = (normal_color >> 16) & 255
+    # g = (normal_color >> 8) & 255  
+    # b = normal_color & 255
+    # print(f"Normal color RGB: ({r}, {g}, {b})")
+
     
     if processor.is_available():
         result = processor.extract_blocks("data/regulatory_documents/eu/Basel_III.pdf")
-        result2 = processor.extract_text("data/regulatory_documents/lu/Lux_cssf18_698eng.pdf")
     else:
         print("PyMuPDF is not available. Please install the required library.")
 
