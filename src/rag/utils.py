@@ -46,10 +46,26 @@ class HybridSearch:
         self.whoosh_index = None
         self.chunks = []
         
-    def build_indexes(self, chunk_data):
+    def build_indexes(self, documents_list):
         """Build FAISS and Whoosh indexes"""
+
+        all_chunks = []
+        for doc_idx, doc in enumerate(documents_list):
+          # Get filename from metadata
+          filename = doc["metadata"].get("filename", f"document_{doc_idx}")
+          
+          for chunk_idx, chunk in enumerate(doc["embeddings"]):
+              chunk["doc_id"] = doc_idx
+              chunk["filename"] = filename  # Use filename from metadata
+              chunk["chunk_id"] = chunk_idx
+              chunk["doc_metadata"] = doc.get("metadata", {})
+              all_chunks.append(chunk)
+
+
+
+        
         os.makedirs(self.index_dir + "/whoosh", exist_ok=True)
-        self.chunks = chunk_data
+        self.chunks = all_chunks
         
         # Build FAISS
         embeddings = np.array([c["embedding"] for c in self.chunks]).astype('float32')
@@ -241,7 +257,8 @@ if __name__ == "__main__":
         load_embeddings = json.load(f)
     
     # Build indexes
-    search.build_indexes(load_embeddings['embeddings'])
+    # search.build_indexes(load_embeddings['embeddings'])
+    search.build_indexes([load_embeddings])
     
     # Optional: Save indexes for persistence
     search.save_indexes()
