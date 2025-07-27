@@ -35,25 +35,25 @@ vector_db = embd_dict['embeddings']
 rag_system = RAGSystem()
 
 
-# Step 1: Search for relevant documents
-query = "What monitoring elements must IFM implement for central administration delegation?"
-query_embeding = embd_srv.embed_text(query)
-relevant_docs = rag_system.search(
-    vector_db=vector_db,
-    query= query,
-    query_embedding=query_embeding,
-    top_k=5,
-    use_hybrid=True
-)
+# # Step 1: Search for relevant documents
+# query = "What monitoring elements must IFM implement for central administration delegation?"
+# query_embeding = embd_srv.embed_text(query)
+# relevant_docs = rag_system.search(
+#     vector_db=vector_db,
+#     query= query,
+#     query_embedding=query_embeding,
+#     top_k=5,
+#     use_hybrid=True
+# )
 
-# Step 2: Generate answer from relevant documents
-answer = rag_system.answer_query(
-    vector_db =vector_db,
-    query=query, 
-    query_embedding=query_embeding,  # Not needed for generation
-    top_k=5
-)
-print(answer)
+# # Step 2: Generate answer from relevant documents
+# answer = rag_system.answer_query(
+#     vector_db =vector_db,
+#     query=query, 
+#     query_embedding=query_embeding,  # Not needed for generation
+#     top_k=5
+# )
+# print(answer)
 
 
 # embd_srv = EmbeddingService()

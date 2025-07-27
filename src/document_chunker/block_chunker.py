@@ -29,7 +29,7 @@ class RegulatoryChunkingSystem:
         self.skip_headers = skip_headers
         self.min_chunk_size = min_chunk_size
         self.max_chunk_size = max_chunk_size
-        self.tokenizer = SentenceTransformer(model).tokenizer
+        self.tokenizer = SentenceTransformer(model, device="cpu").tokenizer
         
 
 

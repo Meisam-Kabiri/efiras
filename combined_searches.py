@@ -61,6 +61,136 @@ from langdetect import detect
 # import torch
 # torch.cuda.empty_cache()  # Clear GPU memory
 
+import asyncio
+import numpy as np
+import faiss
+from whoosh.index import create_index, open_dir
+from whoosh.fields import Schema, TEXT, ID
+from whoosh.qparser import QueryParser
+from whoosh import scoring
+import os
+
+# Global indexes - build once, use many times
+faiss_index = None
+whoosh_index = None
+chunks = []
+
+def build_indexes(chunk_data, index_dir="indexes"):
+    """Build FAISS and Whoosh indexes once"""
+    global faiss_index, whoosh_index, chunks
+    
+    os.makedirs(index_dir, exist_ok=True)
+    chunks = chunk_data
+    
+    # Build FAISS
+    embeddings = np.array([c["embedding"] for c in chunks]).astype('float32')
+    faiss.normalize_L2(embeddings)
+    
+    if len(chunks) > 10000:
+        # Large dataset - use IVF
+        quantizer = faiss.IndexFlatIP(embeddings.shape[1])
+        faiss_index = faiss.IndexIVFFlat(quantizer, embeddings.shape[1], 100)
+        faiss_index.train(embeddings)
+        faiss_index.nprobe = 10
+    else:
+        # Small dataset - use flat
+        faiss_index = faiss.IndexFlatIP(embeddings.shape[1])
+    
+    faiss_index.add(embeddings)
+    
+    # Build Whoosh
+    schema = Schema(id=ID(stored=True), content=TEXT())
+    whoosh_index = create_index(schema, index_dir + "/whoosh")
+    
+    writer = whoosh_index.writer()
+    for i, chunk in enumerate(chunks):
+        writer.add_document(id=str(i), content=chunk["content"])
+    writer.commit()
+
+async def vector_search(query_embedding, top_k=100):
+    """Fast vector search"""
+    query_emb = np.array([query_embedding]).astype('float32')
+    faiss.normalize_L2(query_emb)
+    scores, indices = faiss_index.search(query_emb, top_k)
+    return scores[0], indices[0]
+
+async def bm25_search(query, top_k=100):
+    """Fast BM25 search"""
+    with whoosh_index.searcher(weighting=scoring.BM25F()) as searcher:
+        parser = QueryParser("content", whoosh_index.schema)
+        parsed_query = parser.parse(query)
+        results = searcher.search(parsed_query, limit=top_k)
+        return [(int(r['id']), r.score) for r in results]
+
+def rrf_combine(vector_results, bm25_results, k=60):
+    """Simple RRF combination"""
+    scores, indices = vector_results
+    combined = {}
+    
+    # Vector rankings
+    for rank, idx in enumerate(indices):
+        if idx != -1:
+            combined[idx] = combined.get(idx, 0) + 1/(k + rank + 1)
+    
+    # BM25 rankings  
+    for rank, (idx, score) in enumerate(bm25_results):
+        combined[idx] = combined.get(idx, 0) + 1/(k + rank + 1)
+    
+    return combined
+
+async def hybrid_search(query, query_embedding, top_k=5):
+    """Simple hybrid search"""
+    # Run both searches concurrently
+    vector_task = vector_search(query_embedding, 100)
+    bm25_task = bm25_search(query, 100)
+    
+    vector_results, bm25_results = await asyncio.gather(vector_task, bm25_task)
+    
+    # Combine and get top results
+    combined = rrf_combine(vector_results, bm25_results)
+    top_indices = sorted(combined.keys(), key=combined.get, reverse=True)[:top_k]
+    
+    return [chunks[i]["content"] for i in top_indices], top_indices
+
+# Usage:
+# build_indexes(your_chunks)  # Once
+# results = await hybrid_search(query, query_embedding)  # Many times
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 def smart_tokenize(text):
     try:
         lang = detect(text)
@@ -92,7 +222,6 @@ def better_tokenize(text):
 
 def hybrid_search_rrf(query, query_embedding, chunks,  top_k=5, k=60):
    # 1. Vector search using existing embeddings
-  #  query_embedding = model.encode(query)
    chunk_embeddings = np.array([chunk["embedding"] for chunk in chunks])
    vector_scores = cosine_similarity([query_embedding], chunk_embeddings)[0]
    
@@ -130,7 +259,6 @@ def hybrid_search_rrf(query, query_embedding, chunks,  top_k=5, k=60):
 
 def hybrid_search_simple_comb(query, query_embedding, chunks, weights = [0.7, 0.3],  top_k=5):
     # 1. Vector search using existing embeddings
-    # query_embedding = model.encode(query)
     chunk_embeddings = np.array([chunk["embedding"] for chunk in chunks])
     vector_scores = cosine_similarity([query_embedding], chunk_embeddings)[0]
     
@@ -195,7 +323,7 @@ q = "What must a person demonstrate to the CSSF if they hold more than one manda
 q = "What are some examples of compliance issues that an IFM must address according to the provided text?"  #chunk 119
 q =  "compliance issues violations infringements non-compliance policy restrictions transactions reporting fraud"
 q = "Examples include AML/CFT breaches, inadequate risk management, poor internal controls, conflicts of interest, and failure to meet CSSF reporting or governance requirements.."
-model = SentenceTransformer('all-mpnet-base-v2', local_files_only=True)
+model = SentenceTransformer('all-mpnet-base-v2', local_files_only=True, device = 'cpu')
 q_embed = model.encode(q)
 # chunks_res, inds = hybrid_search_rrf(q, q_embed, chunks, model, top_k=50, k=10)
 chunks_res, inds = hybrid_search_simple_comb(q, q_embed, chunks_mpnet )
@@ -252,7 +380,7 @@ for item in questions_list:
 
 
     q_embed = rag_openai.embed_text(q)
-    chunks_res, inds = hybrid_search_rrf(q, q_embed, chunks_openai, 5, 10)
+    chunks_res, inds = hybrid_search(q, q_embed, chunks_openai, 5, 10)
 
     # q_embed = rag_tuned.embed_text(q)
     # chunks_res, inds = hybrid_search_rrf(q, q_embed, chunks_tuned, 5, 10)

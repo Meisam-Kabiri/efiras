@@ -4,13 +4,16 @@ from typing import List, Dict, Any, Optional
 from dotenv import load_dotenv
 from openai import OpenAI, AzureOpenAI
 
+import logging
+logging.getLogger("faiss").setLevel(logging.ERROR)
+
 
 class EmbeddingService:
     """Service for generating embeddings from text blocks"""
     
     def __init__(self, 
                  use_local: bool = True,
-                 local_model: str = "all-mpnet-base-v2",
+                 local_model: str = "BAAI/bge-large-en-v1.5",  # all-mpnet-base-v2
                  use_azure: bool = False,
                  online_model: str = "text-embedding-3-large",
                  azure_endpoint: Optional[str] = None,
@@ -46,9 +49,18 @@ class EmbeddingService:
         print(f"🎯 Final embedding model: {self.final_model}")
     
         # Initialize local model if needed
+        
+
+
+
         if use_local:
             from sentence_transformers import SentenceTransformer
-            self.local_model = SentenceTransformer(local_model, local_files_only=cached_local_model)
+            try:
+              self.local_model = SentenceTransformer(local_model, local_files_only=cached_local_model, device="cuda")
+            except Exception:
+                print(f"Model not available locally, downloading...")
+                self.local_model = SentenceTransformer(local_model, local_files_only=False, device="cuda")
+                
         else:
             self.local_model = None
             
