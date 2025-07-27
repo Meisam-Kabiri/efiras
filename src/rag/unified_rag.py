@@ -152,7 +152,7 @@ class RAGSystem:
                 
                 # Regulatory boosting
                 content_lower = doc['content'].lower()
-                headers_lower = doc.get('block', {}).get('enriched_headers', '').lower()
+                headers_lower = doc.get('block', {}).get('header', '').lower()
                 search_text = content_lower + ' ' + headers_lower
                 
                 # Boost for regulatory numbers and terms
@@ -196,38 +196,10 @@ class RAGSystem:
         
         return list(set(regulations))  # Remove duplicates
     
-    def _enhance_context_with_related_blocks(self, vector_db, relevant_chunks: List[Dict[str, Any]], query: str) -> str:
-        """Enhance context by finding related blocks from same sections"""
-        enhanced_context = []
-        seen_sections = set()
-        
-        for chunk in relevant_chunks:
-            # Include headers to provide context about which article/section this is
-            headers = chunk['block'].get('enriched_headers', '')
-            content = chunk['content']
-            
-            if headers:
-                enhanced_context.append(f"[{headers}]\n{content}")
-            else:
-                enhanced_context.append(content)
-            
-            # Extract section information
-            headers = chunk['block'].get('enriched_headers', '')
-            if headers and headers not in seen_sections:
-                seen_sections.add(headers)
-                
-                # Look for related blocks in the same section
-                for doc in vector_db:
-                    if (doc['block'].get('enriched_headers', '') == headers and 
-                        doc['content'] not in [c['content'] for c in relevant_chunks]):
-                        enhanced_context.append(doc['content'])
-                        break  # Add only one related block per section
-        
-        return "\n\n".join(enhanced_context)
-    
+
     def answer_query(self, vector_db, query: str, query_embedding: List[float], top_k: int = 5, 
-                    max_context: int = 15000, use_hybrid: bool = True ) -> str:
-        """Answer query using RAG with enhanced context and regulation extraction"""
+               max_context: int = 15000, use_hybrid: bool = True ) -> str:
+        """Answer query using RAG with enhanced context"""
         
         # Search for relevant chunks
         relevant_chunks = self.search(vector_db, query, query_embedding, top_k, use_hybrid)
@@ -235,32 +207,22 @@ class RAGSystem:
         if not relevant_chunks:
             return "No relevant information found."
         
-        # Build enhanced context
-        enhanced_context = self._enhance_context_with_related_blocks(vector_db, relevant_chunks, query)
-        
-        # Extract regulatory references
-        regulations = self._extract_specific_regulations(enhanced_context, query)
-        
-        # Enhanced system prompt based on query type
-        if any(keyword in query.lower() for keyword in ['compliance officer', 'appointment', 'requirements']):
-              system_prompt = """You are a regulatory compliance expert. When answering questions about compliance officers or appointments:
+        system_prompt = """Answer questions based on the provided context. Be specific and cite relevant sections. If information is insufficient, state this clearly. 
 
-                      1. Always include ALL key requirements (full-time vs part-time, approval processes)
-                      2. List ALL required documents completely
-                      3. Mention any exceptions or special procedures (e.g., changes, part-time appointments)
-                      4. Reference specific regulatory sections and articles
-                      5. Be comprehensive while remaining clear and organized
+        Always include a "Sources" section at the end with the page numbers and headers of the sources you used, formatted nicely."""
 
-                      Use bullet points for document lists and organize information logically."""
-        else:
-            system_prompt = """Answer questions based on the provided context. Be specific and cite relevant sections. If information is insufficient, state this clearly. 
-                            For regulatory questions:
-                            - Include all relevant requirements and exceptions
-                            - Reference specific articles, sections, and regulations
-                            - Organize complex information clearly
-                            - Be concise but thorough
-                            """
+        # Build context from relevant chunks with page numbers and headers
+        # Build context from relevant chunks with page numbers and headers
+        context_parts = []
+        for i, chunk in enumerate(relevant_chunks, 1):
+            # Use header_identifier instead of full headers
+            header = chunk['block'].get('header_identifier', 'N/A')
+            page = chunk['block'].get('page', 'N/A')
+            content = chunk['content']
+            context_parts.append(f"[Source {i} - Page {page} - {header}]\n{content}")
         
+        context = "\n\n".join(context_parts)
+
         messages = [
             {
                 "role": "system",
@@ -268,13 +230,11 @@ class RAGSystem:
             },
             {
                 "role": "user", 
-                "content": f"""Context:\n{enhanced_context}
+                "content": f"""Context:\n{context}
 
-Regulatory References Found: {', '.join(regulations) if regulations else 'None'}
+      Question: {query}
 
-Question: {query}
-
-Please provide a comprehensive answer that includes all relevant requirements, exceptions, and procedures."""
+      Please provide a comprehensive answer and include a Sources section at the end."""
             }
         ]
         
@@ -282,50 +242,15 @@ Please provide a comprehensive answer that includes all relevant requirements, e
             response = self.client.chat.completions.create(
                 model=self.model,
                 messages=messages,
-                temperature=0.1,  # Lower temperature for more consistent regulatory answers
-                max_tokens=1200   # Increased for more comprehensive answers
+                temperature=0.1,
+                max_tokens=1200
             )
             return response.choices[0].message.content.strip()
         except Exception as e:
             provider = "Azure OpenAI" if self.use_azure else "OpenAI"
             return f"Error generating response with {provider}: {e}"
-    
-    def answer_with_sources(self, vector_db, query: str, query_embedding: List[float], top_k: int = 5,
-                           use_hybrid: bool = True, use_faiss: bool = False) -> Dict[str, Any]:
-        """Answer query and return sources with enhanced regulation tracking"""
-        
-        # Search for relevant chunks
-        relevant_chunks = self.search(vector_db, query, query_embedding, top_k, use_hybrid)
-        if not relevant_chunks:
-            return {
-                "answer": "No relevant information found.",
-                "sources": [],
-                "regulatory_references": [],
-                "confidence": 0.0
-            }
-        
-        # Generate answer
-        answer = self.answer_query(query, query_embedding, top_k, use_hybrid=use_hybrid, use_faiss=use_faiss)
-        
-        # Extract regulatory references from all relevant chunks
-        all_context = "\n\n".join([chunk['content'] for chunk in relevant_chunks])
-        regulations = self._extract_specific_regulations(all_context, query)
-        
-        sources = []
-        for chunk in relevant_chunks:
-            sources.append({
-                "id": chunk['id'],
-                "preview": chunk['content'][:200] + "..." if len(chunk['content']) > 200 else chunk['content'],
-                "headers": chunk['block'].get('enriched_headers', 'N/A'),
-                "page": chunk['block'].get('page', 'N/A')
-            })
-        
-        return {
-            "answer": answer,
-            "sources": sources,
-            "regulatory_references": regulations,
-            # "confidence": len(relevant_chunks) / top_k
-        }
+  
+
     
     def update_vector_db(self, new_vector_db: List[Dict[str, Any]]):
         """Update the vector database with new embeddings"""
