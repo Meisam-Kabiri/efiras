@@ -6,6 +6,7 @@ from openai import OpenAI, AzureOpenAI
 from sklearn.metrics.pairwise import cosine_similarity
 from pathlib import Path
 import re
+import numpy as np
 
 try:
     from .azure_search_backend import AzureSearchBackend
@@ -14,14 +15,11 @@ except ImportError:
     AZURE_SEARCH_AVAILABLE = False
 
 
-class UnifiedRAGSystem:
-    """Unified RAG System supporting both OpenAI and Azure OpenAI"""
+class RAGSystem:
+    """Unified RAG System focusing on retrieval and generation only"""
     
     def __init__(self, 
-                 model: str = "gpt-4", 
-                 online_embedding_model: str = "text-embedding-3-large", 
-                 use_local_embeddings: bool = True, 
-                 local_embedding_model: str = "all-mpnet-base-v2",
+                 model: str = "gpt-4",
                  use_azure: bool = False,
                  azure_endpoint: Optional[str] = None,
                  azure_api_key: Optional[str] = None,
@@ -31,24 +29,19 @@ class UnifiedRAGSystem:
                  azure_search_endpoint: Optional[str] = None,
                  azure_search_key: Optional[str] = None,
                  azure_search_index: str = "documents",
-                 use_cached_embeddings: bool = True,
-                 cached_local_model:  bool = False,
                  use_managed_identity: bool = False):
         
         """Initialize unified RAG system
         
         Args:
-            model: Model deployment name (OpenAI model or Azure deployment)
-            online_embedding_model: Embedding model name (OpenAI or Azure deployment)
-            use_local_embeddings: Whether to use local embeddings
-            local_embedding_model: Local embedding model name
+            model: LLM model deployment name
             use_azure: Whether to use Azure OpenAI instead of OpenAI
             azure_endpoint: Azure OpenAI endpoint URL
             azure_api_key: Azure OpenAI API key
             api_version: Azure OpenAI API version
             use_azure_search: Whether to use Azure AI Search instead of in-memory vector DB
             azure_search_endpoint: Azure Search service endpoint
-            azure_search_key: Azure Search API key (optional if using managed identity)
+            azure_search_key: Azure Search API key
             azure_search_index: Name of the search index
             use_managed_identity: Use Azure managed identity for search authentication
         """
@@ -57,13 +50,7 @@ class UnifiedRAGSystem:
         
         self.use_azure = use_azure
         self.model = model
-        self.online_embedding_model = online_embedding_model
         self.use_azure_search = use_azure_search
-        self.vector_db = []
-        self.use_cached_embeddings = use_cached_embeddings
-        self.cached_local_model= cached_local_model
-        
-
         
         # Initialize Azure Search backend if requested
         if use_azure_search:
@@ -85,7 +72,7 @@ class UnifiedRAGSystem:
         else:
             self.search_backend = None
         
-        # Initialize client based on type
+        # Initialize LLM client
         if use_azure:
             self.azure_endpoint = azure_endpoint or os.getenv("AZURE_OPENAI_ENDPOINT")
             self.azure_api_key = azure_api_key or os.getenv("AZURE_OPENAI_API_KEY")
@@ -107,166 +94,85 @@ class UnifiedRAGSystem:
             
             self.client = OpenAI(api_key=api_key)
         
-        self.use_local_embeddings = use_local_embeddings
-        # Initialize local embedding model if needed
-        if use_local_embeddings:
-            from sentence_transformers import SentenceTransformer
-            self.local_model = SentenceTransformer(local_embedding_model, local_files_only = self.cached_local_model)
+        print(f"   LLM Provider: {'Azure OpenAI' if use_azure else 'OpenAI'}")
+        print(f"   Search Backend: {'Azure AI Search' if use_azure_search else 'In-Memory Vector DB'}")
     
-    def enrich_text_with_headers(self, block: Dict[str, Any]) -> str:
-        """Enrich block text with hierarchical headers"""
-        enriched = block.get('enriched_headers')
-        if enriched:
-            return f"{enriched}\n\n{block['text']}"
-        else:
-            return block['text']
 
-    def embed_text(self, text: str) -> List[float]:
-        """Generate embeddings for text using Azure OpenAI, OpenAI, or local model"""
-        if self.use_local_embeddings:
-            try:
-                return self.local_model.encode(text).tolist()
-            except Exception as e:
-                print(f"Local embedding error: {e}")
-                return []
-        else:
-            """Generate embeddings using OpenAI or Azure OpenAI API"""
-            try:
-                response = self.client.embeddings.create(
-                    model=self.online_embedding_model,
-                    input=text,
-                    encoding_format="float"
-                )
-                return response.data[0].embedding
-            except Exception as e:
-                provider = "Azure OpenAI" if self.use_azure else "OpenAI"
-                print(f"{provider} embedding error: {e}")
-                return []
-    
-    def embed_blocks(self, blocks: List[Dict[str, Any]], cache_path: str) -> List[Dict[str, Any]]:
-        """Embed blocks with caching"""
-        # Try loading from cache
-        if self.use_cached_embeddings and os.path.exists(cache_path):
-            with open(cache_path, 'r') as f:
-                cached = json.load(f)
-                print(f"Loaded {len(cached)} embeddings from cache")
-                return cached
+    def search(self, vector_db: List[Dict[str, Any]],
+               query: str, 
+               query_embedding: List[float], 
+               top_k: int = 5, 
+               use_hybrid: bool = True) -> List[Dict[str, Any]]:
+        """Search for similar documents using pre-computed query embedding"""
         
-        # Generate embeddings
-        embeddings = []
-        for i, block in enumerate(blocks):
-            print(f"Embedding {i+1}/{len(blocks)}")
-            
-            content = self.enrich_text_with_headers(block)
-            embedding = self.embed_text(content)
-            
-            if embedding:
-                embeddings.append({
-                    'id': i,
-                    'content': block['text'],
-                    'embedding': embedding,
-                    'block': block
-                })
-        
-        # Save to cache
-        with open(cache_path, 'w') as f:
-            json.dump(embeddings, f)
-        print(f"Saved {len(embeddings)} embeddings to cache")
-        
-        return embeddings
-    
-    def add_documents(self, blocks: List[Dict[str, Any]], cache_path: str = "data_processed", cache_file_name: str = "embeddings"):
-        """Add documents to vector database"""
-        
-        # Determine embedding provider suffix (independent of search backend)
-        if self.use_local_embeddings:
-            provider_suffix = "local"
-        elif self.use_azure:
-            provider_suffix = "azure_online"
-        else:
-            provider_suffix = "openai_online"
-        
-        cache_file_path = f"{cache_path}/{cache_file_name}_{provider_suffix}.json"
-        
-        # Generate embeddings (same regardless of search backend)
-        embeddings = self.embed_blocks(blocks, cache_file_path)
-        
-        # Store embeddings based on search backend
-        if self.use_azure_search:
-            # Use Azure Search backend for storage
-            self.search_backend.add_documents(embeddings)
-            print(f"Added {len(embeddings)} documents to Azure AI Search")
-        else:
-            # Use in-memory vector database
-            self.vector_db = embeddings
-            provider = "Azure OpenAI" if self.use_azure else "OpenAI"
-            print(f"Added {len(self.vector_db)} documents to in-memory {provider} database")
-    
-    def search(self, query: str, top_k: int = 5) -> List[Dict[str, Any]]:
-        """Search for similar documents"""
-        query_embedding = self.embed_text(query)
         if not query_embedding:
-            return []
+            raise ValueError("Query embedding is required for search")
         
         if self.use_azure_search:
-            # Use Azure Search backend with hybrid search
-            return self.search_backend.search(
-                query_embedding=query_embedding,
-                query_text=query,  # Enable hybrid search
-                top_k=top_k
-            )
+          # Lazy setup: upload to Azure Search if not done yet
+          if vector_db and not hasattr(self, '_azure_setup_done'):
+              print(f"Setting up Azure Search with {len(vector_db)} documents...")
+              self.search_backend.add_documents(vector_db)
+              self._azure_setup_done = True
+              print("✅ Azure Search setup complete")
+          
+          # Use Azure Search backend
+          return self.search_backend.search(
+              query_embedding=query_embedding,
+              query_text=query,
+              top_k=top_k
+          )
+        
         
         # Use in-memory vector database
-        if not self.vector_db:
+        if not vector_db:
             return []
         
-        # Extract key terms (numbers, important words)
-        key_terms = []
         
-        # Find numbers (like "517")
-        regulatory_numbers = re.findall(r'\b\d+\b', query)
-        regulatory_terms = re.findall(r'\b(?:article|section|sub-section|point|paragraph)\s+\d+\b', query.lower())
-        key_terms.extend(regulatory_numbers)
+        if use_hybrid:
+            # Use hybrid search from rag.utils
+            try:
+                from rag.utils import hybrid_search_rrf
+                contents, top_indices = hybrid_search_rrf(
+                    query=query,
+                    query_embedding=query_embedding,
+                    vector_db=vector_db,
+                    top_k=top_k
+                )
+                return [vector_db[i] for i in top_indices]
+            except ImportError:
+                print("⚠️ Hybrid search not available, falling back to vector search")
+                use_hybrid = False
         
-        # Find important words (skip common words)
-        words = query.lower().split()
-        important_words = [w for w in words if len(w) > 3 and w not in ['the', 'and', 'for', 'with', 'this', 'that']]
-        key_terms.extend(important_words)
-
-        similarities = []
-        for doc in self.vector_db:
-            similarity = cosine_similarity([query_embedding], [doc['embedding']])[0][0]
-
-            # Boost for key term matches - check both content and headers
-            content_lower = doc['content'].lower()
-            headers_lower = doc.get('block', {}).get('enriched_headers', '').lower()
-            search_text = content_lower + ' ' + headers_lower
+        if not use_hybrid:
+            # Fallback: Pure vector search with regulatory boosting
+            similarities = []
+            for doc in vector_db:
+                similarity = cosine_similarity([query_embedding], [doc['embedding']])[0][0]
+                
+                # Regulatory boosting
+                content_lower = doc['content'].lower()
+                headers_lower = doc.get('block', {}).get('enriched_headers', '').lower()
+                search_text = content_lower + ' ' + headers_lower
+                
+                # Boost for regulatory numbers and terms
+                regulatory_numbers = re.findall(r'\b\d+\b', query)
+                regulatory_terms = re.findall(r'\b(?:article|section|sub-section|point|paragraph)\s+\d+\b', query.lower())
+                
+                for num in regulatory_numbers:
+                    if num in search_text:
+                        similarity += 0.5
+                
+                for term in regulatory_terms:
+                    if term in headers_lower:
+                        similarity += 1.0  # Super boost for header matches
+                    elif term in search_text:
+                        similarity += 0.7
+                
+                similarities.append({'document': doc, 'similarity': similarity})
             
-            term_matches = sum(1 for term in key_terms if term in search_text)
-            
-            if term_matches > 0:
-                similarity += 0.1 * term_matches
-
-            # STRONG boost for regulatory numbers
-            for num in regulatory_numbers:
-                if num in search_text:
-                    similarity += 0.5  # Very strong boost
-            
-            # EXTRA boost for full regulatory references
-            for term in regulatory_terms:
-                if term in search_text:
-                    similarity += 0.7  # Even stronger boost
-                    
-            # SUPER boost for exact regulatory references in headers (like "Article 409")
-            for term in regulatory_terms:
-                if term in headers_lower:
-                    similarity += 1.0  # Super strong boost for header matches
-
-            similarities.append({'document': doc, 'similarity': similarity})
-        
-        similarities.sort(key=lambda x: x['similarity'], reverse=True)
-        
-        return [item['document'] for item in similarities[:top_k]]
+            similarities.sort(key=lambda x: x['similarity'], reverse=True)
+            return [item['document'] for item in similarities[:top_k]]
     
     def _extract_specific_regulations(self, context: str, query: str) -> List[str]:
         """Extract specific regulatory references from context"""
@@ -290,7 +196,7 @@ class UnifiedRAGSystem:
         
         return list(set(regulations))  # Remove duplicates
     
-    def _enhance_context_with_related_blocks(self, relevant_chunks: List[Dict[str, Any]], query: str) -> str:
+    def _enhance_context_with_related_blocks(self, vector_db, relevant_chunks: List[Dict[str, Any]], query: str) -> str:
         """Enhance context by finding related blocks from same sections"""
         enhanced_context = []
         seen_sections = set()
@@ -311,7 +217,7 @@ class UnifiedRAGSystem:
                 seen_sections.add(headers)
                 
                 # Look for related blocks in the same section
-                for doc in self.vector_db:
+                for doc in vector_db:
                     if (doc['block'].get('enriched_headers', '') == headers and 
                         doc['content'] not in [c['content'] for c in relevant_chunks]):
                         enhanced_context.append(doc['content'])
@@ -319,39 +225,41 @@ class UnifiedRAGSystem:
         
         return "\n\n".join(enhanced_context)
     
-    def answer_query(self, query: str, top_k: int = 5, max_context: int = 15000) -> str:
+    def answer_query(self, vector_db, query: str, query_embedding: List[float], top_k: int = 5, 
+                    max_context: int = 15000, use_hybrid: bool = True ) -> str:
         """Answer query using RAG with enhanced context and regulation extraction"""
-        relevant_chunks = self.search(query, top_k)
+        
+        # Search for relevant chunks
+        relevant_chunks = self.search(vector_db, query, query_embedding, top_k, use_hybrid)
         
         if not relevant_chunks:
             return "No relevant information found."
         
         # Build enhanced context
-        enhanced_context = self._enhance_context_with_related_blocks(relevant_chunks, query)
+        enhanced_context = self._enhance_context_with_related_blocks(vector_db, relevant_chunks, query)
         
         # Extract regulatory references
         regulations = self._extract_specific_regulations(enhanced_context, query)
         
         # Enhanced system prompt based on query type
         if any(keyword in query.lower() for keyword in ['compliance officer', 'appointment', 'requirements']):
-            system_prompt = """You are a regulatory compliance expert. When answering questions about compliance officers or appointments:
+              system_prompt = """You are a regulatory compliance expert. When answering questions about compliance officers or appointments:
 
-1. Always include ALL key requirements (full-time vs part-time, approval processes)
-2. List ALL required documents completely
-3. Mention any exceptions or special procedures (e.g., changes, part-time appointments)
-4. Reference specific regulatory sections and articles
-5. Be comprehensive while remaining clear and organized
+                      1. Always include ALL key requirements (full-time vs part-time, approval processes)
+                      2. List ALL required documents completely
+                      3. Mention any exceptions or special procedures (e.g., changes, part-time appointments)
+                      4. Reference specific regulatory sections and articles
+                      5. Be comprehensive while remaining clear and organized
 
-Use bullet points for document lists and organize information logically."""
+                      Use bullet points for document lists and organize information logically."""
         else:
             system_prompt = """Answer questions based on the provided context. Be specific and cite relevant sections. If information is insufficient, state this clearly. 
-
-For regulatory questions:
-- Include all relevant requirements and exceptions
-- Reference specific articles, sections, and regulations
-- Organize complex information clearly
-- Be concise but thorough
-"""
+                            For regulatory questions:
+                            - Include all relevant requirements and exceptions
+                            - Reference specific articles, sections, and regulations
+                            - Organize complex information clearly
+                            - Be concise but thorough
+                            """
         
         messages = [
             {
@@ -382,10 +290,12 @@ Please provide a comprehensive answer that includes all relevant requirements, e
             provider = "Azure OpenAI" if self.use_azure else "OpenAI"
             return f"Error generating response with {provider}: {e}"
     
-    def answer_with_sources(self, query: str, top_k: int = 5) -> Dict[str, Any]:
+    def answer_with_sources(self, vector_db, query: str, query_embedding: List[float], top_k: int = 5,
+                           use_hybrid: bool = True, use_faiss: bool = False) -> Dict[str, Any]:
         """Answer query and return sources with enhanced regulation tracking"""
-        relevant_chunks = self.search(query, top_k)
         
+        # Search for relevant chunks
+        relevant_chunks = self.search(vector_db, query, query_embedding, top_k, use_hybrid)
         if not relevant_chunks:
             return {
                 "answer": "No relevant information found.",
@@ -394,7 +304,8 @@ Please provide a comprehensive answer that includes all relevant requirements, e
                 "confidence": 0.0
             }
         
-        answer = self.answer_query(query, top_k)
+        # Generate answer
+        answer = self.answer_query(query, query_embedding, top_k, use_hybrid=use_hybrid, use_faiss=use_faiss)
         
         # Extract regulatory references from all relevant chunks
         all_context = "\n\n".join([chunk['content'] for chunk in relevant_chunks])
@@ -416,6 +327,17 @@ Please provide a comprehensive answer that includes all relevant requirements, e
             # "confidence": len(relevant_chunks) / top_k
         }
     
+    def update_vector_db(self, new_vector_db: List[Dict[str, Any]]):
+        """Update the vector database with new embeddings"""
+        self.vector_db = new_vector_db
+        
+        if self.use_azure_search:
+            # Update Azure Search index
+            self.search_backend.add_documents(new_vector_db)
+            print(f"Updated Azure Search with {len(new_vector_db)} documents")
+        else:
+            print(f"Updated in-memory vector DB with {len(new_vector_db)} documents")
+    
     def stats(self) -> Dict[str, Any]:
         """Get database statistics"""
         if self.use_azure_search:
@@ -429,8 +351,9 @@ Please provide a comprehensive answer that includes all relevant requirements, e
             "llm_provider": "Azure OpenAI" if self.use_azure else "OpenAI",
             "search_backend": "Azure AI Search" if self.use_azure_search else "In-Memory Vector DB",
             "model": self.model,
-            "embedding_model": self.online_embedding_model,
-            "using_local_embeddings": self.use_local_embeddings
+            "total_documents": len(self.vector_db),
+            "supports_faiss": True,
+            "supports_hybrid": True
         }
         
         if self.use_azure:

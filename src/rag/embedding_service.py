@@ -39,7 +39,12 @@ class EmbeddingService:
         self.use_azure = use_azure
         self.online_model = online_model
         self.use_cached_embeddings = use_cached_embeddings
+
+        # Set final model name for clarity
+        self.final_model = self._determine_final_model()
         
+        print(f"🎯 Final embedding model: {self.final_model}")
+    
         # Initialize local model if needed
         if use_local:
             from sentence_transformers import SentenceTransformer
@@ -69,6 +74,16 @@ class EmbeddingService:
         else:
             self.client = None
     
+
+    def _determine_final_model(self) -> str:
+        """Determine the actual model being used"""
+        if self.use_local:
+            return f"Local: {self.local_model_name}"
+        elif self.use_azure:
+            return f"Azure OpenAI: {self.online_model}"
+        else:
+            return f"OpenAI: {self.online_model}"
+        
     def get_provider_suffix(self) -> str:
         """Get suffix for cache file naming based on embedding provider"""
         if self.use_local:
@@ -204,7 +219,8 @@ class EmbeddingService:
             "model": self.local_model_name if self.use_local else self.online_model,
             "use_azure": self.use_azure,
             "cache_enabled": self.use_cached_embeddings,
-            "provider_suffix": self.get_provider_suffix()
+            "provider_suffix": self.get_provider_suffix(),
+            "final_model": self.final_model
         }
         
         print("📋 Embedding Service Configuration:")
@@ -213,42 +229,42 @@ class EmbeddingService:
         
         return config
 
-if __name__ == "__main__":
+# if __name__ == "__main__":
     
-    import sys
-    import os
+#     import sys
+#     import os
 
-    # Add src directory to Python path
-    sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(__file__))))
+#     # Add src directory to Python path
+#     sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(__file__))))
     
-    from pathlib import Path
-    from document_readers.pymupdf_reader import PyMuPDFProcessor
-    from document_processing.block_processor import block_processor
-    from document_chunker.block_chunker import RegulatoryChunkingSystem
+#     from pathlib import Path
+#     from document_readers.pymupdf_reader import PyMuPDFProcessor
+#     from document_processing.block_processor import block_processor
+#     from document_chunker.block_chunker import RegulatoryChunkingSystem
 
 
 
-    input_pdf = "data/regulatory_documents/lu/Lux_cssf18_698eng.pdf"
-    output_dir = Path("data_processed")
-    output_dir.mkdir(exist_ok=True)
+#     input_pdf = "data/regulatory_documents/lu/Lux_cssf18_698eng.pdf"
+#     output_dir = Path("data_processed")
+#     output_dir.mkdir(exist_ok=True)
 
       
-    reader = PyMuPDFProcessor()
+#     reader = PyMuPDFProcessor()
 
 
-    raw_blocks = reader.extract_blocks(input_pdf)
+#     raw_blocks = reader.extract_blocks(input_pdf)
 
-    processor = block_processor(raw_blocks)
-    processed_blocks = processor.process_blocks()
+#     processor = block_processor(raw_blocks)
+#     processed_blocks = processor.process_blocks()
 
-    chunker = RegulatoryChunkingSystem(processed_blocks)
-    chunks_doc = chunker.chunk_blocks()
+#     chunker = RegulatoryChunkingSystem(processed_blocks)
+#     chunks_doc = chunker.chunk_blocks()
     
 
-    embd_srv = EmbeddingService()
-    embd_srv.embed_all_chunks(chunks_doc)
-    embd_srv.get_provider_name()
-    embd_srv.get_config()
+#     embd_srv = EmbeddingService()
+#     embd_srv.embed_all_chunks(chunks_doc)
+#     embd_srv.get_provider_name()
+#     embd_srv.get_config()
 
   
     

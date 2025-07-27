@@ -185,12 +185,13 @@ def sklearn_similarity(chunks: List[str], query:str, k=5, path: str = ''):
     
     return results
 
-def faiss_similarity(chunks:List[dict], query:str, k=5):
+
+
+def faiss_similarity(chunks:List[dict], query_embedding, query:str, k=5):
     """Find top k similar chunks using FAISS cosine similarity"""
 
     # Extract only embeddings
     chunk_embeddings = np.array([item['embedding'] for item in chunks], dtype=np.float32)
-    query_embedding = model.encode([query])
     
     # Convert to float32 and normalize
     chunk_embeddings = np.array(chunk_embeddings, dtype=np.float32)
