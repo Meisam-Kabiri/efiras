@@ -243,9 +243,22 @@ class RAGSystem:
                 model=self.model,
                 messages=messages,
                 temperature=0.1,
-                max_tokens=1200
+                max_tokens=1200,
+                stream=True
             )
-            return response.choices[0].message.content.strip()
+
+            # Print as it streams + collect full response
+            full_response = ""
+            for part in response:
+                if part.choices[0].delta.content:
+                    content = part.choices[0].delta.content
+                    print(content, end="", flush=True)  # Print immediately, no newline
+                    full_response += content
+            
+            print()  # Add final newline
+            return full_response
+        
+            
         except Exception as e:
             provider = "Azure OpenAI" if self.use_azure else "OpenAI"
             return f"Error generating response with {provider}: {e}"
