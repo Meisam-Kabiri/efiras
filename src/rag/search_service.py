@@ -8,16 +8,39 @@ from whoosh.qparser import QueryParser
 from whoosh import scoring
 import os
 import json
+from typing import List, Dict, Any, Optional
 
 
 class SearchService:
-    def __init__(self, index_dir="indexes", use_async = True):
+    def __init__(self, index_dir="indexes",
+                  use_async:bool = True,
+                  # Azure Search parameters
+                  use_azure_search: bool = False,
+                  azure_search_endpoint: Optional[str] = None,
+                  azure_search_key: Optional[str] = None,
+                  azure_search_index: str = "documents",):
+        
+
         """Initialize HybridSearch with optional index directory"""
         self.index_dir = index_dir
         self.faiss_index = None
         self.whoosh_index = None
         self.chunks = []
         self.use_async = use_async
+
+        # Add Azure Search option
+        self.use_azure_search = use_azure_search
+        if use_azure_search:
+            try:
+                from rag.azure_search_backend import AzureSearchBackend
+                AZURE_SEARCH_AVAILABLE = True
+            except ImportError:
+                AZURE_SEARCH_AVAILABLE = False
+            self.azure_backend = AzureSearchBackend(
+                endpoint=azure_search_endpoint,
+                index_name=azure_search_index,
+                api_key=azure_search_key
+            )
         
     def build_indexes(self, documents_list):
         """Build FAISS and Whoosh indexes"""
@@ -36,7 +59,11 @@ class SearchService:
               all_chunks.append(chunk)
 
 
-
+        if self.use_azure_search:
+            print(f"Uploading {len(all_chunks)} chunks to Azure Search...")
+            self.azure_backend.add_documents(all_chunks)
+            print("✅ Azure Search upload complete")
+            return  # Don't build FAISS/Whoosh if using Azure
         
         os.makedirs(self.index_dir + "/whoosh", exist_ok=True)
         self.chunks = all_chunks
@@ -120,6 +147,17 @@ class SearchService:
     async def hybrid_search(self, query, query_embedding, top_k=5):
         """Sync method with concurrent async calls"""
         
+        if self.use_azure_search:
+            azure_results = self.azure_backend.search(query_embedding=query_embedding,
+                                                      query_text=query,
+                                                      top_k=top_k
+                                                      )
+            
+            # Convert to match your local format
+            top_content = [doc["content"] for doc in azure_results]
+            top_indices = [i for i in range(len(azure_results))]  # Sequential indices
+            return top_content, top_indices
+                
         
         if self.use_async:
             # Run both async methods concurrently from sync function
@@ -192,42 +230,6 @@ class SearchService:
             "index_directory": self.index_dir
         }
         return stats
-
-
-# # Usage example
-# async def main():
-#     # Initialize search system
-#     search = HybridSearch(index_dir="indexes")
-    
-#     # Load embeddings
-#     path = 'data_processed/Lux_cssf18_698eng_embds_local_BAAI_bge-large-en-v1.5.json'
-#     with open(path, 'r') as f:
-#         load_embeddings = json.load(f)
-    
-#     # Build indexes
-#     search.build_indexes(load_embeddings['embeddings'])
-    
-#     # Optional: Save indexes for persistence
-#     search.save_indexes()
-    
-#     # Query
-#     query = "What monitoring elements must IFM implement for central administration delegation?"
-    
-#     # Get query embedding
-#     from sentence_transformers import SentenceTransformer
-#     model = SentenceTransformer('BAAI/bge-large-en-v1.5', device='cpu')
-#     query_embed = model.encode(query)
-    
-#     # Search
-#     results, indices = await search.hybrid_search(query, query_embed, top_k=5)
-    
-#     print("Search Results:")
-#     print(f"Indices: {indices}")
-#     for i, result in enumerate(results):
-#         print(f"{i+1}. {result[:100]}...")
-    
-#     # Print stats
-#     print("\nIndex Stats:", search.get_stats())
 
 
 if __name__ == "__main__":
