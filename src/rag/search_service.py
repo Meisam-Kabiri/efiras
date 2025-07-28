@@ -141,24 +141,10 @@ class SearchService:
             combined[idx] = combined.get(idx, 0) + 1/(k + rank + 1)
         
         return combined
-
-
+    
 
     async def hybrid_search(self, query, query_embedding, top_k=5):
-        """Sync method with concurrent async calls"""
-        
-        if self.use_azure_search:
-            azure_results = self.azure_backend.search(query_embedding=query_embedding,
-                                                      query_text=query,
-                                                      top_k=top_k
-                                                      )
-            
-            # Convert to match your local format
-            top_content = [doc["content"] for doc in azure_results]
-            top_indices = [i for i in range(len(azure_results))]  # Sequential indices
-            return top_content, top_indices
-                
-        
+        """Sync method with concurrent async calls"""               
         if self.use_async:
             # Run both async methods concurrently from sync function
             vector_results, bm25_results = await asyncio.gather(
@@ -178,7 +164,22 @@ class SearchService:
         
         return top_content, top_indices
 
-  
+
+    def search_document(self, query, query_embedding, top_k=5):
+        if self.use_azure_search:
+                azure_results = self.azure_backend.search(query_embedding=query_embedding,
+                                                          query_text=query,
+                                                          top_k=top_k
+                                                          )
+                
+                # Convert to match your local format
+                top_content = [doc["content"] for doc in azure_results]
+                top_indices = [i for i in range(len(azure_results))]  # Sequential indices
+                return top_content, top_indices
+        
+        top_content, top_indices = asyncio.run(self.hybrid_search(query, query_embedding, top_k))
+        return top_content, top_indices
+    
     def save_indexes(self, faiss_path=None, whoosh_path=None):
         """Save indexes to disk for persistence"""
         if faiss_path is None:
@@ -257,7 +258,9 @@ if __name__ == "__main__":
     query_embed = model.encode(query)
     
 
-    results, indices = asyncio.run(search.hybrid_search(query, query_embed, top_k=5))
+    # results, indices = asyncio.run(search.hybrid_search(query, query_embed, top_k=5))
+    # or 
+    results, indices = search.search_document(query, query_embed, top_k=5)
 
     
     print("Search Results:")
