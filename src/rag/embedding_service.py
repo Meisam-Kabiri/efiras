@@ -184,12 +184,17 @@ class EmbeddingService:
             embedding = self.embed_text(content)
             
             if embedding:
-                embeddings.append({
+                embedding_item = {
                     'id': i,
                     'content': chunk["text"],  # Store original text
                     'embedding': embedding,
-                    'block': {k: v for k, v in chunk.items() if k != "text"}  # Store full block metadata
-                })
+                }
+                # Add all other fields from chunk/block (except "text") to top level
+                for k, v in chunk.items():
+                    if k != "text":
+                        embedding_item[k] = v
+                        
+                embeddings.append(embedding_item)
             else:
                 print(f"Failed to embed block {i}")
         

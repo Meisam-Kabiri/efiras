@@ -134,36 +134,31 @@ class AzureSearchBackend:
         self._index_exists = True
         print(f"Created Azure Search index: {self.index_name}")
     
-    def add_documents(self, documents: List[Dict[str, Any]]):
+    def add_documents(self, documents_list: List[Dict[str, Any]]):
         """Add documents with embeddings to the search index"""
-        if not documents:
+        if not documents_list:
             return
         
-        # Ensure index exists with correct embedding dimension
-        first_embedding = documents[0].get('embedding', [])
-        embedding_dim = len(first_embedding) if first_embedding else 1536
-        self.ensure_index_exists(embedding_dim)
+        # INPUT: List of documents with nested structure
+        # OUTPUT: Flattened chunks stored individually
         
-        # Prepare documents for indexing
-        search_documents = []
-        for doc in documents:
-            search_doc = {
-                "id": str(uuid.uuid4()),
-                "content": doc.get('content', ''),
-                "headers": doc.get('block', {}).get('enriched_headers', ''),
-                "page": doc.get('block', {}).get('page', 0),
-                "block_id": doc.get('id', 0),
-                "embedding": doc.get('embedding', [])
-            }
-            search_documents.append(search_doc)
+        all_chunks = []
+        for doc in documents_list:  # Each doc has metadata + embeddings list
+            filename = doc.get("metadata", {}).get("filename", "unknown")
+            
+            for chunk in doc.get("embeddings", []):  # Extract each chunk
+                search_doc = {
+                    "id": str(uuid.uuid4()),
+                    "content": chunk.get('content', ''),
+                    "headers": chunk.get('header_identifier', ''),
+                    "page": chunk.get('page', 0),
+                    "block_id": chunk.get('id', 0),
+                    "embedding": chunk.get('embedding', [])
+                }
+                all_chunks.append(search_doc)  # Flatten to chunk level
         
-        # Upload documents in batches
-        batch_size = 100
-        for i in range(0, len(search_documents), batch_size):
-            batch = search_documents[i:i + batch_size]
-            self.search_client.upload_documents(batch)
-        
-        print(f"Added {len(search_documents)} documents to Azure Search index")
+        # Store individual chunks (not nested documents)
+        self.search_client.upload_documents(all_chunks)
     
     def search(self, query_embedding: List[float], query_text: str = "", top_k: int = 5, 
                filters: Optional[str] = None) -> List[Dict[str, Any]]:
@@ -191,15 +186,8 @@ class AzureSearchBackend:
         # Convert results to our standard format
         results = []
         for result in search_results:
-            doc = {
-                'id': result.get('block_id', 0),
-                'content': result.get('content', ''),
-                'embedding': [],  # Don't return large embeddings
-                'block': {
-                    'enriched_headers': result.get('headers', ''),
-                    'page': result.get('page', 0)
-                }
-            }
+            # Just copy everything except embedding
+            doc = {k: v for k, v in result.items() if k != 'embedding'}
             results.append(doc)
         
         return results

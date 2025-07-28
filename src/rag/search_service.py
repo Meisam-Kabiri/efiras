@@ -18,7 +18,8 @@ class SearchService:
                   use_azure_search: bool = False,
                   azure_search_endpoint: Optional[str] = None,
                   azure_search_key: Optional[str] = None,
-                  azure_search_index: str = "documents",):
+                  azure_search_index: str = "documents",
+                  documents_list: List[Dict] = None):
         
 
         """Initialize HybridSearch with optional index directory"""
@@ -27,6 +28,10 @@ class SearchService:
         self.whoosh_index = None
         self.chunks = []
         self.use_async = use_async
+        if documents_list:
+            self.chunks = self.set_chunks(documents_list)
+            if self.use_azure_search:
+                self.add_embedings_to_azure(documents_list)
 
         # Add Azure Search option
         self.use_azure_search = use_azure_search
@@ -41,11 +46,55 @@ class SearchService:
                 index_name=azure_search_index,
                 api_key=azure_search_key
             )
+
+    def add_embedings_to_azure(self, document_list):
+            print(f"Uploading {len(document_list)} chunks to Azure Search...")
+            self.azure_backend.add_documents(document_list)
+            print("✅ Azure Search upload complete")
+            return  # Don't build FAISS/Whoosh if using Azure
+    
+    def set_chunks(self, documents_list):
+        """Set chunks data without building indexes"""
+        all_chunks = []
+        documents_list = documents_list if isinstance(documents_list, list) else [documents_list]
         
+        for doc_idx, doc in enumerate(documents_list):
+            filename = doc["metadata"].get("filename", f"document_{doc_idx}")
+            
+            for chunk_idx, embedded_chunk in enumerate(doc["embeddings"]):
+                # Create new chunk without embedding (for memory efficiency)
+                chunk_metadata = {
+                    'content': embedded_chunk['content'],  # Text content
+                    'id': embedded_chunk['id'],
+                    'doc_id': doc_idx,
+                    'filename': filename,
+                    'chunk_id': chunk_idx,
+                    'doc_metadata': doc.get("metadata", {}),
+                    # Add all other fields from embedded_chunk except 'embedding'
+                    **{k: v for k, v in embedded_chunk.items() 
+                      if k not in ['embedding', 'content', 'id']}
+                }
+                all_chunks.append(chunk_metadata)
+    
+        self.chunks = all_chunks
+        print(f"✅ Set {len(self.chunks)} chunks")
+
+
     def build_indexes(self, documents_list):
         """Build FAISS and Whoosh indexes"""
-
-        all_chunks = []
+        """
+        Each document in documents_list is a dictionary with:
+          - "metadata": contains fields like "filename", "number of pages"
+          - "embeddings": a list of chunks, each with:
+              - "embedding": the vector representation
+              - "content": the text content of the chunk
+              - "headers"
+              - "page_number"
+              - "header_identifier" (the header text)
+        """
+                  
+        self.set_chunks(documents_list)
+        all_embedded_chunks = []
         documents_list = documents_list if isinstance(documents_list, list) else [documents_list]
         for doc_idx, doc in enumerate(documents_list):
           # Get filename from metadata
@@ -56,29 +105,25 @@ class SearchService:
               chunk["filename"] = filename  # Use filename from metadata
               chunk["chunk_id"] = chunk_idx
               chunk["doc_metadata"] = doc.get("metadata", {})
-              all_chunks.append(chunk)
+              all_embedded_chunks.append(chunk)
 
 
-        if self.use_azure_search:
-            print(f"Uploading {len(all_chunks)} chunks to Azure Search...")
-            self.azure_backend.add_documents(all_chunks)
-            print("✅ Azure Search upload complete")
-            return  # Don't build FAISS/Whoosh if using Azure
+
         
         os.makedirs(self.index_dir + "/whoosh", exist_ok=True)
-        self.chunks = all_chunks
+        self.chunks = all_embedded_chunks
         
         # Build FAISS
-        embeddings = np.array([c["embedding"] for c in self.chunks]).astype('float32')
+        embeddings = np.array([c["embedding"] for c in all_embedded_chunks]).astype('float32')
         faiss.normalize_L2(embeddings)
         
-        if len(self.chunks) > 10000:
+        if len(all_embedded_chunks) > 10000:
             # Large dataset - use IVF
             quantizer = faiss.IndexFlatIP(embeddings.shape[1])
             self.faiss_index = faiss.IndexIVFFlat(quantizer, embeddings.shape[1], 100)
             self.faiss_index.train(embeddings)
             self.faiss_index.nprobe = 10
-        elif len(self.chunks) > 1000:
+        elif len(all_embedded_chunks) > 1000:
             # Medium dataset - use HNSW
             self.faiss_index = faiss.IndexHNSWFlat(embeddings.shape[1], 32)
         else:
@@ -92,11 +137,11 @@ class SearchService:
         self.whoosh_index = create_in(self.index_dir + "/whoosh", schema)
         
         writer = self.whoosh_index.writer()
-        for i, chunk in enumerate(self.chunks):
+        for i, chunk in enumerate(all_embedded_chunks):
             writer.add_document(id=str(i), content=chunk["content"])
         writer.commit()
         
-        print(f"✅ Indexes built for {len(self.chunks)} chunks")
+        print(f"✅ Indexes built for {len(all_embedded_chunks)} chunks")
 
     async def vector_search(self, query_embedding, top_k=100):
         """Fast vector search using FAISS"""
@@ -160,25 +205,25 @@ class SearchService:
         combined = self.rrf_combine(vector_results, bm25_results)
         top_indices = sorted(combined.keys(), key=combined.get, reverse=True)[:top_k]
         
-        top_content = [self.chunks[i]["content"] for i in top_indices if i < len(self.chunks)]
+        top_chunks = [self.chunks[i] for i in top_indices if i < len(self.chunks)]
         
-        return top_content, top_indices
+        return top_chunks
 
 
-    def search_document(self, query, query_embedding, top_k=5):
+    def search_documents(self, query, query_embedding, top_k=5):
         if self.use_azure_search:
                 azure_results = self.azure_backend.search(query_embedding=query_embedding,
                                                           query_text=query,
                                                           top_k=top_k
                                                           )
                 
-                # Convert to match your local format
-                top_content = [doc["content"] for doc in azure_results]
-                top_indices = [i for i in range(len(azure_results))]  # Sequential indices
-                return top_content, top_indices
+                # # Convert to match your local format if needed
+                # top_content = [doc["content"] for doc in azure_results]
+                # top_indices = [i for i in range(len(azure_results))]  # Sequential indices
+                return azure_results
         
-        top_content, top_indices = asyncio.run(self.hybrid_search(query, query_embedding, top_k))
-        return top_content, top_indices
+        top_chunks = asyncio.run(self.hybrid_search(query, query_embedding, top_k))
+        return top_chunks
     
     def save_indexes(self, faiss_path=None, whoosh_path=None):
         """Save indexes to disk for persistence"""
@@ -200,24 +245,31 @@ class SearchService:
             faiss_path = os.path.join(self.index_dir, "faiss.index")
         if whoosh_path is None:
             whoosh_path = self.index_dir + "/whoosh"
-            
+
+        success = True   
         try:
             # Load FAISS index
             if os.path.exists(faiss_path):
                 self.faiss_index = faiss.read_index(faiss_path)
                 print(f"✅ FAISS index loaded from {faiss_path}")
+            else:
+              print(f"⚠️ FAISS index not found at {faiss_path}")
+              success = False
             
             # Load Whoosh index
             if os.path.exists(whoosh_path):
                 self.whoosh_index = open_dir(whoosh_path)
                 print(f"✅ Whoosh index loaded from {whoosh_path}")
+            else:
+              print(f"⚠️ Whoosh index not found at {whoosh_path}")
+              success = False
             
             # Load chunks data if provided
             if chunks_data is not None:
                 self.chunks = chunks_data
                 print(f"✅ Loaded {len(self.chunks)} chunks")
                 
-            return True
+            return success
         except Exception as e:
             print(f"❌ Error loading indexes: {e}")
             return False
@@ -243,11 +295,13 @@ if __name__ == "__main__":
         load_embeddings = json.load(f)
     
     # Build indexes
-    # search.build_indexes(load_embeddings['embeddings'])
-    search.build_indexes(load_embeddings)
+
+    if not search.load_indexes():
+      search.build_indexes(load_embeddings)
+      # Optional: Save indexes for persistence
+      search.save_indexes()
+
     
-    # Optional: Save indexes for persistence
-    search.save_indexes()
     
     # Query
     query = "What monitoring elements must IFM implement for central administration delegation?"
@@ -260,13 +314,13 @@ if __name__ == "__main__":
 
     # results, indices = asyncio.run(search.hybrid_search(query, query_embed, top_k=5))
     # or 
-    results, indices = search.search_document(query, query_embed, top_k=5)
+    results, indices = search.search_documents(query, query_embed, top_k=5)
 
     
     print("Search Results:")
     print(f"Indices: {indices}")
     for i, result in enumerate(results):
-        print(f"{i+1}. {result[:100]}...")
+        print(f"{i+1}. {result['content'][:100]}...")
     
     # Print stats
     print("\nIndex Stats:", search.get_stats())
