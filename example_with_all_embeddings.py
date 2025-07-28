@@ -13,55 +13,33 @@ from document_readers.pymupdf_reader import PyMuPDFProcessor
 from document_processing.block_processor import block_processor
 from document_chunker.block_chunker import RegulatoryChunkingSystem
 
-def create_local_embeddings_for_all_pdf_in_directory(path:str):
-    path = Path(path)
-    files = path.glob("*.pdf")
-    for file in files:
-        print (file)
-
-    embd_srv = EmbeddingService()
 def main():
     # File paths
-    input_pdf = "data/regulatory_documents/lu/Lux_cssf18_698eng.pdf"
-    embeddings_path = 'data_processed/Lux_cssf18_698eng_embds_local_BAAI_bge-large-en-v1.5.json'
-    output_dir = Path("data_processed")
-    output_dir.mkdir(exist_ok=True)
+    emb_dir = Path("data_processed")
+    embd_file_list = list(emb_dir.glob("*embds_local_BAAI_bge-large-en-v1.5*.json"))
+    doc_list = []
+    for file in embd_file_list:
+        with open(file, 'r') as f:
+            doc_list.append(json.load(f))
 
     # Initialize services
+    #Assume All the embeddings exists
     embedding_service = EmbeddingService()
     search_service = SearchService(index_dir="indexes")
     rag_system = RAGGenerator()
 
-    # Step 1: Try to load existing embeddings
-    if os.path.exists(embeddings_path):
-        print(f"Loading embeddings from {embeddings_path}")
-        with open(embeddings_path, 'r') as f:
-            embeddings_data = json.load(f)
-    else:
-        print("Embeddings not found, generating new ones...")
-        # Process PDF and generate embeddings
-        reader = PyMuPDFProcessor()
-        raw_blocks = reader.extract_blocks(input_pdf)
-        
-        processor = block_processor(raw_blocks)
-        processed_blocks = processor.process_blocks()
-        
-        chunker = RegulatoryChunkingSystem(processed_blocks)
-        chunks_doc = chunker.chunk_blocks()
-        
-        embeddings_data = embedding_service.embed_all_chunks(chunks_doc)
-
     # Step 2: Setup search service
     if not search_service.load_indexes():
         print("Building new search indexes...")
-        search_service.build_indexes(embeddings_data)  # Build indexes from chunks
+        search_service.build_indexes(doc_list)  # Build indexes from chunks
         search_service.save_indexes()  # Save for next time
     else:
         print("Search indexes loaded successfully!")
-        search_service.set_chunks(embeddings_data)  # Set chunks first
+        search_service.set_chunks(doc_list)  # Set chunks first
 
     # Step 3: Process query
-    query = "What monitoring elements must IFM implement for central administration delegation?"
+    # query = "What monitoring elements must IFM implement for central administration delegation?"
+    query = "According to Article 74 of the Capital Requirements Directive (CRD), what governance arrangements must institutions establish to ensure sound and effective risk management?"
     print(f"\nQuery: {query}")
     
     # Get query embedding
