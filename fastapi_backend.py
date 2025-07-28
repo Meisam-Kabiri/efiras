@@ -8,7 +8,7 @@ from pathlib import Path
 
 # Add your src path
 sys.path.append(os.path.abspath("src"))
-from src.rag.unified_rag import UnifiedRAGSystem
+from rag.rag_generator import UnifiedRAGSystem
 from src.document_readers.base import DocumentProcessor, ProcessorConfig, ProcessorType
 from src.document_processing.block_processor import block_processor
 from src.document_chunker.block_chunker import RegulatoryChunkingSystem

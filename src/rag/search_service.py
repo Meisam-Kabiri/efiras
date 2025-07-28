@@ -9,7 +9,18 @@ from whoosh import scoring
 import os
 import json
 from typing import List, Dict, Any, Optional
+from rank_bm25 import BM25Okapi
+import pickle
 
+
+def better_tokenize(text):
+    import re
+    # Keep important terms together
+    text = re.sub(r'\n+', ' ', text)  # Remove newlines
+    text = re.sub(r'\s+', ' ', text)  # Multiple spaces to single
+    # Don't split "non-compliance" - keep as one term
+    tokens = text.lower().split()
+    return [token.strip('.,') for token in tokens if len(token) > 2]
 
 class SearchService:
     def __init__(self, index_dir="indexes",
@@ -27,11 +38,19 @@ class SearchService:
         self.faiss_index = None
         self.whoosh_index = None
         self.chunks = []
+        self.tokenized_cache = None
         self.use_async = use_async
         if documents_list:
             self.chunks = self.set_chunks(documents_list)
             if self.use_azure_search:
                 self.add_embedings_to_azure(documents_list)
+        
+        # Initialize cross-encoder (you might want to do this in __init__)
+        from sentence_transformers import CrossEncoder
+        try:
+          self.cross_encoder = CrossEncoder('BAAI/bge-reranker-large', local_files_only=True)
+        except:
+          self.cross_encoder = CrossEncoder('BAAI/bge-reranker-large', local_files_only=False)
 
         # Add Azure Search option
         self.use_azure_search = use_azure_search
@@ -132,16 +151,23 @@ class SearchService:
         
         self.faiss_index.add(embeddings)
         
-        # Build Whoosh
-        schema = Schema(id=ID(stored=True), content=TEXT())
-        self.whoosh_index = create_in(self.index_dir + "/whoosh", schema)
+
+        # Build BM25 (your proven approach, just cache it)
+        if not self.tokenized_cache:
+            self.tokenized_cache = [better_tokenize(c["content"]) for c in all_embedded_chunks]
+        self.bm25 = BM25Okapi(self.tokenized_cache)
+
+
+        # # Build Whoosh
+        # schema = Schema(id=ID(stored=True), content=TEXT())
+        # self.whoosh_index = create_in(self.index_dir + "/whoosh", schema)
         
-        writer = self.whoosh_index.writer()
-        for i, chunk in enumerate(all_embedded_chunks):
-            writer.add_document(id=str(i), content=chunk["content"])
-        writer.commit()
+        # writer = self.whoosh_index.writer()
+        # for i, chunk in enumerate(all_embedded_chunks):
+        #     writer.add_document(id=str(i), content=chunk["content"])
+        # writer.commit()
         
-        print(f"✅ Indexes built for {len(all_embedded_chunks)} chunks")
+        # print(f"✅ Indexes built for {len(all_embedded_chunks)} chunks")
 
     async def vector_search(self, query_embedding, top_k=100):
         """Fast vector search using FAISS"""
@@ -154,23 +180,49 @@ class SearchService:
         return scores[0], indices[0]
 
     async def bm25_search(self, query, top_k=100):
-        """Fast BM25 search using Whoosh"""
-        if self.whoosh_index is None:
-            raise ValueError("Whoosh index not built. Call build_indexes() first.")
-            
-        with self.whoosh_index.searcher(weighting=scoring.BM25F()) as searcher:
-            parser = QueryParser("content", self.whoosh_index.schema)
-            try:
-                parsed_query = parser.parse(query)
-            except:
-                # Fallback for malformed queries
-                from whoosh.query import Every
-                parsed_query = Every()
-                
-            results = searcher.search(parsed_query, limit=top_k)
-            return [(int(r['id']), r.score) for r in results]
+        """Fast BM25 search using BM25Okapi"""
+        
+        # Check if BM25 is available (either built fresh or loaded from disk)
+        if self.bm25 is None:
+            # Try to rebuild from tokenized cache if available
+            if hasattr(self, 'tokenized_cache') and self.tokenized_cache:
+                from rank_bm25 import BM25Okapi
+                self.bm25 = BM25Okapi(self.tokenized_cache)
+                print("📝 Rebuilt BM25 from cached tokens")
+            else:
+                raise ValueError("BM25 index not available. Call build_indexes() first or ensure tokenized cache is loaded.")
+        
+        
+        # Tokenize query using YOUR proven tokenization
+        query_tokens = better_tokenize(query)
+        
+        # Get BM25 scores for all documents
+        bm25_scores = self.bm25.get_scores(query_tokens)
+        
+        # Get top_k results with scores
+        scored_indices = [(i, score) for i, score in enumerate(bm25_scores)]
+        scored_indices.sort(key=lambda x: x[1], reverse=True)  # Sort by score descending
+        
+        return scored_indices[:top_k]  # Return (index, score) tuples
 
-    def rrf_combine(self, vector_results, bm25_results, k=60):
+    # async def bm25_search(self, query, top_k=100):
+    #     """Fast BM25 search using Whoosh"""
+    #     if self.whoosh_index is None:
+    #         raise ValueError("Whoosh index not built. Call build_indexes() first.")
+            
+    #     with self.whoosh_index.searcher(weighting=scoring.BM25F()) as searcher:
+    #         parser = QueryParser("content", self.whoosh_index.schema)
+    #         try:
+    #             parsed_query = parser.parse(query)
+    #         except:
+    #             # Fallback for malformed queries
+    #             from whoosh.query import Every
+    #             parsed_query = Every()
+                
+    #         results = searcher.search(parsed_query, limit=top_k)
+    #         return [(int(r['id']), r.score) for r in results]
+
+    def rrf_combine(self, vector_results, bm25_results, k=0):
         """Reciprocal Rank Fusion combination"""
         scores, indices = vector_results
         combined = {}
@@ -210,6 +262,56 @@ class SearchService:
         return top_chunks
 
 
+    async def hybrid_search_with_cross_encoder(self, query, query_embedding, top_k=8):
+      """Hybrid search with cross-encoder re-ranking"""
+      
+      # Step 1: Get candidates from both search methods
+      if self.use_async:
+          vector_results, bm25_results = await asyncio.gather(
+              self.vector_search(query_embedding, 15),  # Get top 10 from each
+              self.bm25_search(query, 15)
+          )
+      else:
+          vector_results = await self.vector_search(query_embedding, 15)
+          bm25_results = await self.bm25_search(query, 15)
+      
+      # Step 2: Combine candidates and remove duplicates
+      candidate_indices = set()
+      
+      # Add vector search indices
+      vector_scores, vector_indices = vector_results
+      for idx in vector_indices:
+          if idx != -1 and idx < len(self.chunks):
+              candidate_indices.add(idx)
+      
+      # Add BM25 indices  
+      for idx, score in bm25_results:
+          if idx < len(self.chunks):
+              candidate_indices.add(idx)
+      
+      # Convert to list of chunks
+      candidate_chunks = [(i, self.chunks[i]) for i in candidate_indices]
+      
+      # Step 3: Re-rank using cross-encoder
+      if len(candidate_chunks) == 0:
+          return []
+      
+      
+      
+      # Prepare query-chunk pairs for cross-encoder
+      pairs = [(query, chunk['content']) for idx, chunk in candidate_chunks]
+      scores = self.cross_encoder.predict(pairs)
+      
+      # Step 4: Sort by cross-encoder scores and return top_k
+      scored_chunks = list(zip(candidate_chunks, scores))
+      scored_chunks.sort(key=lambda x: x[1], reverse=True)  # Sort by score descending
+      
+      # Return top_k chunks
+      top_chunks = [chunk for (idx, chunk), score in scored_chunks[:top_k]]
+      
+      return top_chunks
+    
+    
     def search_documents(self, query, query_embedding, top_k=5):
         if self.use_azure_search:
                 azure_results = self.azure_backend.search(query_embedding=query_embedding,
@@ -225,26 +327,33 @@ class SearchService:
         top_chunks = asyncio.run(self.hybrid_search(query, query_embedding, top_k))
         return top_chunks
     
-    def save_indexes(self, faiss_path=None, whoosh_path=None):
+    def save_indexes(self, faiss_path=None, bm25_path = None, whoosh_path=None):
         """Save indexes to disk for persistence"""
-        if faiss_path is None:
-            faiss_path = os.path.join(self.index_dir, "faiss.index")
-        if whoosh_path is None:
-            whoosh_path = self.index_dir + "/whoosh"
+        faiss_path = faiss_path or os.path.join(self.index_dir, "faiss.index")
+        bm25_path = bm25_path or os.path.join(self.index_dir, "bm25_tokenized.pkl")
+        faiss_path = faiss_path or os.path.join(self.index_dir + "/whoosh", "faiss.index")
+
             
         if self.faiss_index is not None:
             faiss.write_index(self.faiss_index, faiss_path)
             print(f"✅ FAISS index saved to {faiss_path}")
+
+        # Save BM25 tokenized cache
+        if self.tokenized_cache:
+            with open(bm25_path, 'wb') as f:
+                pickle.dump(self.tokenized_cache, f)
+            print(f"✅ BM25 tokenized cache saved to {bm25_path}")
             
         if self.whoosh_index is not None:
             print(f"✅ Whoosh index already saved to {whoosh_path}")
 
-    def load_indexes(self, faiss_path=None, whoosh_path=None, chunks_data=None):
+    def load_indexes(self, faiss_path=None, bm25_path=None, whoosh_path=None, chunks_data=None):
         """Load indexes from disk"""
-        if faiss_path is None:
-            faiss_path = os.path.join(self.index_dir, "faiss.index")
-        if whoosh_path is None:
-            whoosh_path = self.index_dir + "/whoosh"
+
+        faiss_path = faiss_path or os.path.join(self.index_dir, "faiss.index")
+        bm25_path = os.path.join(self.index_dir, "bm25_tokenized.pkl")
+        chunks_path = os.path.join(self.index_dir, "chunks_metadata.json")
+        chunks_path = os.path.join(self.index_dir + "/whoosh", "chunks_metadata.json")
 
         success = True   
         try:
@@ -256,19 +365,38 @@ class SearchService:
               print(f"⚠️ FAISS index not found at {faiss_path}")
               success = False
             
-            # Load Whoosh index
-            if os.path.exists(whoosh_path):
-                self.whoosh_index = open_dir(whoosh_path)
-                print(f"✅ Whoosh index loaded from {whoosh_path}")
-            else:
-              print(f"⚠️ Whoosh index not found at {whoosh_path}")
-              success = False
-            
-            # Load chunks data if provided
-            if chunks_data is not None:
-                self.chunks = chunks_data
-                print(f"✅ Loaded {len(self.chunks)} chunks")
+            # Load BM25 tokenized cache and rebuild BM25
+            if os.path.exists(bm25_path):
+                with open(bm25_path, 'rb') as f:
+                    self.tokenized_cache = pickle.load(f)
                 
+                # Rebuild BM25 from cached tokens
+                from rank_bm25 import BM25Okapi
+                self.bm25 = BM25Okapi(self.tokenized_cache)
+                print(f"✅ BM25 index rebuilt from cached tokens ({len(self.tokenized_cache)} docs)")
+            else:
+                print(f"⚠️ BM25 tokenized cache not found at {bm25_path}")
+                success = False
+
+
+            # # Load Whoosh index
+            # if os.path.exists(whoosh_path):
+            #     self.whoosh_index = open_dir(whoosh_path)
+            #     print(f"✅ Whoosh index loaded from {whoosh_path}")
+            # else:
+            #   print(f"⚠️ Whoosh index not found at {whoosh_path}")
+            #   success = False
+            
+            # Load chunks metadata
+            if os.path.exists(chunks_path):
+                with open(chunks_path, 'r') as f:
+                    self.chunks = json.load(f)
+                print(f"✅ Loaded {len(self.chunks)} chunks metadata")
+            else:
+                print(f"⚠️ Chunks metadata not found at {chunks_path}")
+                # success = False
+
+
             return success
         except Exception as e:
             print(f"❌ Error loading indexes: {e}")

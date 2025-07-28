@@ -1,5 +1,9 @@
 # from elasticsearch import Elasticsearch
 from sentence_transformers import SentenceTransformer
+import logging
+old_level = logging.getLogger("sentence_transformers").level
+logging.getLogger("sentence_transformers").setLevel(logging.ERROR)
+
 # import json
 
 # from elasticsearch import Elasticsearch
@@ -64,7 +68,6 @@ from langdetect import detect
 import asyncio
 import numpy as np
 import faiss
-from whoosh.index import create_index, open_dir
 from whoosh.fields import Schema, TEXT, ID
 from whoosh.qparser import QueryParser
 from whoosh import scoring
@@ -74,120 +77,6 @@ import os
 faiss_index = None
 whoosh_index = None
 chunks = []
-
-def build_indexes(chunk_data, index_dir="indexes"):
-    """Build FAISS and Whoosh indexes once"""
-    global faiss_index, whoosh_index, chunks
-    
-    os.makedirs(index_dir, exist_ok=True)
-    chunks = chunk_data
-    
-    # Build FAISS
-    embeddings = np.array([c["embedding"] for c in chunks]).astype('float32')
-    faiss.normalize_L2(embeddings)
-    
-    if len(chunks) > 10000:
-        # Large dataset - use IVF
-        quantizer = faiss.IndexFlatIP(embeddings.shape[1])
-        faiss_index = faiss.IndexIVFFlat(quantizer, embeddings.shape[1], 100)
-        faiss_index.train(embeddings)
-        faiss_index.nprobe = 10
-    else:
-        # Small dataset - use flat
-        faiss_index = faiss.IndexFlatIP(embeddings.shape[1])
-    
-    faiss_index.add(embeddings)
-    
-    # Build Whoosh
-    schema = Schema(id=ID(stored=True), content=TEXT())
-    whoosh_index = create_index(schema, index_dir + "/whoosh")
-    
-    writer = whoosh_index.writer()
-    for i, chunk in enumerate(chunks):
-        writer.add_document(id=str(i), content=chunk["content"])
-    writer.commit()
-
-async def vector_search(query_embedding, top_k=100):
-    """Fast vector search"""
-    query_emb = np.array([query_embedding]).astype('float32')
-    faiss.normalize_L2(query_emb)
-    scores, indices = faiss_index.search(query_emb, top_k)
-    return scores[0], indices[0]
-
-async def bm25_search(query, top_k=100):
-    """Fast BM25 search"""
-    with whoosh_index.searcher(weighting=scoring.BM25F()) as searcher:
-        parser = QueryParser("content", whoosh_index.schema)
-        parsed_query = parser.parse(query)
-        results = searcher.search(parsed_query, limit=top_k)
-        return [(int(r['id']), r.score) for r in results]
-
-def rrf_combine(vector_results, bm25_results, k=60):
-    """Simple RRF combination"""
-    scores, indices = vector_results
-    combined = {}
-    
-    # Vector rankings
-    for rank, idx in enumerate(indices):
-        if idx != -1:
-            combined[idx] = combined.get(idx, 0) + 1/(k + rank + 1)
-    
-    # BM25 rankings  
-    for rank, (idx, score) in enumerate(bm25_results):
-        combined[idx] = combined.get(idx, 0) + 1/(k + rank + 1)
-    
-    return combined
-
-async def hybrid_search(query, query_embedding, top_k=5):
-    """Simple hybrid search"""
-    # Run both searches concurrently
-    vector_task = vector_search(query_embedding, 100)
-    bm25_task = bm25_search(query, 100)
-    
-    vector_results, bm25_results = await asyncio.gather(vector_task, bm25_task)
-    
-    # Combine and get top results
-    combined = rrf_combine(vector_results, bm25_results)
-    top_indices = sorted(combined.keys(), key=combined.get, reverse=True)[:top_k]
-    
-    return [chunks[i]["content"] for i in top_indices], top_indices
-
-# Usage:
-# build_indexes(your_chunks)  # Once
-# results = await hybrid_search(query, query_embedding)  # Many times
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -254,7 +143,7 @@ def hybrid_search_rrf(query, query_embedding, chunks,  top_k=5, k=60):
    # 5. Get top results
    top_indices = np.argsort(combined_scores)[::-1][:top_k]
    
-   return [chunks[i]["content"] for i in top_indices], top_indices
+   return [chunks[i] for i in top_indices]
 
 
 def hybrid_search_simple_comb(query, query_embedding, chunks, weights = [0.7, 0.3],  top_k=5):
@@ -309,126 +198,142 @@ def load_questions_from_txt(filename="generated_questions.txt"):
 
 
 
-import json 
-path = 'data_processed/Lux_cssf18_698eng_embeddings_local.json'
-with open(path, 'r') as f:
-    chunks_mpnet = json.load(f)
 
-path = 'data_processed/Lux_cssf18_698eng_embeddings_openai_online.json'
-with open(path, 'r') as f:
-    chunks_openai = json.load(f)
+
+###########################################################################
+import sys
+import os
+import json
+from pathlib import Path
+
+# Add src directory to Python path
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(__file__))))
+
+from rag.search_service import SearchService
+from rag.embedding_service import EmbeddingService
+from rag.rag_generator import RAGGenerator
+from document_readers.pymupdf_reader import PyMuPDFProcessor
+from document_processing.block_processor import block_processor
+from document_chunker.block_chunker import RegulatoryChunkingSystem
+
+
+
+# import json 
+# path = 'data_processed/Lux_cssf18_698eng_embds_local_BAAI_bge-large-en-v1.5.json'
+# with open(path, 'r') as f:
+#     chunks_local = json.load(f)
+
+# path = 'data_processed/Lux_cssf18_698eng_embeddings_openai_online.json'
+# with open(path, 'r') as f:
+#     chunks_openai = json.load(f)
 
 # q = "What monitoring elements must IFM implement for central administration delegation?"
 q = "What must a person demonstrate to the CSSF if they hold more than one mandate as a conducting officer?"
 q = "What are some examples of compliance issues that an IFM must address according to the provided text?"  #chunk 119
 q =  "compliance issues violations infringements non-compliance policy restrictions transactions reporting fraud"
 q = "Examples include AML/CFT breaches, inadequate risk management, poor internal controls, conflicts of interest, and failure to meet CSSF reporting or governance requirements.."
-model = SentenceTransformer('all-mpnet-base-v2', local_files_only=True, device = 'cpu')
-q_embed = model.encode(q)
-# chunks_res, inds = hybrid_search_rrf(q, q_embed, chunks, model, top_k=50, k=10)
-chunks_res, inds = hybrid_search_simple_comb(q, q_embed, chunks_mpnet )
-# print(chunks_res[0:5])
-print(inds)
 
 
 
+# File paths
+input_pdf = "data/regulatory_documents/lu/Lux_cssf18_698eng.pdf"
+embeddings_path = 'data_processed/Lux_cssf18_698eng_embds_local_BAAI_bge-large-en-v1.5.json'
+output_dir = Path("data_processed")
+output_dir.mkdir(exist_ok=True)
 
-###########################################################################
-from src.rag.unified_rag import UnifiedRAGSystem
-rag_openai = UnifiedRAGSystem(use_local_embeddings = False) # for gpt embedings
-rag_base_local = UnifiedRAGSystem(local_embedding_model = "all-mpnet-base-v2", cached_local_model = True) # for all-mpnet-base-v2 embedings
-fine_tuned_path = "models/efiras_contrastive_embeddings"
-rag_tuned = UnifiedRAGSystem(local_embedding_model = fine_tuned_path, cached_local_model = True) # for all-mpnet-base-v2 embedings
+# Initialize services
+embedding_service = EmbeddingService()
+search_service = SearchService(index_dir="indexes")
+rag_system = RAGGenerator()
 
-with open("data_processed/Lux_cssf18_698eng_chunked_blocks.json", 'r') as f:
-    chunks_to_be_embeded = json.load(f)
+# Step 1: Try to load existing embeddings
+if os.path.exists(embeddings_path):
+  print(f"Loading embeddings from {embeddings_path}")
+  with open(embeddings_path, 'r') as f:
+      embeddings_data = json.load(f)
+else:
+  print("Embeddings not found, generating new ones...")
+  # Process PDF and generate embeddings
+  reader = PyMuPDFProcessor()
+  raw_blocks = reader.extract_blocks(input_pdf)
+  
+  processor = block_processor(raw_blocks)
+  processed_blocks = processor.process_blocks()
+  
+  chunker = RegulatoryChunkingSystem(processed_blocks)
+  chunks_doc = chunker.chunk_blocks()
+  
+  embeddings_data = embedding_service.embed_all_chunks(chunks_doc)
 
-chunks_tuned = rag_tuned.embed_blocks(chunks_to_be_embeded, cache_path= "data_processed/Lux_cssf18_698eng_embeddings_local_fine_tuned.json")
-q = "What are some examples of compliance issues that an IFM must address according to the provided text?"  #chunk 119
-q = "What rights do the persons conducting the business of the IFM have regarding the delegation of functions?" #chunk 201
-# q = "What specific documents must be included in the notification regarding the branch manager(s)?" #chunk 264
-# q = "What specific documents must be included with the notification to the CSSF? " #chunk 52
-q_embed = rag_openai.embed_text(q)
-# chunks_res, inds = hybrid_search_simple_comb(q, q_embed, chunks_openai, weights = [0.0, 1.0])
-chunks_res, inds = hybrid_search_rrf(q, q_embed, chunks_openai, 5, k=10)
-# print(chunks_res[0:5])
-print(f"inds found using openai embedding model: {inds} \n")
+# Step 2: Setup search service
+if not search_service.load_indexes():
+  print("Building new search indexes...")
+  search_service.build_indexes(embeddings_data)  # Build indexes from chunks
+  search_service.save_indexes()  # Save for next time
+else:
+  print("Search indexes loaded successfully!")
+  search_service.set_chunks([embeddings_data])  # Set chunks first
 
-q_embed = rag_base_local.embed_text(q)
-chunks_res, inds = hybrid_search_simple_comb(q, q_embed, chunks_mpnet, weights = [1, 0])
-# print(chunks_res[0:5])
-print(f"inds found using local base mpnet: {inds} \n")
+# What ongoing responsibility do members of the management body/governing body of the IFM have regarding compliance? chunk_id: 89
+# What responsibilities does the executive committee have regarding the compliance of the investment policy with the prospectus? chunk_id: 106
+# To whom does the sub-chapter apply within the context of the IFM? chunk_id: 119
+# What information must an IFM communicate to the CSSF when delegating risk management activities? chunk_id: 238
+# What is the process for an IFM to delegate the compliance function to a third party? chunk_id: 262
+# Under what circumstances can the CSSF allow an IFM to delegate the internal audit function to an external expert? chunk_id: 293
+# To which entities does this sub-chapter apply? chunk_id: 319
+# What specific elements must be covered in the annual report regarding the identification and assessment of ML/TF risks? chunk_id: 337
+# What is required of the IFM concerning the due diligence and ongoing monitoring of delegates? chunk_id: 378
+# What measures must the IFM take to ensure compliance with CSSF Regulation 10-4 when delegating functions? chunk_id: 480
+# What additional regulations must AIFMs comply with according to the text? chunk_id: 501
+q = "What ongoing monitoring responsibility does the IFM have regarding delegated portfolio management?q = " #chunk_id: 519
 
-###########################################################################
-# # Load the questions
-questions_list = load_questions_from_txt("all_questions.txt")
+# q =  "What ongoing monitoring operations must an IFM perform to ensure compliance with legal provisions for managed UCIs?" #chunk_id: 521
 
 
 
+q_embed = embedding_service.embed_text(q)
 
-# Print to verify
-found = 0
-not_found = 0
-for item in questions_list:
-    # print(f"ID: {item['id']}, Q: {item['question']}")
+# Step 4: Search for relevant chunks
+import asyncio
+relevant_chunks = asyncio.run(search_service.hybrid_search(q, q_embed, top_k=20))
+for chunk in relevant_chunks:
+    print(chunk["chunk_id"], ",", end="", flush=True)
+print('\n=========================================================')
+relevant_chunks = asyncio.run(search_service.hybrid_search_with_cross_encoder(q, q_embed, top_k=8))
+for chunk in relevant_chunks:
+    print(chunk["chunk_id"], ",", end="", flush=True)
+print('\n=========================================================')
 
-    q = item["question"]
+relevant_chunks =hybrid_search_rrf(q, q_embed, embeddings_data["embeddings"],  top_k=20, k=60)
+for chunk in relevant_chunks:
+    print(chunk["chunk_id"], ",", end="", flush=True)
+print()
+
+# ###########################################################################
+# # # # Load the questions
+# questions_list = load_questions_from_txt("all_questions.txt")
+# found = 0
+# not_found = 0
+# i = 0
+# for item in questions_list:
+#     q = item["question"]
+#     id = item["id"]
+#     i+=1
     
-    
-    
-    # model = SentenceTransformer('all-mpnet-base-v2',  device='cpu', local_files_only=True)
+#     q_embed = embedding_service.embed_text(q)
+#     relevant_chunks = asyncio.run(search_service.hybrid_search(q, q_embed, top_k=8))
+#     # relevant_chunks = asyncio.run(search_service.hybrid_search_with_cross_encoder(q, q_embed, top_k=8))
+#     # relevant_chunks =hybrid_search_rrf(q, q_embed, embeddings_data["embeddings"],  top_k=5, k=60)
+#     inds = [chunk['chunk_id'] for chunk in relevant_chunks]
 
-
-    q_embed = rag_openai.embed_text(q)
-    chunks_res, inds = hybrid_search(q, q_embed, chunks_openai, 5, 10)
-
-    # q_embed = rag_tuned.embed_text(q)
-    # chunks_res, inds = hybrid_search_rrf(q, q_embed, chunks_tuned, 5, 10)
-
-
-    # q_embed = rag_base_local.embed_text(q)
-    # chunks_res, inds = hybrid_search_rrf(q, q_embed, chunks_mpnet, 5, 10)
-    
-    # chunks_res, inds = hybrid_search_simple_comb(q, q_embed, chunks_openai, weights = [0.5, 0.5])
-    # chunks_res, inds = hybrid_search_simple_comb(q, chunks, model )
-    # print(chunks_res[0:5])
-    # print(inds)
-    if item['id'] in inds:
-        found+=1
-    else:
-        not_found+=1
-        print(f"not found query:\n")
-        print(q)
-print(f"found are: {found}\n")
-print(f"Not found are: {not_found}\n")
+#     if item['id'] in inds:
+#         found+=1
+#     else:
+#         not_found+=1
+#         print(f"not found query: {not_found}/{i}\n")
+#         print(q, "chunk_id:", id)
+# print(f"found are: {found}\n")
+# print(f"Not found are: {not_found}\n")
     
 
 
-
-###################################################################################
-
-# Now you have a list of dicts like:
-# [
-#   {"id": "290", "question": "What changes are subject to notification..."},
-#   {"id": "291", "question": "What is the latest deadline..."},
-#   ...
-# ]
-
-
-
-# What must a person demonstrate to the CSSF if they hold more than one mandate as a conducting officer?
-# not found query:
-
-# To whom are the persons responsible for the internal control functions accountable?
-# not found query:
-
-# What are some examples of compliance issues that an IFM must address according to the provided text?
-# not found query:
-
-# What qualifications and conditions must AML/CFT Compliance Officers meet according to the text?
-# not found query:
-
-# What is the purpose of the initial due diligence and ongoing monitoring by the IFM concerning delegates?
-# found are: 253
-
-# Not found are: 5

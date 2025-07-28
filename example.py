@@ -47,7 +47,7 @@ def main():
     # Step 2: Setup search service
     if not search_service.load_indexes():
         print("Building new search indexes...")
-        search_service.build_indexes()  # Build indexes from chunks
+        search_service.build_indexes(embeddings_data)  # Build indexes from chunks
         search_service.save_indexes()  # Save for next time
     else:
         print("Search indexes loaded successfully!")

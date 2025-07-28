@@ -110,7 +110,7 @@ def save_questions_to_txt(questions_output, filename="generated_questions.txt"):
 
 # Usage example
 import json
-with open("data_processed/Lux_cssf18_698eng_chunked_blocks.json", 'r') as f:
+with open("data_processed/Lux_cssf18_698eng_chunks.json", 'r') as f:
     chunks = json.load(f)
 
 
@@ -133,7 +133,8 @@ with open("data_processed/Lux_cssf18_698eng_chunked_blocks.json", 'r') as f:
 
 # Usage for 300 chunks
 print(f"Total chunks to process: {len(chunks)}")
-# chunks = chunks[20:24]
+# chunks = chunks["chunks"][20:30]
+chunks = chunks["chunks"]
 questions_output = process_chunks_in_batches(chunks, batch_size=10)
 print(questions_output)
 
