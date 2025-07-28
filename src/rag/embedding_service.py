@@ -173,8 +173,8 @@ class EmbeddingService:
         # Generate embeddings
         print(f"Generating embeddings using {self.get_provider_name()}...")
         embeddings = []
-        metadata = {k:v for k, v in chunked_doc.items() if (v!='chunks' and v!="blocks")}
-        chunks = chunked_doc.get('blocks') or chunked_doc.get('chunks', [])
+        metadata = {k: v for k, v in chunked_doc.items() if k not in ["chunks", "blocks"]}
+        chunks = chunked_doc.get("blocks") or chunked_doc.get("chunks", [])
         
         for i, chunk in enumerate(chunks):
             print(f"Embedding {i+1}/{len(chunks)}")
@@ -186,9 +186,9 @@ class EmbeddingService:
             if embedding:
                 embeddings.append({
                     'id': i,
-                    'content': chunk['text'],  # Store original text
+                    'content': chunk["text"],  # Store original text
                     'embedding': embedding,
-                    'block': {k: v for k, v in chunk.items() if k != 'text'}  # Store full block metadata
+                    'block': {k: v for k, v in chunk.items() if k != "text"}  # Store full block metadata
                 })
             else:
                 print(f"Failed to embed block {i}")
@@ -241,42 +241,42 @@ class EmbeddingService:
         
         return config
 
-# if __name__ == "__main__":
+if __name__ == "__main__":
     
-#     import sys
-#     import os
+    import sys
+    import os
 
-#     # Add src directory to Python path
-#     sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(__file__))))
+    # Add src directory to Python path
+    sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(__file__))))
     
-#     from pathlib import Path
-#     from document_readers.pymupdf_reader import PyMuPDFProcessor
-#     from document_processing.block_processor import block_processor
-#     from document_chunker.block_chunker import RegulatoryChunkingSystem
+    from pathlib import Path
+    from document_readers.pymupdf_reader import PyMuPDFProcessor
+    from document_processing.block_processor import block_processor
+    from document_chunker.block_chunker import RegulatoryChunkingSystem
 
 
 
-#     input_pdf = "data/regulatory_documents/lu/Lux_cssf18_698eng.pdf"
-#     output_dir = Path("data_processed")
-#     output_dir.mkdir(exist_ok=True)
+    input_pdf = "data/regulatory_documents/lu/Lux_cssf18_698eng.pdf"
+    output_dir = Path("data_processed")
+    output_dir.mkdir(exist_ok=True)
 
       
-#     reader = PyMuPDFProcessor()
+    reader = PyMuPDFProcessor()
 
 
-#     raw_blocks = reader.extract_blocks(input_pdf)
+    raw_blocks = reader.extract_blocks(input_pdf)
 
-#     processor = block_processor(raw_blocks)
-#     processed_blocks = processor.process_blocks()
+    processor = block_processor(raw_blocks)
+    processed_blocks = processor.process_blocks()
 
-#     chunker = RegulatoryChunkingSystem(processed_blocks)
-#     chunks_doc = chunker.chunk_blocks()
+    chunker = RegulatoryChunkingSystem(processed_blocks)
+    chunks_doc = chunker.chunk_blocks()
     
 
-#     embd_srv = EmbeddingService()
-#     embd_srv.embed_all_chunks(chunks_doc)
-#     embd_srv.get_provider_name()
-#     embd_srv.get_config()
+    embd_srv = EmbeddingService()
+    embd_srv.embed_all_chunks(chunks_doc)
+    embd_srv.get_provider_name()
+    embd_srv.get_config()
 
   
     
