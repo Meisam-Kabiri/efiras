@@ -16,12 +16,19 @@ from document_chunker.block_chunker import RegulatoryChunkingSystem
 def main():
     # File paths
     emb_dir = Path("data_processed")
-    embd_file_list = list(emb_dir.glob("*embds_local_BAAI_bge-large-en-v1.5*.json"))
+    embd_file_list = list(emb_dir.glob("*embds_local_BAAI_bge-large-en-v1_5*.json"))
     doc_list = []
     for file in embd_file_list:
         with open(file, 'r') as f:
             doc_list.append(json.load(f))
-
+            
+    chunk_len_list = [len(doc["embeddings"]) for doc in doc_list]
+    print(chunk_len_list)
+    toatl_chunks = sum(chunk_len_list)
+    print (toatl_chunks)
+    
+    # with open("data_processed/CRD_V_embds_local_BAAI_bge-large-en-v1.5.json", 'r') as f:
+    #         doc_list.append(json.load(f))
     # Initialize services
     #Assume All the embeddings exists
     embedding_service = EmbeddingService()
@@ -39,7 +46,7 @@ def main():
 
     # Step 3: Process query
     # query = "What monitoring elements must IFM implement for central administration delegation?"
-    query = "According to Article 74 of the Capital Requirements Directive (CRD), what governance arrangements must institutions establish to ensure sound and effective risk management?"
+    query = "According the Capital Requirements Directive (CRD), According to Article 111 (as replaced), who is responsible for supervising a parent credit institution on a consolidated basis if the parent is a parent credit institution in a Member State or an EU parent credit institution?"
     print(f"\nQuery: {query}")
     
     # Get query embedding
@@ -47,7 +54,7 @@ def main():
     
     # Step 4: Search for relevant chunks
     print("\nSearching for relevant chunks...")
-    relevant_chunks = search_service.search_documents(query, query_embedding, top_k=5)
+    relevant_chunks = search_service.search_documents(query, query_embedding, top_k=12)
     
     print(f"Found {len(relevant_chunks)} relevant chunks:")
     for i, chunk in enumerate(relevant_chunks, 1):

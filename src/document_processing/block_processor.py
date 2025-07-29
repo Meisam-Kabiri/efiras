@@ -47,7 +47,7 @@ class block_processor():
         blocks = self._extract_headers(blocks)
         block = self._clean_text(blocks)
         blocks = [block for block in blocks 
-                if not (self._identify_header_footer_blocks(height, block) or len(block["text"]) < 5)
+                if not (self._identify_header_footer_blocks(height, block))
                 ]
         
 
@@ -59,6 +59,8 @@ class block_processor():
 
         self._enrich_blocks_with_titles(blocks, toc)
         self.reattach_split_paragraphs_across_pages(blocks)
+
+        blocks = self.merge_short_blocks_with_next(blocks, min_length=15)
 
         self._save_processed_blocks(
             filename=filename,
@@ -82,7 +84,52 @@ class block_processor():
                 "table_of_contents": toc,
                 "blocks": blocks
                     }
-       
+
+    def merge_short_blocks_with_next(self, blocks: List[Dict[str, Any]], min_length: int = 10) -> List[Dict[str, Any]]:
+        """
+        Merge blocks with text length < min_length with the next block.
+        
+        Args:
+            blocks: List of blocks to process
+            min_length: Minimum text length threshold (default 10)
+        
+        Returns:
+            List of blocks with short blocks merged with next blocks
+        """
+        if not blocks:
+            return blocks
+        
+        merged_blocks = []
+        i = 0
+        
+        while i < len(blocks):
+            current_block = blocks[i].copy()
+            current_text = current_block['text'].strip()
+            
+            # If current block is short and there's a next block
+            if len(current_text) < min_length and i + 1 < len(blocks):
+                next_block = blocks[i + 1]
+                next_text = next_block['text'].strip()
+                
+                # Merge current short block with next block
+                merged_text = current_text + ' ' + next_text
+                current_block['text'] = merged_text
+                
+                # # Optionally preserve metadata from both blocks
+                # if 'bbox' in current_block and 'bbox' in next_block:
+                #     # You can merge bounding boxes or keep the first one
+                #     pass  # Keep current bbox or implement bbox merging logic
+                
+                # Add merged block and skip the next block
+                merged_blocks.append(current_block)
+                i += 2  # Skip both current and next block
+                
+            else:
+                # Block is long enough or it's the last block, keep as-is
+                merged_blocks.append(current_block)
+                i += 1
+        
+        return merged_blocks  
     def _merge_blocks_with_colon_pattern(self, blocks: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
         """
         Merges blocks that end with a colon (e.g., section headers) with the next block's text.
@@ -162,7 +209,7 @@ class block_processor():
               1: r'(?i)^(title|book|part)\s+([ivxlcdm\d]+)', # Matches: "Title I", "Book 2", "Part III", "PART 5"
               2: r'(?i)^(chapter|sub-?chapter|division)\s+([ivxlcdm\d]+)',  # Matches: "Chapter 1", "Sub-chapter II", "Division 3", "CHAPTER V"
               3: r'(?i)^(section|sub-?part)\s+([ivxlcdm\d]+(?:\.\d+)*)', # Matches: "Section 1", "Sub-part 2.1", "SECTION III", "subpart 4.2.3"
-              4: r'(?i)^(article|art\.?)\s+([\d\(\)]+)', # Matches: "Article 5", "Art. 166", "ARTICLE (2)", "art 123"
+              4: r'(?i)^(article|art\.?)\s+([\d\(\)a-zA-Z]+)', # Matches: "Article 5", "Art. 166", "ARTICLE (2)", "art 123", "article 104b"
               5: r'(?i)^(sub-?section|subsection)\s+([\d.]+)', #Matches: "Sub-section 1.2", "Subsection 4.5", "SUB-SECTION 2.1.3"
           }
           

@@ -48,7 +48,27 @@ def create_local_embeddings_for_all_pdf_in_directory(path:str):
               torch.cuda.empty_cache()
           # del embd_srv
 
+def delete_chunk_block_files_pathlib(directory_path):
+    directory = Path(directory_path)
+    
+    # Find files containing 'chunks' or 'blocks' with .json extension
+    chunk_files = directory.glob("*chunks*.json")
+    block_files = directory.glob("*blocks*.json")
+    
+    deleted_count = 0
+    for file_path in list(chunk_files) + list(block_files):
+        try:
+            file_path.unlink()  # Delete the file
+            print(f"Deleted: {file_path}")
+            deleted_count += 1
+        except OSError as e:
+            print(f"Error deleting {file_path}: {e}")
+    
+    print(f"Total files deleted: {deleted_count}")
+
+
 
 path = "data/regulatory_documents/eu"
 create_local_embeddings_for_all_pdf_in_directory(path)
+# delete_chunk_block_files_pathlib("data_processed")
 

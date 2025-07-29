@@ -20,7 +20,7 @@ logger = logging.getLogger(__name__)
 class RegulatoryChunkingSystem:
     def __init__(self,
                  pdf_content: Dict[str, Any] = None,
-                 min_chunk_size: int = 25,
+                 min_chunk_size: int = 5,
                  max_chunk_size: int = 512,
                  skip_headers:bool = True,
                  model: str = "all-mpnet-base-v2"):
