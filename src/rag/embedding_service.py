@@ -20,7 +20,8 @@ class EmbeddingService:
                  azure_api_key: Optional[str] = None,
                  api_version: str = "2024-02-01",
                  use_cached_embeddings: bool = True,
-                 cached_local_model: bool = True):
+                 cached_local_model: bool = True,
+                 device:str = "cpu"): # cpu or cuda 
         """
         Initialize embedding service
         
@@ -56,10 +57,10 @@ class EmbeddingService:
         if use_local:
             from sentence_transformers import SentenceTransformer
             try:
-              self.local_model = SentenceTransformer(local_model, local_files_only=cached_local_model, device="cuda")
+              self.local_model = SentenceTransformer(local_model, local_files_only=cached_local_model, device=device)
             except Exception:
                 print(f"Model not available locally, downloading...")
-                self.local_model = SentenceTransformer(local_model, local_files_only=False, device="cuda")
+                self.local_model = SentenceTransformer(local_model, local_files_only=False, device=device)
                 
         else:
             self.local_model = None
@@ -99,18 +100,29 @@ class EmbeddingService:
     def get_provider_suffix(self) -> str:
         """Get suffix for cache file naming based on embedding provider"""
         if self.use_local:
-            return f"local_{self.local_model_name.replace('/', '_')}"
+            return f"local_{self.local_model_name.replace('/', '_').replace('.', '_')}"
         elif self.use_azure:
             return f"azure_{self.online_model}"
         else:
             return f"openai_{self.online_model}"
     
-    def enrich_text_with_headers(self, chunk: Dict[str, Any]) -> str:
-        """Enrich block text with hierarchical headers"""
-        enriched = chunk.get('headers')
-        if enriched:
-            return f"{enriched}\n\n{chunk['text']}"
-        return chunk['text']
+    def enrich_text_with_headers(self, chunk: Dict[str, Any], filename: str = None) -> str:
+        """Enrich block text with hierarchical headers and optionally filename"""
+        enriched_parts = []
+        
+        # Add filename if provided
+        if filename:
+            enriched_parts.append(f"Document: {filename}")
+        
+        # Add headers if available
+        headers = chunk.get('headers')
+        if headers:
+            enriched_parts.append(headers)
+        
+        # Add the main text
+        enriched_parts.append(chunk['text'])
+        
+        return "\n\n".join(enriched_parts)
     
     def embed_text(self, text: str) -> List[float]:
         """Generate embedding for a single text"""
@@ -152,8 +164,9 @@ class EmbeddingService:
              }
         """
         # Build cache file path
+        file_name = chunked_doc["filename_without_ext"]
         if not cache_filename:
-            cache_filename = chunked_doc["filename_without_ext"]
+            cache_filename = file_name
         
         provider_suffix = self.get_provider_suffix()
         cache_file = f"{cache_path}/{cache_filename}_embds_{provider_suffix}.json"
@@ -180,7 +193,7 @@ class EmbeddingService:
             print(f"Embedding {i+1}/{len(chunks)}")
             
             # Enrich text with headers for better context
-            content = self.enrich_text_with_headers(chunk)
+            content = self.enrich_text_with_headers(chunk, file_name)
             embedding = self.embed_text(content)
             
             if embedding:

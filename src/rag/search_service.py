@@ -141,10 +141,15 @@ class SearchService:
             quantizer = faiss.IndexFlatIP(embeddings.shape[1])
             self.faiss_index = faiss.IndexIVFFlat(quantizer, embeddings.shape[1], 100)
             self.faiss_index.train(embeddings)
-            self.faiss_index.nprobe = 10
+            self.faiss_index.nprobe = 20
         elif len(all_embedded_chunks) > 1000:
             # Medium dataset - use HNSW
-            self.faiss_index = faiss.IndexHNSWFlat(embeddings.shape[1], 32)
+            self.faiss_index = faiss.IndexHNSWFlat(embeddings.shape[1], 64)
+            # Step 2: Set high-quality construction before adding vectors
+            self.faiss_index.hnsw.efConstruction = 200
+
+            # Step 4: Set high efSearch before querying
+            self.faiss_index.hnsw.efSearch = 256
         else:
             # Small dataset - use flat
             self.faiss_index = faiss.IndexFlatIP(embeddings.shape[1])
@@ -240,7 +245,7 @@ class SearchService:
         return combined
     
 
-    async def hybrid_search(self, query, query_embedding, top_k=5):
+    async def hybrid_search(self, query, query_embedding, top_k=12):
         """Sync method with concurrent async calls"""               
         if self.use_async:
             # Run both async methods concurrently from sync function
