@@ -406,7 +406,11 @@ class block_processor():
             if 'text' in block:
                 text = block['text']
                 # Remove invisible/problematic characters
+                # Remove invisible/zero-width characters
                 text = re.sub(r'[\u200b\u200c\u200d\u00ad\u00a0\ufeff\u200f\u200e]', '', text)
+
+                # Remove ALL quote characters (smart quotes + angle quotes)
+                text = re.sub(r'[\u2018\u2019\u201c\u201d''""‚„‹›«»]', '', text)
                 # Remove single \n but keep \n\n as paragraph breaks
                 text = re.sub(r'(?<!\n)\n(?!\n)', ' ', text)
                 # Clean up multiple spaces

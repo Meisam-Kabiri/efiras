@@ -1,6 +1,6 @@
 import os
 import json
-from typing import List, Dict, Any, Optional
+from typing import Generator, List, Dict, Any, Optional
 from dotenv import load_dotenv
 from openai import OpenAI, AzureOpenAI
 from sklearn.metrics.pairwise import cosine_similarity
@@ -140,7 +140,72 @@ class RAGGenerator:
           provider = "Azure OpenAI" if self.use_azure else "OpenAI"
           return f"Error generating response with {provider}: {e}"
   
+    def answer_query_stream(self, query: str, relevant_chunks: List[Dict[str, Any]]) -> Generator[str, None, None]:
+      """Stream answer using RAG with enhanced context"""
+      
+      if not relevant_chunks:
+          yield "No relevant information found."
+          return
+      
+      system_prompt = """Answer the question using the provided regulatory document chunks. 
+      These chunks may contain related or complementary information from different sections of the same regulation.
 
+        Guidelines:
+        - Synthesize overlapping information into clear, organized points
+        - Create comprehensive lists when multiple chunks provide related requirements
+        - Don't repeat the same information multiple times
+        - Organize your response with clear structure (numbered lists, categories, etc.)
+        - Include all relevant details from the chunks
+
+        Always include a complete "Sources" section listing every source that provided 
+        information for your answer, even if they discuss similar points. This shows the 
+        regulatory foundation for each aspect of your response."""
+
+      # Build context from relevant chunks - include filename
+      context_parts = []
+      for i, chunk in enumerate(relevant_chunks, 1):
+          # Access fields directly (flattened structure)
+          header = chunk.get('header_identifier', 'N/A')
+          page = chunk.get('page', 'N/A')
+          filename = chunk.get('filename', 'N/A')
+          content = chunk.get('content', '')
+          context_parts.append(f"[Source {i} - {filename} - Page {page} - {header}]\n{content}")
+      
+      context = "\n\n".join(context_parts)
+
+      messages = [
+          {
+              "role": "system",
+              "content": system_prompt
+          },
+          {
+              "role": "user", 
+              "content": f"""Context:\n{context}
+
+          Question: {query}
+
+          Please provide a comprehensive answer and include a Sources section at the end with filename, page number, and header for each source."""
+          }
+      ]
+      
+      try:
+          response = self.client.chat.completions.create(
+              model=self.model,
+              messages=messages,
+              temperature=0.1,
+              max_tokens=1200,
+              stream=True
+          )
+
+          # Stream to frontend instead of printing
+          for part in response:
+              if part.choices[0].delta.content:
+                  content = part.choices[0].delta.content
+                  yield content  # Yield each token to frontend
+          
+      except Exception as e:
+          provider = "Azure OpenAI" if self.use_azure else "OpenAI"
+          yield f"Error generating response with {provider}: {e}"
 
     def stats(self) -> Dict[str, Any]:
         """Get database statistics"""
