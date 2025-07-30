@@ -287,4 +287,5 @@ def list_documents():
 if __name__ == "__main__":
     import uvicorn
     print("Starting modernized RAG API server...")
-    uvicorn.run(app, host="localhost", port=8080)
+    # uvicorn.run(app, host="localhost", port=8080)
+    uvicorn.run("fastapi_backend:app", host="0.0.0.0", port=8080)
