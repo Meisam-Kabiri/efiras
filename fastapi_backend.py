@@ -15,23 +15,39 @@ from document_readers.pymupdf_reader import PyMuPDFProcessor
 from document_processing.block_processor import block_processor
 from document_chunker.block_chunker import RegulatoryChunkingSystem
 from fastapi.responses import StreamingResponse
-
-from contextlib import asynccontextmanager
 from create_embeddings_and_indexes import create_embeddings_and_indexes
+from contextlib import asynccontextmanager
 
-@asynccontextmanager
-async def lifespan(app: FastAPI):
-    # Startup
+
+print("Loading RAG system components...")
+embedding_service = EmbeddingService()
+search_service = SearchService(index_dir="indexes")
+rag_generator = RAGGenerator()
+
+# This will run when the application starts up
+async def startup():
+    print("Running startup tasks")
+    # NOW call your function
     if not Path("indexes/faiss.index").exists():
         print("🔄 No indexes found, building from scratch...")
         create_embeddings_and_indexes()
     else:
         print("✅ Loading existing indexes...")
         search_service.load_indexes()
-    
-    yield  # App runs here
-    
-    # Shutdown (nothing needed)
+    # Initialize your resources here
+    # Example: database connections, load ML models, etc.
+
+# This will run when the application shuts down
+async def shutdown():
+    print("Running shutdown tasks")
+    # Clean up resources here
+    # Example: close database connections, etc.
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    await startup()
+    yield  # The application runs here
+    await shutdown()
 
 app = FastAPI(lifespan=lifespan)
 
@@ -59,10 +75,7 @@ class UploadResponse(BaseModel):
     chunks_created: int
 
 # Initialize the 3-service RAG system
-print("Loading RAG system components...")
-embedding_service = EmbeddingService()
-search_service = SearchService(index_dir="indexes")
-rag_generator = RAGGenerator()
+
 
 # Load all existing embeddings and build/load indexes
 print("Loading existing embeddings...")
