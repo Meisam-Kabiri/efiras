@@ -22,9 +22,10 @@ logger = logging.getLogger(__name__)
 class PyMuPDFProcessor():
     """Fast processor for text-based PDFs"""
     
-    def __init__(self, path:str = ''):
+    def __init__(self, path:str = '', enable_save:bool = True):
         self.processor_type = ProcessorType.PYMUPDF
         self.file_path = Path(path)
+        self.enable_save = enable_save
 
     def is_available(self) -> bool:
         try:
@@ -104,7 +105,8 @@ class PyMuPDFProcessor():
                         "blocks": blocks,
                     }
                 # save file to json file
-                self._save_extracted_blocks(output)
+                if self.enable_save:
+                  self._save_extracted_blocks(output)
 
                 return output
 

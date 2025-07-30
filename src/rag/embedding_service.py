@@ -20,7 +20,7 @@ class EmbeddingService:
                  azure_api_key: Optional[str] = None,
                  api_version: str = "2024-02-01",
                  use_cached_embeddings: bool = True,
-                 cached_local_model: bool = True,
+                #  cached_local_model: bool = True,
                  device:str = "cpu"): # cpu or cuda 
         """
         Initialize embedding service
@@ -52,18 +52,18 @@ class EmbeddingService:
         # Initialize local model if needed
         
 
-
-
         if use_local:
             from sentence_transformers import SentenceTransformer
+            
             try:
-              self.local_model = SentenceTransformer(local_model, local_files_only=cached_local_model, device=device)
-            except Exception:
-                print(f"Model not available locally, downloading...")
+                # Try loading from cache first
+                self.local_model = SentenceTransformer(local_model, local_files_only=True, device=device)
+                print(f"✅ Loaded cached model: {local_model}")
+            except:
+                # If not cached, download it
+                print(f"📥 Downloading model: {local_model}")
                 self.local_model = SentenceTransformer(local_model, local_files_only=False, device=device)
-                
-        else:
-            self.local_model = None
+                print(f"✅ Model downloaded and ready: {local_model}")
             
         # Initialize online client if needed
         if not use_local:

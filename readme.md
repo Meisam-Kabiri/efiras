@@ -60,6 +60,36 @@ This system processes PDF documents by extracting text, cleaning it, and making 
 - **Finds relevant information** by searching through document content
 - **Provides source citations** showing where answers came from
 
+## Available Regulatory Documents
+
+The system comes pre-loaded with **24 major financial and regulatory documents** that you can immediately query:
+
+### European Union and Luxembourg Regulations (23 documents)
+- **Luxembourg CSSF 18/698** - Investment Fund Manager regulations
+- **Alternative Investment Fund Managers Directive (AIFMD)** + Level 2 Regulations
+- **Basel II Framework** (2006) and **Basel III Framework** - International banking regulations
+- **Capital Requirements Directive V (CRD V)** and **Capital Requirements Regulation (CRR)**
+- **Dodd-Frank Wall Street Reform** (2 versions) - US financial reform legislation
+- **European Market Infrastructure Regulation (EMIR)**
+- **European Union Taxonomy Regulation** - Sustainable finance classification
+- **Anti-Money Laundering Directives**: 4th (4AMLD) and 5th (5AMLD) versions
+- **Financial Action Task Force (FATF) Recommendations 2012**
+- **General Data Protection Regulation (GDPR)** - EU data protection law
+- **Markets in Financial Instruments**: Directive II (MiFID II) and Regulation (MiFIR)
+- **Payment Services Directive 2 (PSD2)** - European payment services regulation
+- **Securities Financing Transactions Regulation (SFTR)**
+- **Solvency II Directive** + Level 2 Regulations - Insurance sector prudential regulation
+- **Sustainable Finance Disclosure Regulation (SFDR)** - ESG disclosure requirements
+- **Undertakings for Collective Investment in Transferable Securities (UCITS)**
+
+
+### Ready-to-Query Knowledge Base
+All documents are **fully processed and embedded**, meaning you can immediately ask questions like:
+- *"What are the reporting requirements under MiFID II?"*
+- *"How does Basel III define Tier 1 capital?"*
+- *"What are the data protection obligations under GDPR for financial institutions?"*
+- *"What monitoring elements must IFM implement for central administration delegation according to CSSF 18/698?"*
+
 ## System Components
 
 ### 1. Multi-Engine Document Processor
@@ -89,18 +119,65 @@ Splits large documents into smaller pieces:
 - Uses word-based splitting as last resort
 - Preserves document structure and metadata
 
-### 4. RAG (Retrieval-Augmented Generation) System
-Provides question-answering capabilities with support for both OpenAI and Azure OpenAI:
-- **Unified RAG System**: Single interface supporting both OpenAI and Azure OpenAI
-- Creates embeddings from document chunks using either:
-  - **Online embeddings**: OpenAI's text-embedding-3-large or Azure OpenAI embedding models
-  - **Offline embeddings**: Local sentence-transformer models (e.g., all-mpnet-base-v2)
-- Searches for relevant content using hybrid similarity matching with regulatory boosting
-- Keyword term matching adds boost per matching term
-- Regulatory number boosting for numbers like "517", "698"
-- Regulatory reference boosting for citations like "Article 5", "Section 3.2"
-- Generates answers using OpenAI's GPT models or Azure OpenAI deployments with regulatory-specific prompting
-- Returns answers with source information including page numbers and hierarchical context
+### 4. EmbeddingService - Dual-Mode Embedding Generation
+Advanced embedding service supporting both local and online models:
+
+**Local Embeddings (Default):**
+- **BAAI/bge-large-en-v1.5**: High-quality multilingual embeddings optimized for retrieval
+- **Sentence Transformers**: Local processing with GPU acceleration (`device='cuda'`)
+- **Cached Processing**: Automatic caching of embeddings to avoid recomputation
+- **Offline Operation**: No API calls required, complete privacy
+
+**Online Embeddings (Optional):**
+- **OpenAI**: `text-embedding-3-large` - Latest OpenAI embedding model
+- **Azure OpenAI**: Enterprise-grade embedding deployments
+- **API Integration**: Seamless switching between OpenAI and Azure OpenAI
+- **Environment Configuration**: Automatic credential loading from `.env`
+
+**Key Features:**
+- **Header Enrichment**: Automatically enriches text with document hierarchy and filename
+- **Model Flexibility**: Easy switching between local and online models
+- **Batch Processing**: Efficient processing of multiple documents
+- **Memory Management**: Automatic GPU memory cleanup after processing
+
+### 5. SearchService - Advanced Hybrid Search System  
+Sophisticated multi-modal search combining semantic and keyword approaches:
+
+**Hybrid Search Architecture:**
+- **BM25 Keyword Search**: Traditional term-frequency based search using `rank_bm25`
+- **Semantic Vector Search**: Dense retrieval using FAISS indexes with cosine similarity
+- **Reciprocal Rank Fusion (RRF)**: Combines results from both methods for superior relevance
+
+**Advanced Indexing:**
+- **FAISS Vector Index**: Optimized for different dataset sizes:
+  - Small datasets (<1K): Flat index for exact search
+  - Medium datasets (1K-10K): HNSW for balanced speed/accuracy
+  - Large datasets (>10K): IVF with quantization for scalability
+- **Whoosh Text Index**: Full-text search with advanced tokenization
+- **Intelligent Tokenization**: Preserves regulatory terms (e.g., "non-compliance")
+
+**Cross-Encoder Reranking:**
+- **BAAI/bge-reranker-large**: State-of-the-art reranking model
+- **Query-Document Scoring**: Precise relevance assessment between query and chunks
+- **Final Reordering**: Re-ranks hybrid search results for optimal precision
+
+**Search Workflow:**
+```
+Query → [BM25 Search] + [Semantic Search] → RRF Fusion → Cross-Encoder Reranking → Final Results
+```
+
+**Performance Features:**
+- **Async Support**: Non-blocking search operations
+- **Result Caching**: Speeds up repeated queries
+- **Index Persistence**: Save/load indexes for faster startup
+- **Regulatory Boosting**: Special handling for regulatory citations and numbers
+
+### 6. RAG Generator - Intelligent Answer Generation
+Combines search results with large language models for comprehensive answers:
+- **Context Assembly**: Intelligently combines multiple search results
+- **Source Attribution**: Provides exact page numbers and regulatory hierarchy
+- **Regulatory Formatting**: Professional formatting suitable for compliance documentation
+- **Multi-Model Support**: Works with OpenAI, Azure OpenAI, and local models
 
 ## Input and Output
 
@@ -121,41 +198,93 @@ Provides question-answering capabilities with support for both OpenAI and Azure 
 ## Usage Example
 
 ```python
-from src.document_readers.base import DocumentProcessor, ProcessorConfig
-from src.document_processing.block_processor import block_processor
-from src.document_chunker.block_chunker import RegulatoryChunkingSystem
-from src.rag.unified_rag import UnifiedRAGSystem
-from src.document_processing.manager import DocumentProcessorManager
+import json
+from pathlib import Path
+from rag.search_service import SearchService
+from rag.embedding_service import EmbeddingService
+from rag.rag_generator import RAGGenerator
+from document_readers.pymupdf_reader import PyMuPDFProcessor
+from document_processing.block_processor import block_processor
+from document_chunker.block_chunker import RegulatoryChunkingSystem
 
-# 1. Configure and process PDF document
-config = ProcessorConfig(chunk_size=2000, extract_tables=True, ocr_fallback=True)
-manager = DocumentProcessorManager(config)
-raw_result = manager.process_document("document.pdf", preferred_processor="PYMUPDF")
+# Example 1: Generate embeddings for all PDFs in a directory
+def create_embeddings_for_directory(pdf_directory_path):
+    path = Path(pdf_directory_path)
+    pdf_files = path.glob("*.pdf")
+    embedding_service = EmbeddingService(device='cuda')  # Use GPU if available
+    
+    for pdf_file in pdf_files:
+        # Check if embeddings already exist
+        embedding_dir = Path("data_processed")
+        if list(embedding_dir.glob(f"{pdf_file.stem}*embd*.json")):
+            print(f"Embeddings exist for {pdf_file.name}")
+            continue
+            
+        print(f"Processing {pdf_file.name}...")
+        
+        # 1. Extract text from PDF
+        reader = PyMuPDFProcessor()
+        raw_blocks = reader.extract_blocks(pdf_file)
+        
+        # 2. Clean and structure the text
+        processor = block_processor(raw_blocks)
+        processed_blocks = processor.process_blocks()
+        
+        # 3. Create manageable chunks
+        chunker = RegulatoryChunkingSystem(processed_blocks)
+        chunks_doc = chunker.chunk_blocks()
+        
+        # 4. Generate embeddings
+        embeddings_data = embedding_service.embed_all_chunks(chunks_doc)
 
-# 2. Clean and structure the text
-processor = block_processor()
-processed_data = processor.process_and_chunk_blocks(raw_result)
+# Example 2: Complete RAG system with all embeddings
+def setup_rag_system():
+    # Load all existing embeddings from processed directory
+    embedding_dir = Path("data_processed")
+    embedding_files = list(embedding_dir.glob("*embds_local_BAAI_bge-large-en-v1_5*.json"))
+    
+    document_list = []
+    for file in embedding_files:
+        with open(file, 'r') as f:
+            document_list.append(json.load(f))
+    
+    print(f"Loaded {len(document_list)} documents")
+    total_chunks = sum(len(doc["embeddings"]) for doc in document_list)
+    print(f"Total chunks: {total_chunks}")
+    
+    # Initialize RAG system components
+    embedding_service = EmbeddingService()
+    search_service = SearchService(index_dir="indexes")
+    rag_generator = RAGGenerator()
+    
+    # Setup search service with indexes
+    if not search_service.load_indexes():
+        print("Building new search indexes...")
+        search_service.build_indexes(document_list)
+        search_service.save_indexes()
+    else:
+        print("Search indexes loaded successfully!")
+        search_service.set_chunks(document_list)
+    
+    # Process a query
+    query = "What are the main requirements for risk management?"
+    print(f"\nQuery: {query}")
+    
+    # Get query embedding and search
+    query_embedding = embedding_service.embed_text(query)
+    relevant_chunks = search_service.search_documents(query, query_embedding, top_k=12)
+    
+    print(f"Found {len(relevant_chunks)} relevant chunks")
+    
+    # Generate answer using RAG
+    answer = rag_generator.answer_query(query, relevant_chunks)
+    print(f"Answer: {answer}")
+    
+    return search_service, rag_generator
 
-# 3. Create manageable chunks
-chunker = RegulatoryChunkingSystem(max_chunk_size=1500)
-chunked_blocks = chunker.chunk_blocks(processed_data)
-
-# 4. Build searchable knowledge base with various configurations
-# Option A: Use OpenAI with local embeddings
-rag = UnifiedRAGSystem(use_local_embeddings=True, use_azure=False)
-
-# Option B: Use Azure OpenAI with local embeddings
-# rag = UnifiedRAGSystem(use_local_embeddings=True, use_azure=True, model="gpt-35-turbo")
-
-# Option C: Use Azure OpenAI with Azure AI Search backend
-# rag = UnifiedRAGSystem(use_local_embeddings=True, use_azure=True, model="gpt-35-turbo", use_azure_search=True)
-
-rag.add_documents(chunked_blocks, cache_path="data", cache_file_name="embeddings")
-
-# 5. Ask questions
-result = rag.answer_with_sources("What are the main requirements?", top_k=3)
-print(f"Answer: {result['answer']}")
-print(f"Confidence: {result['confidence']}")
+# Usage
+create_embeddings_for_directory("data/regulatory_documents/eu")
+search_service, rag_system = setup_rag_system()
 ```
 
 ## Real-World Example

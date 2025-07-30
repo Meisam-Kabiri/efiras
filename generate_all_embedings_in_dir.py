@@ -30,13 +30,21 @@ def create_local_embeddings_for_all_pdf_in_directory(path:str):
         # Create Embedding for the file: 
           print("Embeddings not found, generating new ones...")
           # Process PDF and generate embeddings
-          reader = PyMuPDFProcessor()
+          # removing the indexes
+          index_path = Path("indexes")
+          if index_path.exists() and index_path.is_dir():
+            index_path.rmdir()  # Deletes the empty directory
+            print(f"{index_path} has been deleted.")
+          else:
+             print(f"{index_path} does not exist or is not a directory.")
+             
+          reader = PyMuPDFProcessor(enable_save = False)
           raw_blocks = reader.extract_blocks(file)
           
-          processor = block_processor(raw_blocks)
+          processor = block_processor(raw_blocks, enable_save = False)
           processed_blocks = processor.process_blocks()
           
-          chunker = RegulatoryChunkingSystem(processed_blocks)
+          chunker = RegulatoryChunkingSystem(processed_blocks, enable_save = False)
           chunks_doc = chunker.chunk_blocks()
           
           # embd_srv = EmbeddingService()

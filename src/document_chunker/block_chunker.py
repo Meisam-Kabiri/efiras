@@ -23,13 +23,15 @@ class RegulatoryChunkingSystem:
                  min_chunk_size: int = 5,
                  max_chunk_size: int = 512,
                  skip_headers:bool = True,
-                 model: str = "all-mpnet-base-v2"):
+                 model: str = "all-mpnet-base-v2", 
+                 enable_save:bool = True):
         
         self.pdf_content = pdf_content
         self.skip_headers = skip_headers
         self.min_chunk_size = min_chunk_size
         self.max_chunk_size = max_chunk_size
         self.tokenizer = SentenceTransformer(model, device="cpu").tokenizer
+        self.enable_save = enable_save
         
 
 
@@ -134,10 +136,11 @@ class RegulatoryChunkingSystem:
         file_path = Path(saving_path)
         file_path.parent.mkdir(parents=True, exist_ok=True)
 
-        with open(file_path, 'w', encoding='utf-8') as f:
-            json.dump(chunked_document, f, indent=4, ensure_ascii=False)
+        if self.enable_save:
+          with open(file_path, 'w', encoding='utf-8') as f:
+              json.dump(chunked_document, f, indent=4, ensure_ascii=False)
 
-        logger.info(f"Data saved to {file_path}")
+          logger.info(f"Data saved to {file_path}")
 
         return chunked_document
 

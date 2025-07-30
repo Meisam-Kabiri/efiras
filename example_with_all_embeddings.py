@@ -68,7 +68,8 @@ def main():
     # Step 5: Generate answer using RAG
     print("\nGenerating answer...")
     print("=" * 80)
-    answer = rag_system.answer_query(query, relevant_chunks)
+    # answer = rag_system.answer_query(query, relevant_chunks)
+    
     print("=" * 80)
     
     # Step 6: Print stats

@@ -11,8 +11,9 @@ logger = logging.getLogger(__name__)
 class block_processor():
     """Fast processor for text-based PDFs"""
     
-    def __init__(self, pdf_content: List[Dict[str, Any]] = None):
+    def __init__(self, pdf_content: List[Dict[str, Any]] = None, enable_save:bool  = True):
         self.pdf_content = pdf_content
+        self.if_save = enable_save
 
     def process_blocks(self, pdf_content: List[Dict[str, Any]] = None) -> List[Dict[str, Any]]:
         """
@@ -61,16 +62,16 @@ class block_processor():
         self.reattach_split_paragraphs_across_pages(blocks)
 
         blocks = self.merge_short_blocks_with_next(blocks, min_length=15)
-
-        self._save_processed_blocks(
-            filename=filename,
-            filename_without_ext=filename_without_ext,
-            file_extension = extension,
-            pages=pages,
-            toc=toc,
-            blocks=blocks,
-            is_toc = is_toc,
-            )
+        if self.if_save:
+          self._save_processed_blocks(
+              filename=filename,
+              filename_without_ext=filename_without_ext,
+              file_extension = extension,
+              pages=pages,
+              toc=toc,
+              blocks=blocks,
+              is_toc = is_toc,
+              )
         
         return {
                 "height": height,
