@@ -102,61 +102,6 @@ print("RAG system ready!")
 
 @app.post("/query-stream")
 async def query_documents_stream(request: QueryRequest):
-    """Stream the response as it's generated"""
-    
-    def generate_response():
-        try:
-            # Get query embedding and search
-            query_embedding = embedding_service.embed_text(request.question)
-            relevant_chunks = search_service.search_documents(
-                request.question, 
-                query_embedding, 
-                top_k=12
-            )
-            
-            # Stream the answer generation
-            for chunk in rag_generator.answer_query_stream(request.question, relevant_chunks):
-                data = {
-                    "type": "content",
-                    "content": chunk
-                }
-                yield f"data: {json.dumps(data)}\n\n"
-            
-            # Send sources at the end - REPLACE [...] WITH YOUR ACTUAL SOURCES CODE
-            # sources = []
-            # for chunk in relevant_chunks[:5]:  # Top 5 sources
-            #     sources.append({
-            #         "filename": chunk.get("filename", "Unknown"),
-            #         "page": chunk.get("page", "N/A"),
-            #         "headers": chunk.get("headers", ""),
-            #         "content_preview": chunk.get("content", "")[:200] + "..."
-            #     })
-            
-            # final_data = {
-            #     "type": "sources",
-            #     "sources": sources
-            # }
-            # yield f"data: {json.dumps(final_data)}\n\n"
-            yield f"data: [DONE]\n\n"
-            
-        except Exception as e:
-            error_data = {
-                "type": "error", 
-                "error": str(e)
-            }
-            yield f"data: {json.dumps(error_data)}\n\n"
-    
-    return StreamingResponse(
-        generate_response(),
-        media_type="text/plain",
-        headers={
-            "Cache-Control": "no-cache",
-            "Connection": "keep-alive",
-            "Content-Type": "text/event-stream",
-        }
-    )
-@app.post("/query-stream")
-async def query_documents_stream(request: QueryRequest):
     def generate_response():
         try:
             query_embedding = embedding_service.embed_text(request.question)
