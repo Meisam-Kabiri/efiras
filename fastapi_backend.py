@@ -16,7 +16,24 @@ from document_processing.block_processor import block_processor
 from document_chunker.block_chunker import RegulatoryChunkingSystem
 from fastapi.responses import StreamingResponse
 
-app = FastAPI()
+from contextlib import asynccontextmanager
+from create_embeddings_and_indexes import create_embeddings_and_indexes
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # Startup
+    if not Path("indexes/faiss.index").exists():
+        print("🔄 No indexes found, building from scratch...")
+        create_embeddings_and_indexes()
+    else:
+        print("✅ Loading existing indexes...")
+        search_service.load_indexes()
+    
+    yield  # App runs here
+    
+    # Shutdown (nothing needed)
+
+app = FastAPI(lifespan=lifespan)
 
 # CORS setup
 app.add_middleware(
