@@ -1,5 +1,25 @@
+# cloudbuild.yaml
 steps:
   - name: 'gcr.io/cloud-builders/docker'
-    args: ['build', '-t', 'gcr.io/$PROJECT_ID/your-app', '.']
+    args: ['build', '-t', 'gcr.io/$PROJECT_ID/rag-api', '.']
+  
+  - name: 'gcr.io/cloud-builders/docker'
+    args: ['push', 'gcr.io/$PROJECT_ID/rag-api']
+  
+  - name: 'gcr.io/cloud-builders/gcloud'
+    args:
+    - 'run'
+    - 'deploy'
+    - 'rag-api'
+    - '--image=gcr.io/$PROJECT_ID/rag-api'
+    - '--region=us-central1'  # Change to your preferred region
+    - '--platform=managed'
+    - '--allow-unauthenticated'
+    - '--memory=4Gi'          # Increase memory for ML models
+    - '--cpu=2'               # Increase CPU
+    - '--timeout=3600'        # Increase timeout
+    - '--max-instances=10'
+
+
 options:
-  logging: CLOUD_LOGGING_ONLY  # SKIPS BUCKET REQUIREMENTS
+  logging: CLOUD_LOGGING_ONLY
