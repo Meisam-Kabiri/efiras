@@ -25,12 +25,19 @@ search_service = SearchService(index_dir="indexes")
 rag_generator = RAGGenerator()
 
 async def startup():
+    print(f"🚀 Starting RAG system initialization at {datetime.now()}")
+    print(f"🔧 Environment PORT: {os.environ.get('PORT', 'Not set')}")
+    print(f"📁 Current directory: {os.getcwd()}")
+    print(f"📂 Files in indexes/: {list(Path('indexes').glob('*')) if Path('indexes').exists() else 'No indexes dir'}")
+    
     print("Loading existing indexes...")
     if Path("indexes/faiss.index").exists():
+        print("📁 FAISS index found, loading...")
         search_service.load_indexes()
         print("✅ Indexes loaded successfully")
     else:
-        print("❌ No indexes found - application will not work properly")
+        print("❌ No indexes found")
+    print(f"🎉 RAG system ready at {datetime.now()}")
 
 # This will run when the application shuts down
 async def shutdown():
@@ -111,23 +118,23 @@ def get_status():
     """Get system status"""
     return {
         "status": "running",
-        "documents_loaded": len(doc_list),
-        "total_chunks": sum(len(doc["embeddings"]) for doc in doc_list),
+        # "documents_loaded": len(doc_list),
+        # "total_chunks": sum(len(doc["embeddings"]) for doc in doc_list),
         "search_stats": search_service.get_stats(),
         "rag_config": rag_generator.get_config_info()
     }
 
-@app.get("/documents")
-def list_documents():
-    """List all loaded documents"""
-    docs_info = []
-    for doc in doc_list:
-        docs_info.append({
-            "filename": doc["metadata"]["filename"],
-            "pages": doc["metadata"].get("pages", 0),
-            "chunks": len(doc["embeddings"])
-        })
-    return {"documents": docs_info}
+# @app.get("/documents")
+# def list_documents():
+#     """List all loaded documents"""
+#     docs_info = []
+#     for doc in doc_list:
+#         docs_info.append({
+#             "filename": doc["metadata"]["filename"],
+#             "pages": doc["metadata"].get("pages", 0),
+#             "chunks": len(doc["embeddings"])
+#         })
+#     return {"documents": docs_info}
 
 if __name__ == "__main__":
     import uvicorn
