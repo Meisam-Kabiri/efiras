@@ -15,8 +15,6 @@ RUN pip install -r requirements.txt
 # Pre-download the model to avoid startup delays
 RUN python -c "from sentence_transformers import SentenceTransformer; SentenceTransformer('BAAI/bge-large-en-v1.5')"
 
-COPY . .
-
 # Create indexes directory
 RUN mkdir -p indexes data_processed
 
