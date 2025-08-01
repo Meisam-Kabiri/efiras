@@ -5,6 +5,8 @@ import sys, os
 import tempfile
 import json
 from pathlib import Path
+import requests
+
 
 # Add your src path
 sys.path.append(os.path.abspath("src"))
@@ -16,6 +18,7 @@ from document_processing.block_processor import block_processor
 from document_chunker.block_chunker import RegulatoryChunkingSystem
 from fastapi.responses import StreamingResponse
 from contextlib import asynccontextmanager
+
 
 
 print("Loading RAG system components...")
