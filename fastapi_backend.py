@@ -15,7 +15,6 @@ from document_readers.pymupdf_reader import PyMuPDFProcessor
 from document_processing.block_processor import block_processor
 from document_chunker.block_chunker import RegulatoryChunkingSystem
 from fastapi.responses import StreamingResponse
-from create_embeddings_and_indexes import create_embeddings_and_indexes
 from contextlib import asynccontextmanager
 
 

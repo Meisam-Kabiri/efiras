@@ -16,7 +16,7 @@ from document_chunker.block_chunker import RegulatoryChunkingSystem
 def create_local_embeddings_for_all_pdf_in_directory(path:str):
     path = Path(path)
     files = path.glob("*.pdf")
-    embd_srv = EmbeddingService(device = 'cuda')  # Create once
+    embd_srv = EmbeddingService(device = 'cpu')  # Create once
     for file in files:
         # print (file.name)
         # print (file.stem)
