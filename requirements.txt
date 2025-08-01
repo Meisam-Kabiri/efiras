@@ -13,7 +13,7 @@ PyMuPDF==1.26.3
 openai==1.93.0
 python-dotenv==1.1.1
 Whoosh==2.7.4
-torch==2.7.1+cpu
+torch==2.5.1
 tokenizers==0.21.2
 safetensors==0.5.3
 requests==2.32.4
