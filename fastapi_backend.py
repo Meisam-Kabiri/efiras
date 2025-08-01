@@ -24,18 +24,13 @@ embedding_service = EmbeddingService()
 search_service = SearchService(index_dir="indexes")
 rag_generator = RAGGenerator()
 
-# This will run when the application starts up
 async def startup():
-    print("Running startup tasks")
-    # NOW call your function
-    if not Path("indexes/faiss.index").exists():
-        print("🔄 No indexes found, building from scratch...")
-        create_embeddings_and_indexes()
-    else:
-        print("✅ Loading existing indexes...")
+    print("Loading existing indexes...")
+    if Path("indexes/faiss.index").exists():
         search_service.load_indexes()
-    # Initialize your resources here
-    # Example: database connections, load ML models, etc.
+        print("✅ Indexes loaded successfully")
+    else:
+        print("❌ No indexes found - application will not work properly")
 
 # This will run when the application shuts down
 async def shutdown():
@@ -74,29 +69,9 @@ class UploadResponse(BaseModel):
     filename: str
     chunks_created: int
 
-# Initialize the 3-service RAG system
 
 
-# Load all existing embeddings and build/load indexes
-print("Loading existing embeddings...")
-emb_dir = Path("data_processed")
-embd_file_list = list(emb_dir.glob("*embds_local_BAAI_bge-large-en-v1_5*.json"))
-doc_list = []
 
-for file in embd_file_list:
-    with open(file, 'r') as f:
-        doc_list.append(json.load(f))
-
-print(f"Loaded {len(doc_list)} documents with embeddings")
-
-# Setup search service
-if not search_service.load_indexes():
-    print("Building new search indexes...")
-    search_service.build_indexes(doc_list)
-    search_service.save_indexes()
-else:
-    print("Search indexes loaded successfully!")
-    search_service.set_chunks(doc_list)
 
 print("RAG system ready!")
 
@@ -130,136 +105,6 @@ async def query_documents_stream(request: QueryRequest):
 @app.get("/")
 def home():
     return {"message": "Financial RAG API is running with 3-service architecture"}
-
-# @app.post("/upload", response_model=UploadResponse)
-# async def upload_document(file: UploadFile = File(...)):
-#     """Upload and process a document using the new 3-service architecture"""
-    
-#     if not file.filename.lower().endswith(('.pdf', '.doc', '.docx', '.txt')):
-#         raise HTTPException(status_code=400, detail="Only PDF, DOC, DOCX, and TXT files are supported")
-    
-#     try:
-#         # Create temporary file
-#         with tempfile.NamedTemporaryFile(delete=False, suffix=Path(file.filename).suffix) as temp_file:
-#             content = await file.read()
-#             temp_file.write(content)
-#             temp_file_path = temp_file.name
-        
-#         print(f"Processing uploaded file: {file.filename}")
-        
-#         # Step 1: Extract text using PyMuPDF
-#         processor = PyMuPDFProcessor()
-#         raw_result = processor.process_document(temp_file_path)
-        
-#         # Step 2: Process blocks
-#         block_proc = block_processor()
-#         processed_data = block_proc.process_blocks(raw_result)
-        
-#         # Step 3: Create chunks
-#         chunker = RegulatoryChunkingSystem(max_chunk_size=512)
-#         chunked_blocks = chunker.chunk_blocks(processed_data)
-        
-#         chunks = chunked_blocks["chunks"]
-#         print(f"Created {len(chunks)} chunks")
-        
-#         # Step 4: Generate embeddings using EmbeddingService
-#         print("Generating embeddings...")
-#         embedded_doc = {
-#             "metadata": {
-#                 "filename": file.filename,
-#                 "pages": processed_data.get("pages", 0),
-#                 "processor": "PyMuPDF"
-#             },
-#             "embeddings": []
-#         }
-        
-#         for chunk in chunks:
-#             # Generate embedding for this chunk
-#             embedding = embedding_service.embed_text(chunk["text"])
-            
-#             embedded_chunk = {
-#                 "content": chunk["text"],
-#                 "embedding": embedding.tolist(),  # Convert numpy to list for JSON
-#                 "id": chunk.get("chunk_id", len(embedded_doc["embeddings"])),
-#                 "page": chunk.get("page", 1),
-#                 "headers": chunk.get("headers", ""),
-#                 "header_identifier": chunk.get("header_identifier", "")
-#             }
-#             embedded_doc["embeddings"].append(embedded_chunk)
-        
-#         # Step 5: Save embeddings
-#         filename_stem = Path(file.filename).stem
-#         embedding_path = emb_dir / f"{filename_stem}_embds_local_BAAI_bge-large-en-v1_5.json"
-        
-#         with open(embedding_path, 'w') as f:
-#             json.dump(embedded_doc, f, indent=2)
-        
-#         # Step 6: Update search service with new document
-#         global doc_list
-#         doc_list.append(embedded_doc)
-        
-#         # Rebuild indexes to include new document
-#         search_service.build_indexes(doc_list)
-#         search_service.save_indexes()
-        
-#         # Clean up
-#         os.unlink(temp_file_path)
-        
-#         return UploadResponse(
-#             message=f"Document '{file.filename}' processed successfully",
-#             filename=file.filename,
-#             chunks_created=len(chunks)
-#         )
-        
-#     except Exception as e:
-#         if 'temp_file_path' in locals():
-#             try:
-#                 os.unlink(temp_file_path)
-#             except:
-#                 pass
-        
-#         print(f"Error processing file: {str(e)}")
-#         raise HTTPException(status_code=500, detail=f"Error processing document: {str(e)}")
-
-# @app.post("/query", response_model=QueryResponse)
-# def query_documents(request: QueryRequest):
-#     """Query documents using the 3-service architecture"""
-#     if not request.question:
-#         raise HTTPException(status_code=400, detail="No question provided")
-    
-#     try:
-#         # Step 1: Get query embedding
-#         query_embedding = embedding_service.embed_text(request.question)
-        
-#         # Step 2: Search for relevant chunks
-#         relevant_chunks = search_service.search_documents(
-#             request.question, 
-#             query_embedding, 
-#             top_k=12
-#         )
-        
-#         # Step 3: Generate answer
-#         answer = rag_generator.answer_query(request.question, relevant_chunks)
-        
-#         # Step 4: Format sources
-#         sources = []
-#         for chunk in relevant_chunks[:5]:  # Top 5 sources
-#             sources.append({
-#                 "filename": chunk.get("filename", "Unknown"),
-#                 "page": chunk.get("page", "N/A"),
-#                 "headers": chunk.get("headers", ""),
-#                 "content_preview": chunk.get("content", "")[:200] + "..."
-#             })
-        
-#         return QueryResponse(
-#             question=request.question,
-#             answer=answer,
-#             sources=sources
-#         )
-        
-#     except Exception as e:
-#         print(f"Error querying documents: {str(e)}")
-#         raise HTTPException(status_code=500, detail=f"Error querying documents: {str(e)}")
 
 @app.get("/status")
 def get_status():

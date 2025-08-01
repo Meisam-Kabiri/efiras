@@ -332,11 +332,12 @@ class SearchService:
         top_chunks = asyncio.run(self.hybrid_search(query, query_embedding, top_k))
         return top_chunks
     
-    def save_indexes(self, faiss_path=None, bm25_path = None, whoosh_path=None):
+    def save_indexes(self, faiss_path=None, bm25_path = None, chunks_path = None, whoosh_path=None):
         """Save indexes to disk for persistence"""
         faiss_path = faiss_path or os.path.join(self.index_dir, "faiss.index")
         bm25_path = bm25_path or os.path.join(self.index_dir, "bm25_tokenized.pkl")
         faiss_path = faiss_path or os.path.join(self.index_dir + "/whoosh", "faiss.index")
+        chunks_path = os.path.join(self.index_dir, "chunks_metadata.json")
 
             
         if self.faiss_index is not None:
@@ -348,6 +349,11 @@ class SearchService:
             with open(bm25_path, 'wb') as f:
                 pickle.dump(self.tokenized_cache, f)
             print(f"✅ BM25 tokenized cache saved to {bm25_path}")
+
+        if self.chunks:
+            with open (chunks_path, 'w') as f:
+              json.dump(self.chunks, f)
+            print(f"✅ Chunks metadata saved to {chunks_path}")
             
         if self.whoosh_index is not None:
             print(f"✅ Whoosh index already saved to {whoosh_path}")
