@@ -23,21 +23,48 @@ print("Loading RAG system components...")
 embedding_service = EmbeddingService()
 search_service = SearchService(index_dir="indexes")
 rag_generator = RAGGenerator()
-
 async def startup():
-    print(f"🚀 Starting RAG system initialization at {datetime.now()}")
-    print(f"🔧 Environment PORT: {os.environ.get('PORT', 'Not set')}")
-    print(f"📁 Current directory: {os.getcwd()}")
-    print(f"📂 Files in indexes/: {list(Path('indexes').glob('*')) if Path('indexes').exists() else 'No indexes dir'}")
+    print("🚀 Starting RAG system initialization...")
+    
+    # Create indexes directory
+    Path("indexes").mkdir(exist_ok=True)
+    
+    # Download files if they don't exist
+    files_to_download = [
+        {
+            "url": "https://efiras-indexes.s3.us-east-1.amazonaws.com/indexes/bm25_tokenized.pkl",
+            "path": "indexes/bm25_tokenized.pkl"
+        },
+        {
+            "url": "https://efiras-indexes.s3.us-east-1.amazonaws.com/indexes/faiss.index", 
+            "path": "indexes/faiss.index"
+        },
+        {
+            "url": "https://efiras-indexes.s3.us-east-1.amazonaws.com/indexes/chunks_metadata.json",
+            "path": "indexes/chunks_metadata.json"
+        }
+    ]
+    
+    for file_info in files_to_download:
+        file_path = Path(file_info["path"])
+        if not file_path.exists():
+            print(f"📥 Downloading {file_info['path']}...")
+            response = requests.get(file_info["url"])
+            response.raise_for_status()
+            
+            with open(file_path, 'wb') as f:
+                f.write(response.content)
+            print(f"✅ Downloaded {file_info['path']} ({file_path.stat().st_size / 1024 / 1024:.1f}MB)")
+        else:
+            print(f"✅ {file_info['path']} already exists")
     
     print("Loading existing indexes...")
     if Path("indexes/faiss.index").exists():
-        print("📁 FAISS index found, loading...")
         search_service.load_indexes()
         print("✅ Indexes loaded successfully")
     else:
         print("❌ No indexes found")
-    print(f"🎉 RAG system ready at {datetime.now()}")
+    print("🎉 RAG system ready!")
 
 # This will run when the application shuts down
 async def shutdown():
