@@ -95,6 +95,7 @@ def create_indexes():
       
       search_service = SearchService(index_dir="indexes")
       search_service.build_indexes(doc_list)
+      search_service.save_indexes()
       print("Search indexes built successfully!")
 
 def create_embeddings_and_indexes(): 
@@ -102,4 +103,6 @@ def create_embeddings_and_indexes():
     create_local_embeddings_for_all_pdf_in_directory(path)
     create_indexes ()
 # delete_chunk_block_files_pathlib("data_processed")
+
+create_embeddings_and_indexes()
 

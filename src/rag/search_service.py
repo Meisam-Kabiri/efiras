@@ -129,7 +129,7 @@ class SearchService:
 
 
         
-        os.makedirs(self.index_dir + "/whoosh", exist_ok=True)
+        
         self.chunks = all_embedded_chunks
         
         # Build FAISS
@@ -164,6 +164,7 @@ class SearchService:
 
 
         # # Build Whoosh
+        # os.makedirs(self.index_dir + "/whoosh", exist_ok=True)
         # schema = Schema(id=ID(stored=True), content=TEXT())
         # self.whoosh_index = create_in(self.index_dir + "/whoosh", schema)
         
@@ -334,6 +335,7 @@ class SearchService:
     
     def save_indexes(self, faiss_path=None, bm25_path = None, chunks_path = None, whoosh_path=None):
         """Save indexes to disk for persistence"""
+        os.makedirs(self.index_dir + "/whoosh", exist_ok=True)
         faiss_path = faiss_path or os.path.join(self.index_dir, "faiss.index")
         bm25_path = bm25_path or os.path.join(self.index_dir, "bm25_tokenized.pkl")
         faiss_path = faiss_path or os.path.join(self.index_dir + "/whoosh", "faiss.index")
@@ -364,7 +366,7 @@ class SearchService:
         faiss_path = faiss_path or os.path.join(self.index_dir, "faiss.index")
         bm25_path = os.path.join(self.index_dir, "bm25_tokenized.pkl")
         chunks_path = os.path.join(self.index_dir, "chunks_metadata.json")
-        chunks_path = os.path.join(self.index_dir + "/whoosh", "chunks_metadata.json")
+
 
         success = True   
         try:
