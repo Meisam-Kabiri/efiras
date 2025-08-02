@@ -27,7 +27,7 @@ search_service = None
 rag_generator = None
 
 async def startup():
-    
+    global embedding_service, search_service, rag_generator  # ADD THIS LINE
     print("🚀 Loading models...")
     embedding_service = EmbeddingService()
     search_service = SearchService(index_dir="indexes")
