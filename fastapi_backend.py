@@ -21,17 +21,25 @@ from contextlib import asynccontextmanager
 
 
 
-print("Loading RAG system components...")
-embedding_service = EmbeddingService()
-search_service = SearchService(index_dir="indexes")
-rag_generator = RAGGenerator()
+# Global variables
+embedding_service = None
+search_service = None
+rag_generator = None
+
 async def startup():
+    
+    print("🚀 Loading models...")
+    embedding_service = EmbeddingService()
+    search_service = SearchService(index_dir="indexes")
+    rag_generator = RAGGenerator()
+    print("✅ Models loaded!")
+
     print("🚀 Starting RAG system initialization...")
     
     # Create indexes directory
     Path("indexes").mkdir(exist_ok=True)
     
-    # Download files if they don't exist
+    # Download files only if they don't exist
     files_to_download = [
         {
             "url": "https://efiras-indexes.s3.us-east-1.amazonaws.com/indexes/bm25_tokenized.pkl",
@@ -51,22 +59,19 @@ async def startup():
         file_path = Path(file_info["path"])
         if not file_path.exists():
             print(f"📥 Downloading {file_info['path']}...")
-            response = requests.get(file_info["url"])
-            response.raise_for_status()
-            
-            with open(file_path, 'wb') as f:
-                f.write(response.content)
-            print(f"✅ Downloaded {file_info['path']} ({file_path.stat().st_size / 1024 / 1024:.1f}MB)")
+            try:
+                response = requests.get(file_info["url"], timeout=300)
+                response.raise_for_status()
+                
+                with open(file_path, 'wb') as f:
+                    f.write(response.content)
+                print(f"✅ Downloaded {file_info['path']} ({file_path.stat().st_size / 1024 / 1024:.1f}MB)")
+            except Exception as e:
+                print(f"❌ Failed to download {file_info['path']}: {e}")
         else:
-            print(f"✅ {file_info['path']} already exists")
+            print(f"✅ {file_info['path']} already exists, skipping download")
     
-    print("Loading existing indexes...")
-    if Path("indexes/faiss.index").exists():
-        search_service.load_indexes()
-        print("✅ Indexes loaded successfully")
-    else:
-        print("❌ No indexes found")
-    print("🎉 RAG system ready!")
+    print("🎉 File check/download complete!")
 
 # This will run when the application shuts down
 async def shutdown():
@@ -113,12 +118,18 @@ print("RAG system ready!")
 
 @app.post("/query-stream")
 async def query_documents_stream(request: QueryRequest):
+    import time 
+    
     def generate_response():
         try:
+            start = time.time()
             query_embedding = embedding_service.embed_text(request.question)
+            print(f"Embedding: {time.time() - start:.2f}s")
+            start = time.time()
             relevant_chunks = search_service.search_documents(
                 request.question, query_embedding, top_k=12
             )
+            print(f"Search: {time.time() - start:.2f}s")
             
             # This will now work because answer_query_stream exists
             for chunk in rag_generator.answer_query_stream(request.question, relevant_chunks):

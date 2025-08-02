@@ -45,12 +45,7 @@ class SearchService:
             if self.use_azure_search:
                 self.add_embedings_to_azure(documents_list)
         
-        # Initialize cross-encoder (you might want to do this in __init__)
-        from sentence_transformers import CrossEncoder
-        try:
-          self.cross_encoder = CrossEncoder('BAAI/bge-reranker-large', local_files_only=True)
-        except:
-          self.cross_encoder = CrossEncoder('BAAI/bge-reranker-large', local_files_only=False)
+       
 
         # Add Azure Search option
         self.use_azure_search = use_azure_search
@@ -270,6 +265,12 @@ class SearchService:
 
     async def hybrid_search_with_cross_encoder(self, query, query_embedding, top_k=8):
       """Hybrid search with cross-encoder re-ranking"""
+       # Initialize cross-encoder (you might want to do this in __init__)
+      from sentence_transformers import CrossEncoder
+      try:
+        self.cross_encoder = CrossEncoder('BAAI/bge-reranker-large', local_files_only=True)
+      except:
+        self.cross_encoder = CrossEncoder('BAAI/bge-reranker-large', local_files_only=False)
       
       # Step 1: Get candidates from both search methods
       if self.use_async:

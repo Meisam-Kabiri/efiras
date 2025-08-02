@@ -48,21 +48,20 @@ class EmbeddingService:
         self.final_model = self._determine_final_model()
         
         print(f"🎯 Final embedding model: {self.final_model}")
-    
-        # Initialize local model if needed
-        
+  
+
 
         if use_local:
             from sentence_transformers import SentenceTransformer
             
             try:
                 # Try loading from cache first
-                self.local_model = SentenceTransformer(local_model, local_files_only=True, device=device)
+                self.local_model = SentenceTransformer(local_model, cache_folder="./model_cache", local_files_only=True, device=device)
                 print(f"✅ Loaded cached model: {local_model}")
             except:
                 # If not cached, download it
                 print(f"📥 Downloading model: {local_model}")
-                self.local_model = SentenceTransformer(local_model, local_files_only=False, device=device)
+                self.local_model = SentenceTransformer(local_model, cache_folder="./model_cache", local_files_only=False, device=device)
                 print(f"✅ Model downloaded and ready: {local_model}")
             
         # Initialize online client if needed
