@@ -28,6 +28,7 @@ rag_generator = None
 
 async def startup():
     global embedding_service, search_service, rag_generator  # ADD THIS LINE
+
     print("🚀 Loading models...")
     embedding_service = EmbeddingService()
     search_service = SearchService(index_dir="indexes")
@@ -72,6 +73,13 @@ async def startup():
             print(f"✅ {file_info['path']} already exists, skipping download")
     
     print("🎉 File check/download complete!")
+
+    print("🔧 Loading indexes...")
+    success = search_service.load_indexes()
+    if success:
+        print("✅ All indexes loaded successfully!")
+    else:
+        print("❌ Failed to load some indexes")
 
 # This will run when the application shuts down
 async def shutdown():
