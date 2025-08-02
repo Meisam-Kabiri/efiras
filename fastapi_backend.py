@@ -118,9 +118,11 @@ print("RAG system ready!")
 
 @app.post("/query-stream")
 async def query_documents_stream(request: QueryRequest):
+    print("the query stream started")
     import time 
     
     def generate_response():
+        print("the genrate response fucntion started")
         try:
             start = time.time()
             query_embedding = embedding_service.embed_text(request.question)
