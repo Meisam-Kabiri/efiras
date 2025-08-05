@@ -8,6 +8,66 @@ from pathlib import Path
 import re
 import numpy as np
 
+system_prompt = """You are an expert regulatory compliance assistant specializing in financial regulations.
+
+QUERY VALIDATION:
+- Single letters/gibberish → "Please ask a complete regulatory question"
+- Greetings → Respond warmly and guide toward regulatory topics
+- Vague queries → Request specific details about compliance, risk, or regulatory requirements
+
+RESPONSE FORMAT FOR VALID QUESTIONS:
+1. **Structure**: Organize answers with clear headings and numbered points
+2. **Citations**: Use inline citations (1), (2), (3) after each statement
+3. **Synthesis**: Combine overlapping information from multiple sources
+4. **Accuracy**: Include all relevant regulatory details without repetition
+
+CITATION OPTIMIZATION:
+- **Group similar sources**: If multiple points come from the same document section, use ONE reference
+- **Simplify format**: "Document Name, Section X.X, Page XX" (remove redundant hierarchies)
+- **Deduplicate**: Don't repeat identical or very similar references
+- **Clean names**: "CSSF_18_698.pdf" → "CSSF Circular 18/698"
+
+REQUIRED SOURCES SECTION:
+End with concise, non-repetitive sources:
+**Sources:**
+1. CSSF Circular 18/698, Section 6.4.3, Pages 67-73
+2. CSSF Circular 18/698, Section 6.2.3, Pages 63-67
+3. CSSF Circular 18/698, Section 5, Page 24
+
+**EXAMPLE FORMAT:**
+"Investment funds must maintain liquidity buffers and implement risk frameworks (1). Capital requirements are set at 8% of risk-weighted assets, with ongoing monitoring obligations (1). Additional reporting requirements apply quarterly (2).
+
+**Sources:**
+1. CSSF Circular 18/698, Sections 6.2-6.4, Pages 63-73
+2. Basel III Framework, Section 2.1, Page 23"
+
+**KEY RULE: Combine references from the same document/section into single entries. Quality over quantity.**"""
+
+
+# system_prompt = """Answer the question using the provided regulatory document chunks. 
+# These chunks may contain related or complementary information from different sections of the same regulation.
+
+# Guidelines:
+# - Synthesize overlapping information into clear, organized points
+# - Create comprehensive lists when multiple chunks provide related requirements
+# - Don't repeat the same information multiple times
+# - Organize your response with clear structure (numbered lists, categories, etc.)
+# - Include all relevant details from the chunks
+
+# Source Citation Guidelines:
+# - Format source names clearly using standard regulatory names:
+#   * "Luxembourg_CSSF_18_698(CSSF_18_698).pdf" → "CSSF Circular 18/698"
+#   * "Capital_Requirements_Directive_V_(CRD_V)" → "Capital Requirements Directive V (CRD V)"
+#   * "Basel_III_Framework_2023" → "Basel III Framework (2023)"
+#   * "MiFID_II_Directive_2014_65_EU" → "MiFID II Directive 2014/65/EU"
+# - Use standard regulatory citation format: "Document Name - Section X.X.X (Page XX)"
+# - Remove file extensions (.pdf) and redundant parenthetical information
+# - Keep page numbers and section references for precise citation
+# - Make citations readable and professional for compliance professionals
+
+# Always include a concise "References" section with your selected sources, showing the regulatory foundation for your response while maintaining clarity and readability."""
+
+
 try:
     from .azure_search_backend import AzureSearchBackend
     AZURE_SEARCH_AVAILABLE = True
@@ -19,7 +79,7 @@ class RAGGenerator:
     """Unified RAG System focusing on retrieval and generation only"""
     
     def __init__(self, 
-                 model: str = "gpt-4",
+                 model: str = "gpt-4o-mini", #"gpt-4o-mini"  # "gpt-4" is 4o which is most expensive  # gpt-3.5-turbo # The cheapest model available
                  use_azure: bool = False,
                  azure_endpoint: Optional[str] = None,
                  azure_api_key: Optional[str] = None,
@@ -74,19 +134,19 @@ class RAGGenerator:
       if not relevant_chunks:
           return "No relevant information found."
       
-      system_prompt = """Answer the question using the provided regulatory document chunks. 
-      These chunks may contain related or complementary information from different sections of the same regulation.
+      # system_prompt = """Answer the question using the provided regulatory document chunks. 
+      # These chunks may contain related or complementary information from different sections of the same regulation.
 
-        Guidelines:
-        - Synthesize overlapping information into clear, organized points
-        - Create comprehensive lists when multiple chunks provide related requirements
-        - Don't repeat the same information multiple times
-        - Organize your response with clear structure (numbered lists, categories, etc.)
-        - Include all relevant details from the chunks
+      #   Guidelines:
+      #   - Synthesize overlapping information into clear, organized points
+      #   - Create comprehensive lists when multiple chunks provide related requirements
+      #   - Don't repeat the same information multiple times
+      #   - Organize your response with clear structure (numbered lists, categories, etc.)
+      #   - Include all relevant details from the chunks
 
-        Always include a complete "Sources" section listing every source that provided 
-        information for your answer, even if they discuss similar points. This shows the 
-        regulatory foundation for each aspect of your response."""
+      #   Always include a complete "Sources" section listing every source that provided 
+      #   information for your answer, even if they discuss similar points. This shows the 
+      #   regulatory foundation for each aspect of your response."""
 
       # Build context from relevant chunks - include filename
       context_parts = []
@@ -111,7 +171,8 @@ class RAGGenerator:
 
           Question: {query}
 
-          Please provide a comprehensive answer and include a Sources section at the end with filename, page number, and header for each source."""
+          Please provide a comprehensive answer and include a Sources section at the end with filename, page number, and header for each source.
+          Remember: Your primary job is to be helpful. If a query isn't meaningful, guide the user toward asking better questions rather than trying to answer nonsense."""
           }
       ]
       
@@ -147,20 +208,6 @@ class RAGGenerator:
           yield "No relevant information found."
           return
       
-      system_prompt = """Answer the question using the provided regulatory document chunks. 
-      These chunks may contain related or complementary information from different sections of the same regulation.
-
-        Guidelines:
-        - Synthesize overlapping information into clear, organized points
-        - Create comprehensive lists when multiple chunks provide related requirements
-        - Don't repeat the same information multiple times
-        - Organize your response with clear structure (numbered lists, categories, etc.)
-        - Include all relevant details from the chunks
-
-        Always include a complete "Sources" section listing every source that provided 
-        information for your answer, even if they discuss similar points. This shows the 
-        regulatory foundation for each aspect of your response."""
-
       # Build context from relevant chunks - include filename
       context_parts = []
       for i, chunk in enumerate(relevant_chunks, 1):

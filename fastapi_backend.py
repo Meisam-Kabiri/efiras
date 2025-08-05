@@ -6,6 +6,7 @@ import tempfile
 import json
 from pathlib import Path
 import requests
+from datetime import datetime
 
 
 # Add your src path
@@ -18,13 +19,153 @@ from document_processing.block_processor import block_processor
 from document_chunker.block_chunker import RegulatoryChunkingSystem
 from fastapi.responses import StreamingResponse
 from contextlib import asynccontextmanager
+import time
+import hashlib
+from fastapi import Request, HTTPException
+from collections import defaultdict
+from threading import Lock
 
+class SimpleMemoryRateLimiter:
+    def __init__(self):
+        self.usage_data = defaultdict(lambda: {"minute": {}, "hour": {}, "day": {}})
+        self.lock = Lock()  # Thread safety
+        
+        # Set your limits here
+        self.LIMITS = {
+            "minute": 1,   # 3 requests per minute
+            "hour": 1,    # 20 requests per hour
+            "day": 10     # 100 requests per day
+        }
+    def get_user_fingerprint(self, request: Request) -> str:
+        """Create unique fingerprint for each user based on browser characteristics"""
+        
+        # Combine IP + User Agent + Accept Language for uniqueness
+        # Safely get headers with fallbacks for None values
+        fingerprint_parts = [
+            str(request.client.host or "unknown"),  # IP address
+            str(request.headers.get("user-agent") or "unknown"),  # Browser info
+            str(request.headers.get("accept-language") or "unknown"),  # Language
+            str(request.headers.get("accept-encoding") or "unknown"),   # Encoding
+            str(request.headers.get("cache-control") or "unknown"),
+            str(request.headers.get("sec-ch-ua") or "unknown"),
+        ]
+        
+        # Join them and create a hash
+        fingerprint_string = "|".join(fingerprint_parts)
+        fingerprint_hash = hashlib.sha256(fingerprint_string.encode()).hexdigest()
+        
+        # Return first 16 characters (enough for uniqueness)
+        return fingerprint_hash[:16]
+
+
+    def clean_old_data(self, user_data, window_type, current_window):
+        """Remove old time windows to prevent memory buildup"""
+        to_remove = []
+        for window_time in user_data[window_type]:
+            if window_time < current_window - 2:  # Keep last 2 windows for safety
+                to_remove.append(window_time)
+        
+        for old_window in to_remove:
+            del user_data[window_type][old_window]
+    
+    def check_and_increment(self, request):
+        """Check rate limit and increment if allowed"""
+        user_id = self.get_user_fingerprint(request)
+        current_time = int(time.time())
+
+        print(f"🔍 Debug - User ID: {user_id}")
+        print(f"🔍 Debug - Current time: {current_time}")
+        
+        # Calculate current time windows
+        current_minute = current_time // 60
+        current_hour = current_time // 3600
+        current_day = current_time // 86400
+
+        print(f"🔍 Debug - Current minute window: {current_minute}")
+        
+        with self.lock:
+            user_data = self.usage_data[user_id]
+            
+            # Clean old data to prevent memory leak
+            self.clean_old_data(user_data, "minute", current_minute)
+            self.clean_old_data(user_data, "hour", current_hour)
+            self.clean_old_data(user_data, "day", current_day)
+            
+            # Get current counts
+            minute_count = user_data["minute"].get(current_minute, 0)
+            hour_count = user_data["hour"].get(current_hour, 0)
+            day_count = user_data["day"].get(current_day, 0)
+
+            print(f"🔍 Debug - Current counts: minute={minute_count}, hour={hour_count}, day={day_count}")
+            print(f"🔍 Debug - Limits: minute={self.LIMITS['minute']}, hour={self.LIMITS['hour']}, day={self.LIMITS['day']}")
+            
+            # # Check limits
+            # if minute_count >= self.LIMITS["minute"]:
+            #     return {
+            #         "allowed": False,
+            #         "reason": "Too many requests per minute. Please wait a moment.",
+            #         "reset_in": 60 - (current_time % 60)
+            #     }
+            
+            # if hour_count >= self.LIMITS["hour"]:
+            #     return {
+            #         "allowed": False,
+            #         "reason": "Hourly limit reached. Please wait or consider our paid plans.",
+            #         "reset_in": 3600 - (current_time % 3600)
+            #     }
+                
+            if day_count >= self.LIMITS["day"]:
+                return {
+                    "allowed": False,
+                    "reason": "Daily limit reached.!",
+                    "reset_in": 86400 - (current_time % 86400)
+                }
+            
+            print(f"✅ Debug - ALLOWED: incrementing counters")
+            # All good - increment counters
+            user_data["minute"][current_minute] = minute_count + 1
+            user_data["hour"][current_hour] = hour_count + 1
+            user_data["day"][current_day] = day_count + 1
+            
+            print(f"🔍 Debug - After increment: minute={minute_count + 1}")
+            return {
+                "allowed": True,
+                "remaining": min(
+                    self.LIMITS["minute"] - minute_count - 1,
+                    self.LIMITS["hour"] - hour_count - 1,
+                    self.LIMITS["day"] - day_count - 1
+                ),
+                "usage": {
+                    "minute": f"{minute_count + 1}/{self.LIMITS['minute']}",
+                    "hour": f"{hour_count + 1}/{self.LIMITS['hour']}",
+                    "day": f"{day_count + 1}/{self.LIMITS['day']}"
+                }
+            }
 
 
 # Global variables
 embedding_service = None
 search_service = None
 rag_generator = None
+rate_limiter = SimpleMemoryRateLimiter()
+
+def check_rate_limit(request: Request):
+    """Check if request should be rate limited"""
+    
+    result = rate_limiter.check_and_increment(request)
+    
+    if not result["allowed"]:
+        raise HTTPException(
+            status_code=429,
+            detail={
+                "error": "Rate limit exceeded",
+                "message": result["reason"],
+                "reset_in_seconds": result["reset_in"],
+                "tip": "Please wait a moment, or contact us about higher limits for serious usage."
+            }
+        )
+    
+    return result
 
 async def startup():
     global embedding_service, search_service, rag_generator  # ADD THIS LINE
@@ -121,16 +262,19 @@ class UploadResponse(BaseModel):
 
 
 
-
 print("RAG system ready!")
 
 @app.post("/query-stream")
-async def query_documents_stream(request: QueryRequest):
+async def query_documents_stream(request: QueryRequest, http_request: Request):
+    
+    rate_info = check_rate_limit(http_request)
+
     print("the query stream started")
-    import time 
+     
     
     def generate_response():
         print("the genrate response fucntion started")
+        full_response = "" 
         try:
             start = time.time()
             query_embedding = embedding_service.embed_text(request.question)
@@ -141,16 +285,30 @@ async def query_documents_stream(request: QueryRequest):
             )
             print(f"Search: {time.time() - start:.2f}s")
             
-            # This will now work because answer_query_stream exists
+            
             for chunk in rag_generator.answer_query_stream(request.question, relevant_chunks):
+                full_response += chunk
                 data = {"type": "content", "content": chunk}
                 yield f"data: {json.dumps(data)}\n\n"
             
             # Send sources and completion
-            sources = [...]  # your existing sources code
-            final_data = {"type": "sources", "sources": sources}
-            yield f"data: {json.dumps(final_data)}\n\n"
+            # sources = [...]  # your existing sources code
+            # final_data = {"type": "sources", "sources": sources}
+            # yield f"data: {json.dumps(final_data)}\n\n"
             yield f"data: [DONE]\n\n"
+
+
+            # Save query and answer after streaming is complete
+            query_log = {
+                "timestamp": datetime.now().isoformat(),
+                "query": request.question,
+                "answer": full_response
+            }
+
+            # Save to file
+            with open("query_logs.json", "a") as f:
+                f.write(json.dumps(query_log) + "\n")
+            print(f"Logged query: {request.question[:50]}...")
             
         except Exception as e:
             error_data = {"type": "error", "error": str(e)}

@@ -373,7 +373,11 @@ class SearchService:
         try:
             # Load FAISS index
             if os.path.exists(faiss_path):
-                self.faiss_index = faiss.read_index(faiss_path)
+                # Load with memory mapping instead of loading entirely into RAM
+                #Uses memory-mapped I/O, meaning:
+                # FAISS doesn’t load the full file into RAM at once.
+                # It maps the index file on disk into memory and loads only the needed parts when required.
+                self.faiss_index = faiss.read_index(faiss_path, faiss.IO_FLAG_MMAP)
                 print(f"✅ FAISS index loaded from {faiss_path}")
             else:
               print(f"⚠️ FAISS index not found at {faiss_path}")

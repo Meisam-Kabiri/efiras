@@ -45,8 +45,8 @@ def main():
         search_service.set_chunks(doc_list)  # Set chunks first
 
     # Step 3: Process query
-    # query = "What monitoring elements must IFM implement for central administration delegation?"
-    query = "According the Capital Requirements Directive (CRD), According to Article 111 (as replaced), who is responsible for supervising a parent credit institution on a consolidated basis if the parent is a parent credit institution in a Member State or an EU parent credit institution?"
+    query = "What monitoring elements must IFM implement for central administration delegation?"
+    # query = "According the Capital Requirements Directive (CRD), According to Article 111 (as replaced), who is responsible for supervising a parent credit institution on a consolidated basis if the parent is a parent credit institution in a Member State or an EU parent credit institution?"
     print(f"\nQuery: {query}")
     
     # Get query embedding
@@ -68,7 +68,8 @@ def main():
     # Step 5: Generate answer using RAG
     print("\nGenerating answer...")
     print("=" * 80)
-    # answer = rag_system.answer_query(query, relevant_chunks)
+    answer = rag_system.answer_query(query, relevant_chunks)
+    print(answer)
     
     print("=" * 80)
     
