@@ -246,4 +246,4 @@ if __name__ == "__main__":
     print("Starting modernized RAG API server...")
     port=int(os.environ.get("PORT", 8080))
     # uvicorn.run(app, host="localhost", port=8080)
-    uvicorn.run("fastapi_backend:app", host="0.0.0.0", port=port)
+    uvicorn.run("efiras_backend:app", host="0.0.0.0", port=port)
