@@ -214,8 +214,8 @@ pdf_content = {
 
 ### Usage in EFIRAS System
 ```python
-from src.document_processing.block_processor import block_processor
-from src.document_processing.manager import DocumentProcessorManager
+from src.core.processor.block_processor import block_processor
+from src.core.processor.manager import DocumentProcessorManager
 
 # Document extraction
 manager = DocumentProcessorManager()

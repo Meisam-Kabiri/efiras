@@ -18,7 +18,7 @@ from nltk.corpus import stopwords
 from nltk.tokenize import word_tokenize
 from langdetect import detect
 from sklearn.metrics.pairwise import cosine_similarity
-from sentence_transformers import SentenceTransformer
+# from sentence_transformers import SentenceTransformer
 import faiss
 import numpy as np
 
@@ -26,8 +26,6 @@ import numpy as np
 from langdetect import detect
 # import torch
 # torch.cuda.empty_cache()  # Clear GPU memory
-
-
 
 load_dotenv()  # Load environment variables from .env file
 openai_api_key = os.getenv("GPT_API_KEY")
@@ -158,39 +156,40 @@ def hybrid_search_simple_comb(query, query_embedding, vector_db, weights = [0.7,
 
 
 
-# Initialize model once
-model = SentenceTransformer('all-mpnet-base-v2')
+# # Initialize model once
+# model = SentenceTransformer('all-mpnet-base-v2')
 
-def sklearn_similarity(chunks: List[str], query:str, k=5, path: str = ''):
-    """Find top k similar chunks using scikit-learn cosine similarity"""
+# def sklearn_similarity(chunks: List[str], query:str, k=5, path: str = ''):
+#     """Find top k similar chunks using scikit-learn cosine similarity"""
 
-    chunk_embeddings = np.array([item['embedding'] for item in chunks], dtype=np.float32)
-    query_embedding = model.encode([query])
+#     chunk_embeddings = np.array([item['embedding'] for item in chunks], dtype=np.float32)
+#     query_embedding = model.encode([query])
     
-    # Calculate similarities
-    similarities = cosine_similarity(query_embedding, chunk_embeddings)[0]
+#     # Calculate similarities
+#     similarities = cosine_similarity(query_embedding, chunk_embeddings)[0]
     
-    # Get top k indices
-    top_indices = np.argsort(similarities)[::-1][:k]
+#     # Get top k indices
+#     top_indices = np.argsort(similarities)[::-1][:k]
     
-    # Return results
-    results = []
-    for idx in top_indices:
-        results.append({
-            'chunk': chunks[idx],
-            'content': [item['content'] for item in chunks if item['id'] == idx],
-            'similarity': similarities[idx],
-            'index': idx
-        })
+#     # Return results
+#     results = []
+#     for idx in top_indices:
+#         results.append({
+#             'chunk': chunks[idx],
+#             'content': [item['content'] for item in chunks if item['id'] == idx],
+#             'similarity': similarities[idx],
+#             'index': idx
+#         })
     
-    return results
+#     return results
 
-def faiss_similarity(chunks:List[dict], query:str, k=5):
+
+
+def faiss_similarity(chunks:List[dict], query_embedding, query:str, k=5):
     """Find top k similar chunks using FAISS cosine similarity"""
 
     # Extract only embeddings
     chunk_embeddings = np.array([item['embedding'] for item in chunks], dtype=np.float32)
-    query_embedding = model.encode([query])
     
     # Convert to float32 and normalize
     chunk_embeddings = np.array(chunk_embeddings, dtype=np.float32)
@@ -222,25 +221,31 @@ def faiss_similarity(chunks:List[dict], query:str, k=5):
 
 
 # Example usage
-if __name__ == "__main__":
+# if __name__ == "__main__":
         # Get embeddings
-    path = 'data/data_processed/Lux_cssf18_698eng_embeddings_local.json'
+    # path = 'data/data_processed/Lux_cssf18_698eng_embds_local_BAAI_bge-large-en-v1.5.json'
 
-    with open(path, 'r') as f:
-        load_embeddings = json.load(f)
-        # chunk_embeddings = np.array([item['embedding'] for item in load_embeddings], dtype=np.float32)
-        # chunks_content = [item['content'] for item in load_embeddings]
+    # with open(path, 'r') as f:
+    #     load_embeddings = json.load(f)
+    #     # chunk_embeddings = np.array([item['embedding'] for item in load_embeddings], dtype=np.float32)
+    #     # chunks_content = [item['content'] for item in load_embeddings]
     
-    query = "What monitoring elements must IFM implement for central administration delegation?"
+    # query = "What monitoring elements must IFM implement for central administration delegation?"
+    # from sentence_transformers import SentenceTransformer
+    # model = SentenceTransformer('BAAI/bge-large-en-v1.5')
+    # query_embed = model.encode(query)
+
+    # build_indexes(load_embeddings['embeddings'])
+    # a, b = asyncio.run(hybrid_search(query, query_embed, 5))
+    # print(b)
+    # print(a)
+    # print("Scikit-learn results:")
+    # sklearn_results = sklearn_similarity(load_embeddings, query, k=1)
+    # for r in sklearn_results:
+    #     print(f"  {r['similarity']:.3f} - {r['content']}")
+    #     print(".."*50)
     
-    
-    print("Scikit-learn results:")
-    sklearn_results = sklearn_similarity(load_embeddings, query, k=1)
-    for r in sklearn_results:
-        print(f"  {r['similarity']:.3f} - {r['content']}")
-        print(".."*50)
-    
-    print("\nFAISS results:")
-    faiss_results = faiss_similarity(load_embeddings, query, k=1)
-    for r in faiss_results:
-        print(f"  {r['similarity']:.3f} - {r['content']}")
+    # print("\nFAISS results:")
+    # faiss_results = faiss_similarity(load_embeddings, query, k=1)
+    # for r in faiss_results:
+    #     print(f"  {r['similarity']:.3f} - {r['content']}")

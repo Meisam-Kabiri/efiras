@@ -4,20 +4,24 @@ from typing import List, Dict, Any, Optional
 from dotenv import load_dotenv
 from openai import OpenAI, AzureOpenAI
 
+import logging
+logging.getLogger("faiss").setLevel(logging.ERROR)
+
 
 class EmbeddingService:
     """Service for generating embeddings from text blocks"""
     
     def __init__(self, 
                  use_local: bool = True,
-                 local_model: str = "all-mpnet-base-v2",
+                 local_model: str = "BAAI/bge-large-en-v1.5",  # all-mpnet-base-v2
                  use_azure: bool = False,
                  online_model: str = "text-embedding-3-large",
                  azure_endpoint: Optional[str] = None,
                  azure_api_key: Optional[str] = None,
                  api_version: str = "2024-02-01",
                  use_cached_embeddings: bool = True,
-                 cached_local_model: bool = True):
+                #  cached_local_model: bool = True,
+                 device:str = "cpu"): # cpu or cuda 
         """
         Initialize embedding service
         
@@ -39,13 +43,26 @@ class EmbeddingService:
         self.use_azure = use_azure
         self.online_model = online_model
         self.use_cached_embeddings = use_cached_embeddings
+
+        # Set final model name for clarity
+        self.final_model = self._determine_final_model()
         
-        # Initialize local model if needed
+        print(f"🎯 Final embedding model: {self.final_model}")
+  
+
+
         if use_local:
             from sentence_transformers import SentenceTransformer
-            self.local_model = SentenceTransformer(local_model, local_files_only=cached_local_model)
-        else:
-            self.local_model = None
+            
+            try:
+                # Try loading from cache first
+                self.local_model = SentenceTransformer(local_model, cache_folder="./model_cache", local_files_only=True, device=device)
+                print(f"✅ Loaded cached model: {local_model}")
+            except:
+                # If not cached, download it
+                print(f"📥 Downloading model: {local_model}")
+                self.local_model = SentenceTransformer(local_model, cache_folder="./model_cache", local_files_only=False, device=device)
+                print(f"✅ Model downloaded and ready: {local_model}")
             
         # Initialize online client if needed
         if not use_local:
@@ -69,21 +86,42 @@ class EmbeddingService:
         else:
             self.client = None
     
+
+    def _determine_final_model(self) -> str:
+        """Determine the actual model being used"""
+        if self.use_local:
+            return f"Local: {self.local_model_name}"
+        elif self.use_azure:
+            return f"Azure OpenAI: {self.online_model}"
+        else:
+            return f"OpenAI: {self.online_model}"
+        
     def get_provider_suffix(self) -> str:
         """Get suffix for cache file naming based on embedding provider"""
         if self.use_local:
-            return f"local_{self.local_model_name.replace('/', '_')}"
+            return f"local_{self.local_model_name.replace('/', '_').replace('.', '_')}"
         elif self.use_azure:
             return f"azure_{self.online_model}"
         else:
             return f"openai_{self.online_model}"
     
-    def enrich_text_with_headers(self, chunk: Dict[str, Any]) -> str:
-        """Enrich block text with hierarchical headers"""
-        enriched = chunk.get('headers')
-        if enriched:
-            return f"{enriched}\n\n{chunk['text']}"
-        return chunk['text']
+    def enrich_text_with_headers(self, chunk: Dict[str, Any], filename: str = None) -> str:
+        """Enrich block text with hierarchical headers and optionally filename"""
+        enriched_parts = []
+        
+        # Add filename if provided
+        if filename:
+            enriched_parts.append(f"Document: {filename}")
+        
+        # Add headers if available
+        headers = chunk.get('headers')
+        if headers:
+            enriched_parts.append(headers)
+        
+        # Add the main text
+        enriched_parts.append(chunk['text'])
+        
+        return "\n\n".join(enriched_parts)
     
     def embed_text(self, text: str) -> List[float]:
         """Generate embedding for a single text"""
@@ -107,27 +145,35 @@ class EmbeddingService:
                 return []
     
     def embed_all_chunks(self, 
-                    chunked_doc: Dict[str, Any], 
+                    chunked_doc: Dict[str, Any],
+                    use_local_file: bool =  True,
                     cache_path: str = "data/data_processed",
-                    cache_filename: str = "embeddings") -> List[Dict[str, Any]]:
+                    cache_filename: str = '') -> Dict[str, Any]:
         """
         Generate embeddings for blocks with caching
         
         Returns:
-            List of dictionaries with structure:
-            {
+            nested dictionaries with structure:
+            metadata: {...}
+            'embedings': {
                 'id': int,
                 'content': str,
                 'embedding': List[float],
                 'block': Dict[str, Any]
-            }
+             }
         """
         # Build cache file path
+        file_name = chunked_doc["filename_without_ext"]
+        if not cache_filename:
+            cache_filename = file_name
+        
         provider_suffix = self.get_provider_suffix()
-        cache_file = f"{cache_path}/{cache_filename}_{provider_suffix}.json"
+        cache_file = f"{cache_path}/{cache_filename}_embds_{provider_suffix}.json"
         
         # Try loading from cache
-        if self.use_cached_embeddings and os.path.exists(cache_file):
+ 
+            
+        if self.use_cached_embeddings and use_local_file and os.path.exists(cache_file):
             try:
                 with open(cache_file, 'r') as f:
                     cached = json.load(f)
@@ -137,67 +183,93 @@ class EmbeddingService:
                 print(f"Error loading cache: {e}")
         
         # Generate embeddings
-        print(f"Generating embeddings using {self._get_provider_name()}...")
+        print(f"Generating embeddings using {self.get_provider_name()}...")
         embeddings = []
-        embeddings = {k:v for k, v in chunked_doc.items if (v!='chunks' and v!="blocks")}
-        chunks = chunked_doc.get('blocks') or chunked_doc.get('chunks', [])
+        metadata = {k: v for k, v in chunked_doc.items() if k not in ["chunks", "blocks"]}
+        chunks = chunked_doc.get("blocks") or chunked_doc.get("chunks", [])
         
         for i, chunk in enumerate(chunks):
             print(f"Embedding {i+1}/{len(chunks)}")
             
             # Enrich text with headers for better context
-            content = self.enrich_text_with_headers(chunk)
+            content = self.enrich_text_with_headers(chunk, file_name)
             embedding = self.embed_text(content)
             
             if embedding:
-                embeddings.append({
+                embedding_item = {
                     'id': i,
-                    'content': chunk['text'],  # Store original text
+                    'content': chunk["text"],  # Store original text
                     'embedding': embedding,
-                    'block': {k: v for k, v in chunk.items() if k != 'text'}  # Store full block metadata
-                })
+                }
+                # Add all other fields from chunk/block (except "text") to top level
+                for k, v in chunk.items():
+                    if k != "text":
+                        embedding_item[k] = v
+                        
+                embeddings.append(embedding_item)
             else:
                 print(f"Failed to embed block {i}")
         
         # Save to cache
+        # Combined structure for saving
+        complete_data = {
+            'metadata': metadata,        # Document info (filename, pages, etc.)
+            'embeddings': embeddings  # List of embedding objects
+        }
+
         if self.use_cached_embeddings:
             try:
                 os.makedirs(cache_path, exist_ok=True)
                 with open(cache_file, 'w') as f:
-                    json.dump(embeddings, f)
-                print(f"Saved {len(embeddings)} embeddings to cache: {cache_file}")
+                    json.dump(complete_data, f)
+                print(f"Saved {len(embeddings)} embeddings to cache: {cache_file} along with metadata")
             except Exception as e:
                 print(f"Error saving cache: {e}")
         
-        return embeddings
+        return complete_data
     
-    def _get_provider_name(self) -> str:
-        """Get human-readable provider name"""
-        if self.use_local:
-            return f"Local ({self.local_model_name})"
-        elif self.use_azure:
-            return f"Azure OpenAI ({self.online_model})"
-        else:
-            return f"OpenAI ({self.online_model})"
-    
+    def get_provider_name(self) -> str:
+      """Get human-readable provider name"""
+      if self.use_local:
+          name = f"Local ({self.local_model_name})"
+      elif self.use_azure:
+          name = f"Azure OpenAI ({self.online_model})"
+      else:
+          name = f"OpenAI ({self.online_model})"
+      
+      print(f"🔧 Provider: {name}")
+      return name
+
     def get_config(self) -> Dict[str, Any]:
         """Get configuration information"""
-        return {
-            "provider": self._get_provider_name(),
+        config = {
+            "provider": self.get_provider_name(),
             "use_local": self.use_local,
             "model": self.local_model_name if self.use_local else self.online_model,
             "use_azure": self.use_azure,
             "cache_enabled": self.use_cached_embeddings,
-            "provider_suffix": self.get_provider_suffix()
+            "provider_suffix": self.get_provider_suffix(),
+            "final_model": self.final_model
         }
-    
+        
+        print("📋 Embedding Service Configuration:")
+        for key, value in config.items():
+            print(f"   {key}: {value}")
+        
+        return config
 
 if __name__ == "__main__":
     
+    import sys
+    import os
+
+    # Add src directory to Python path
+    sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(__file__))))
+    
     from pathlib import Path
-    from efiras.core.document_processing.readers.pymupdf_reader import PyMuPDFProcessor
-    from efiras.document_processing.block_processor import block_processor
-    from efiras.document_chunker.block_chunker import RegulatoryChunkingSystem
+    from core.document_processing.readers.pymupdf_reader import PyMuPDFProcessor
+    from document_processing.block_processor import block_processor
+    from document_chunker.block_chunker import RegulatoryChunkingSystem
 
 
 
@@ -207,29 +279,22 @@ if __name__ == "__main__":
 
       
     reader = PyMuPDFProcessor()
-    processor = block_processor()
-    chunker = RegulatoryChunkingSystem()
 
-    reader.extract_blocks(input_pdf, output_dir)
+
+    raw_blocks = reader.extract_blocks(input_pdf)
+
+    processor = block_processor(raw_blocks)
+    processed_blocks = processor.process_blocks()
+
+    chunker = RegulatoryChunkingSystem(processed_blocks)
+    chunks_doc = chunker.chunk_blocks()
     
+
+    embd_srv = EmbeddingService()
+    embd_srv.embed_all_chunks(chunks_doc)
+    embd_srv.get_provider_name()
+    embd_srv.get_config()
 
   
     
     
-    # Step 3: Clean and structure the text
-    print("3. Cleaning and structuring text...")
-    processor = block_processor()
-    
-    # Process and chunk blocks (includes TOC extraction and header assignment)
-    processed_data = processor.process_and_chunk_blocks(raw_result)
-    
-    
-    print(f"   - Extracted TOC entries: {len(processed_data['table_of_contents'])}")
-    print(f"   - Processed blocks: {len(processed_data['blocks'])}")
-    
-    # Step 4: Create manageable chunks
-    print("4. Creating manageable chunks...")
-    chunker = RegulatoryChunkingSystem(max_chunk_size=512)
-    chunked_blocks = chunker.chunk_blocks(processed_data)
-
-    embd_serv = EmbeddingService()

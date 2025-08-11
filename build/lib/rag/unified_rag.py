@@ -175,7 +175,7 @@ class UnifiedRAGSystem:
         
         return embeddings
     
-    def add_documents(self, blocks: List[Dict[str, Any]], cache_path: str = "data_processed", cache_file_name: str = "embeddings"):
+    def add_documents(self, blocks: List[Dict[str, Any]], cache_path: str = "data/data_processed", cache_file_name: str = "embeddings"):
         """Add documents to vector database"""
         
         # Determine embedding provider suffix (independent of search backend)

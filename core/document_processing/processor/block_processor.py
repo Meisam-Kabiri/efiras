@@ -8,25 +8,29 @@ import re
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-class block_processor():
+class BlockProcessor():
     """Fast processor for text-based PDFs"""
     
-    def __init__(self):
-        pass
+    def __init__(self, pdf_content: List[Dict[str, Any]] = None, enable_save:bool  = True):
+        self.pdf_content = pdf_content
+        self.if_save = enable_save
 
-    def process_and_chunk_blocks(self, pdf_content: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+    def process_blocks(self, pdf_content: List[Dict[str, Any]] = None) -> List[Dict[str, Any]]:
         """
         Process and chunk the extracted blocks of text.
         Merges blocks with colons, identifies headers/footers, and chunks text.
         """
-        if pdf_content is not None:
-            blocks = pdf_content.get("blocks")
-            height = pdf_content.get("height", 0)
-            width = pdf_content.get("width", 0)
-            filename = pdf_content.get("filename", "")
-            filename_without_ext = pdf_content.get("filename_without_ext", "")
-            pages = pdf_content.get("pages", 0)
-            extension = pdf_content.get("extension", "")   
+        if pdf_content:
+            self.pdf_content = pdf_content
+            
+        if self.pdf_content is not None:
+            blocks = self.pdf_content.get("blocks")
+            height = self.pdf_content.get("height", 0)
+            width = self.pdf_content.get("width", 0)
+            filename = self.pdf_content.get("filename", "")
+            filename_without_ext = self.pdf_content.get("filename_without_ext", "")
+            pages = self.pdf_content.get("pages", 0)
+            extension = self.pdf_content.get("extension", "")   
 
         if not blocks:
             logger.warning("No blocks found in the PDF content.")
@@ -44,7 +48,7 @@ class block_processor():
         blocks = self._extract_headers(blocks)
         block = self._clean_text(blocks)
         blocks = [block for block in blocks 
-                if not (self._identify_header_footer_blocks(height, block) or len(block["text"]) < 5)
+                if not (self._identify_header_footer_blocks(height, block))
                 ]
         
 
@@ -57,15 +61,17 @@ class block_processor():
         self._enrich_blocks_with_titles(blocks, toc)
         self.reattach_split_paragraphs_across_pages(blocks)
 
-        self._save_processed_blocks(
-            filename=filename,
-            filename_without_ext=filename_without_ext,
-            file_extension = extension,
-            pages=pages,
-            toc=toc,
-            blocks=blocks,
-            is_toc = is_toc,
-            )
+        blocks = self.merge_short_blocks_with_next(blocks, min_length=15)
+        if self.if_save:
+          self._save_processed_blocks(
+              filename=filename,
+              filename_without_ext=filename_without_ext,
+              file_extension = extension,
+              pages=pages,
+              toc=toc,
+              blocks=blocks,
+              is_toc = is_toc,
+              )
         
         return {
                 "height": height,
@@ -79,7 +85,52 @@ class block_processor():
                 "table_of_contents": toc,
                 "blocks": blocks
                     }
-       
+
+    def merge_short_blocks_with_next(self, blocks: List[Dict[str, Any]], min_length: int = 10) -> List[Dict[str, Any]]:
+        """
+        Merge blocks with text length < min_length with the next block.
+        
+        Args:
+            blocks: List of blocks to process
+            min_length: Minimum text length threshold (default 10)
+        
+        Returns:
+            List of blocks with short blocks merged with next blocks
+        """
+        if not blocks:
+            return blocks
+        
+        merged_blocks = []
+        i = 0
+        
+        while i < len(blocks):
+            current_block = blocks[i].copy()
+            current_text = current_block['text'].strip()
+            
+            # If current block is short and there's a next block
+            if len(current_text) < min_length and i + 1 < len(blocks):
+                next_block = blocks[i + 1]
+                next_text = next_block['text'].strip()
+                
+                # Merge current short block with next block
+                merged_text = current_text + ' ' + next_text
+                current_block['text'] = merged_text
+                
+                # # Optionally preserve metadata from both blocks
+                # if 'bbox' in current_block and 'bbox' in next_block:
+                #     # You can merge bounding boxes or keep the first one
+                #     pass  # Keep current bbox or implement bbox merging logic
+                
+                # Add merged block and skip the next block
+                merged_blocks.append(current_block)
+                i += 2  # Skip both current and next block
+                
+            else:
+                # Block is long enough or it's the last block, keep as-is
+                merged_blocks.append(current_block)
+                i += 1
+        
+        return merged_blocks  
     def _merge_blocks_with_colon_pattern(self, blocks: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
         """
         Merges blocks that end with a colon (e.g., section headers) with the next block's text.
@@ -159,7 +210,7 @@ class block_processor():
               1: r'(?i)^(title|book|part)\s+([ivxlcdm\d]+)', # Matches: "Title I", "Book 2", "Part III", "PART 5"
               2: r'(?i)^(chapter|sub-?chapter|division)\s+([ivxlcdm\d]+)',  # Matches: "Chapter 1", "Sub-chapter II", "Division 3", "CHAPTER V"
               3: r'(?i)^(section|sub-?part)\s+([ivxlcdm\d]+(?:\.\d+)*)', # Matches: "Section 1", "Sub-part 2.1", "SECTION III", "subpart 4.2.3"
-              4: r'(?i)^(article|art\.?)\s+([\d\(\)]+)', # Matches: "Article 5", "Art. 166", "ARTICLE (2)", "art 123"
+              4: r'(?i)^(article|art\.?)\s+([\d\(\)a-zA-Z]+)', # Matches: "Article 5", "Art. 166", "ARTICLE (2)", "art 123", "article 104b"
               5: r'(?i)^(sub-?section|subsection)\s+([\d.]+)', #Matches: "Sub-section 1.2", "Subsection 4.5", "SUB-SECTION 2.1.3"
           }
           
@@ -356,7 +407,11 @@ class block_processor():
             if 'text' in block:
                 text = block['text']
                 # Remove invisible/problematic characters
+                # Remove invisible/zero-width characters
                 text = re.sub(r'[\u200b\u200c\u200d\u00ad\u00a0\ufeff\u200f\u200e]', '', text)
+
+                # Remove ALL quote characters (smart quotes + angle quotes)
+                text = re.sub(r'[\u2018\u2019\u201c\u201d''""‚„‹›«»]', '', text)
                 # Remove single \n but keep \n\n as paragraph breaks
                 text = re.sub(r'(?<!\n)\n(?!\n)', ' ', text)
                 # Clean up multiple spaces

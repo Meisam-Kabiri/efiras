@@ -200,10 +200,10 @@ Combines search results with large language models for comprehensive answers:
 ```python
 import json
 from pathlib import Path
-from rag.search_service import SearchService
-from rag.embedding_service import EmbeddingService
-from rag.rag_generator import RAGGenerator
-from document_readers.pymupdf_reader import PyMuPDFProcessor
+from core.rag.search_service import SearchService
+from core.rag.embedding_service import EmbeddingService
+from core.rag.rag_generator import RAGGenerator
+from core.document_processing.readers.pymupdf_reader import PyMuPDFProcessor
 from document_processing.block_processor import block_processor
 from document_chunker.block_chunker import RegulatoryChunkingSystem
 
@@ -215,7 +215,7 @@ def create_embeddings_for_directory(pdf_directory_path):
     
     for pdf_file in pdf_files:
         # Check if embeddings already exist
-        embedding_dir = Path("data_processed")
+        embedding_dir = Path("data/data_processed")
         if list(embedding_dir.glob(f"{pdf_file.stem}*embd*.json")):
             print(f"Embeddings exist for {pdf_file.name}")
             continue
@@ -240,7 +240,7 @@ def create_embeddings_for_directory(pdf_directory_path):
 # Example 2: Complete RAG system with all embeddings
 def setup_rag_system():
     # Load all existing embeddings from processed directory
-    embedding_dir = Path("data_processed")
+    embedding_dir = Path("data/data_processed")
     embedding_files = list(embedding_dir.glob("*embds_local_BAAI_bge-large-en-v1_5*.json"))
     
     document_list = []
@@ -254,7 +254,7 @@ def setup_rag_system():
     
     # Initialize RAG system components
     embedding_service = EmbeddingService()
-    search_service = SearchService(index_dir="indexes")
+    search_service = SearchService(index_dir="data/indexes")
     rag_generator = RAGGenerator()
     
     # Setup search service with indexes
@@ -283,7 +283,7 @@ def setup_rag_system():
     return search_service, rag_generator
 
 # Usage
-create_embeddings_for_directory("data/regulatory_documents/eu")
+create_embeddings_for_directory("data/raw/regulatory_documents/eu")
 search_service, rag_system = setup_rag_system()
 ```
 

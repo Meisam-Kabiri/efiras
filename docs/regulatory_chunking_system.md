@@ -125,7 +125,7 @@ chunks = chunker.chunk_blocks(processed_data)
 ```python
 # Output to RAG system
 rag = UnifiedRAGSystem()
-rag.add_documents(chunks, cache_path="data_processed", cache_file_name="embeddings")
+rag.add_documents(chunks, cache_path="data/data_processed", cache_file_name="embeddings")
 ```
 
 ## Configuration Examples
