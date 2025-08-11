@@ -25,6 +25,8 @@ from fastapi import Request, HTTPException
 from collections import defaultdict
 from threading import Lock
 
+from visit_tracker import track_visit, get_visit_stats, get_recent_visits
+
 class SimpleMemoryRateLimiter:
     def __init__(self):
         self.usage_data = defaultdict(lambda: {"minute": {}, "hour": {}, "day": {}})
@@ -318,8 +320,20 @@ async def query_documents_stream(request: QueryRequest, http_request: Request):
 
 
 @app.get("/")
-def home():
+def home(request: Request):
+    track_visit(request)
     return {"message": "Financial RAG API is running with 3-service architecture"}
+
+@app.get("/admin/visits")
+async def visit_statistics():
+    """Get website visit statistics"""
+    stats = get_visit_stats()
+    recent = get_recent_visits(10)
+    return {
+        "statistics": stats,
+        "recent_visits": recent
+    }
+
 
 @app.get("/status")
 def get_status():

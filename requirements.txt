@@ -18,3 +18,4 @@ tokenizers==0.21.2
 safetensors==0.5.3
 requests==2.32.4
 click==8.2.1
+sqlalchemy==2.0.41
