@@ -14,7 +14,7 @@ class SimpleMemoryRateLimiter:
         self.LIMITS = {
             "minute": 1,   # 3 requests per minute
             "hour": 1,    # 20 requests per hour
-            "day": 10     # 100 requests per day
+            "day": 5     # 100 requests per day
         }
     def get_user_fingerprint(self, request: Request) -> str:
         """Create unique fingerprint for each user based on browser characteristics"""

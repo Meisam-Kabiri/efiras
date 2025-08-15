@@ -1,4 +1,4 @@
-from fastapi import FastAPI, UploadFile, File, HTTPException
+from fastapi import FastAPI, UploadFile, File, HTTPException, Depends, BackgroundTasks
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 import sys, os
@@ -7,10 +7,10 @@ import json
 from pathlib import Path
 import requests
 from datetime import datetime
-
+from typing import Optional
+import asyncio
 
 # Add your src path
-sys.path.append(os.path.abspath("src"))
 from core.rag.search_service import SearchService
 from core.rag.embedding_service import EmbeddingService
 from core.rag.rag_generator import RAGGenerator
@@ -26,6 +26,16 @@ from threading import Lock
 
 from core.database.operations.visit_tracker import track_visit, get_visit_stats, get_recent_visits
 from core.services.rate_limiter import SimpleMemoryRateLimiter
+
+# from auth.firebase_admin_config import verify_firebase_token
+from auth.auth_middleware import get_current_user
+from auth.firebase_user_tracker import usage_tracker, initialize_usage_tracker
+
+
+# Configure logging
+import logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 
 # Global variables
@@ -53,65 +63,88 @@ def check_rate_limit(request: Request):
     return result
 
 async def startup():
-    global embedding_service, search_service, rag_generator  # ADD THIS LINE
+    """Initialize all services"""
+    global embedding_service, search_service, rag_generator
+    
+    try:
+        logger.info("🚀 Loading models...")
+        embedding_service = EmbeddingService()
+        search_service = SearchService(index_dir="data/indexes")
+        rag_generator = RAGGenerator()
+        logger.info("✅ Models loaded!")
 
-    print("🚀 Loading models...")
-    embedding_service = EmbeddingService()
-    search_service = SearchService(index_dir="data/indexes")
-    rag_generator = RAGGenerator()
-    print("✅ Models loaded!")
+        logger.info("🚀 Starting RAG system initialization...")
+        
+        # Create indexes directory
+        Path("data/indexes").mkdir(exist_ok=True)
+        
+        # Download files only if they don't exist
+        files_to_download = [
+            {
+                "url": "https://efiras-indexes.s3.us-east-1.amazonaws.com/indexes/bm25_tokenized.pkl",
+                "path": "data/indexes/bm25_tokenized.pkl"
+            },
+            {
+                "url": "https://efiras-indexes.s3.us-east-1.amazonaws.com/indexes/faiss.index", 
+                "path": "data/indexes/faiss.index"
+            },
+            {
+                "url": "https://efiras-indexes.s3.us-east-1.amazonaws.com/indexes/chunks_metadata.json",
+                "path": "data/indexes/chunks_metadata.json"
+            }
+        ]
+        
+        for file_info in files_to_download:
+            file_path = Path(file_info["path"])
+            if not file_path.exists():
+                logger.info(f"📥 Downloading {file_info['path']}...")
+                try:
+                    response = requests.get(file_info["url"], timeout=300)
+                    response.raise_for_status()
+                    
+                    with open(file_path, 'wb') as f:
+                        f.write(response.content)
+                    logger.info(f"✅ Downloaded {file_info['path']} ({file_path.stat().st_size / 1024 / 1024:.1f}MB)")
+                except Exception as e:
+                    logger.error(f"❌ Failed to download {file_info['path']}: {e}")
+            else:
+                logger.info(f"✅ {file_info['path']} already exists, skipping download")
+        
+        logger.info("🎉 File check/download complete!")
 
-    print("🚀 Starting RAG system initialization...")
-    
-    # Create indexes directory
-    Path("data/indexes").mkdir(exist_ok=True)
-    
-    # Download files only if they don't exist
-    files_to_download = [
-        {
-            "url": "https://efiras-indexes.s3.us-east-1.amazonaws.com/indexes/bm25_tokenized.pkl",
-            "path": "data/indexes/bm25_tokenized.pkl"
-        },
-        {
-            "url": "https://efiras-indexes.s3.us-east-1.amazonaws.com/indexes/faiss.index", 
-            "path": "data/indexes/faiss.index"
-        },
-        {
-            "url": "https://efiras-indexes.s3.us-east-1.amazonaws.com/indexes/chunks_metadata.json",
-            "path": "data/indexes/chunks_metadata.json"
-        }
-    ]
-    
-    for file_info in files_to_download:
-        file_path = Path(file_info["path"])
-        if not file_path.exists():
-            print(f"📥 Downloading {file_info['path']}...")
-            try:
-                response = requests.get(file_info["url"], timeout=300)
-                response.raise_for_status()
-                
-                with open(file_path, 'wb') as f:
-                    f.write(response.content)
-                print(f"✅ Downloaded {file_info['path']} ({file_path.stat().st_size / 1024 / 1024:.1f}MB)")
-            except Exception as e:
-                print(f"❌ Failed to download {file_info['path']}: {e}")
+        logger.info("🔧 Loading indexes...")
+        success = search_service.load_indexes()
+        if success:
+            logger.info("✅ All indexes loaded successfully!")
         else:
-            print(f"✅ {file_info['path']} already exists, skipping download")
-    
-    print("🎉 File check/download complete!")
+            logger.error("❌ Failed to load some indexes")
 
-    print("🔧 Loading indexes...")
-    success = search_service.load_indexes()
-    if success:
-        print("✅ All indexes loaded successfully!")
-    else:
-        print("❌ Failed to load some indexes")
+        # NEW: Initialize authentication services
+        logger.info("🔧 Initializing authentication services...")
+        await initialize_usage_tracker()
+        logger.info("✅ Authentication services initialized")
+        
+        logger.info("🎉 EFIRAS backend started successfully!")
+        
+    except Exception as e:
+        logger.error(f"❌ Startup failed: {e}")
+        raise
 
 # This will run when the application shuts down
 async def shutdown():
-    print("Running shutdown tasks")
-    # Clean up resources here
-    # Example: close database connections, etc.
+    """Cleanup when app shuts down"""
+    try:
+        logger.info("🔧 Running shutdown tasks...")
+        
+        # NEW: Close authentication services
+        await usage_tracker.close()
+        logger.info("✅ Authentication services closed")
+        
+        # Add any other cleanup here
+        logger.info("✅ Shutdown completed successfully")
+        
+    except Exception as e:
+        logger.error(f"❌ Shutdown error: {e}")
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -119,7 +152,12 @@ async def lifespan(app: FastAPI):
     yield  # The application runs here
     await shutdown()
 
-app = FastAPI(lifespan=lifespan)
+app = FastAPI(
+    title="EFIRAS API",
+    description="Regulatory AI Assistant with Authentication",
+    version="1.0.0",
+    lifespan=lifespan
+)
 
 # CORS setup
 app.add_middleware(
@@ -138,6 +176,18 @@ class QueryResponse(BaseModel):
     question: str
     answer: str
     sources: list
+    usage_info: Optional[dict] = None  # NEW: Usage tracking info
+
+class AuthenticatedQueryRequest(BaseModel):
+    question: str
+    document_filter: Optional[str] = None
+
+class UsageResponse(BaseModel):
+    daily_queries: int
+    daily_limit: int
+    remaining: int
+    plan: str
+    total_queries: int
 
 class UploadResponse(BaseModel):
     message: str
@@ -147,14 +197,31 @@ class UploadResponse(BaseModel):
 
 
 
-print("RAG system ready!")
+# PUBLIC ENDPOINTS (No authentication required)
+
+@app.get("/")
+def home(request: Request):
+    track_visit(request)
+    return {"message": "EFIRAS API is running", "version": "1.0.0"}
+
+@app.get("/health")
+def health_check():
+    """Health check endpoint"""
+    return {
+        "status": "healthy",
+        "service": "EFIRAS API",
+        "version": "1.0.0",
+        "timestamp": datetime.now().isoformat()
+    }
+
 
 @app.post("/query-stream")
-async def query_documents_stream(request: QueryRequest, http_request: Request):
+async def query_documents_stream(request: QueryRequest, http_request: Request, background_tasks: BackgroundTasks  ):
     
+    """Public query endpoint with rate limiting (no auth required)"""
     rate_info = check_rate_limit(http_request)
+    logger.info(f"Public query: {request.question[:50]}...")
 
-    print("the query stream started")
      
     
     def generate_response():
@@ -183,16 +250,24 @@ async def query_documents_stream(request: QueryRequest, http_request: Request):
             yield f"data: [DONE]\n\n"
 
 
-            # Save query and answer after streaming is complete
-            query_log = {
-                "timestamp": datetime.now().isoformat(),
-                "query": request.question,
-                "answer": full_response
-            }
+            # # Save query and answer after streaming is complete
+            # query_log = {
+            #     "timestamp": datetime.now().isoformat(),
+            #     "query": request.question,
+            #     "answer": full_response
+            # }
 
-            # Save to file
-            with open("logs/query_logs.json", "a") as f:
-                f.write(json.dumps(query_log) + "\n")
+            # # Save to file
+            # with open("logs/query_logs.json", "a") as f:
+            #     f.write(json.dumps(query_log) + "\n")
+            # print(f"Logged query: {request.question[:50]}...")
+
+            # Schedule background task to record query
+            background_tasks.add_task(
+                record_anonymous_query,
+                request.question,
+                full_response
+            )
             print(f"Logged query: {request.question[:50]}...")
             
         except Exception as e:
@@ -201,11 +276,193 @@ async def query_documents_stream(request: QueryRequest, http_request: Request):
     
     return StreamingResponse(generate_response(), media_type="text/event-stream")
 
+async def record_anonymous_query(query_text: str, response_text: str):
+    """Record anonymous query to database - with anonymous user creation"""
+    try:
+        async with usage_tracker.connection_pool.acquire() as conn:
+            # First, ensure "anonymous" user exists
+            await conn.execute("""
+                INSERT INTO users (user_id, email, plan) 
+                VALUES ($1, $2, $3)
+                ON CONFLICT (user_id) DO NOTHING
+            """, "anonymous", "anonymous@system.internal", "free")
+            
+            # Then insert query log
+            await conn.execute("""
+                INSERT INTO query_logs (user_id, query_text, success, created_at)
+                VALUES ($1, $2, $3, $4)
+            """, "anonymous", query_text[:1000], True, datetime.now())
+            
+        logger.info(f"✅ Anonymous query recorded to database")
+    except Exception as e:
+        logger.error(f"❌ Failed to record anonymous query: {e}")
 
-@app.get("/")
-def home(request: Request):
-    track_visit(request)
-    return {"message": "Financial RAG API is running with 3-service architecture"}
+
+
+@app.post("/auth/query-stream")
+async def authenticated_query_stream(
+    request: AuthenticatedQueryRequest,
+    background_tasks: BackgroundTasks,
+    current_user: dict = Depends(get_current_user)
+):
+    """Authenticated query endpoint with usage tracking"""
+    start_time = time.time()
+    
+    try:
+        user_id = current_user["user_id"]
+        email = current_user["email"]
+        
+        logger.info(f"Authenticated query from {email}: {request.question[:50]}...")
+        
+        # Check usage limits
+        can_query, usage_info = await usage_tracker.can_make_query(user_id, email)
+        
+        if not can_query:
+            logger.warning(f"Rate limit exceeded for user {email}")
+            raise HTTPException(
+                status_code=429,
+                detail=f"Daily limit exceeded. You've used {usage_info.daily_queries}/{usage_info.daily_limit} queries today."
+            )
+        
+        # Variables to track the response
+        full_response = ""
+        query_success = True
+        error_message = None
+        
+        def generate_authenticated_response():
+            nonlocal full_response, query_success, error_message
+            
+            try:
+                # Process query with your RAG system
+                query_embedding = embedding_service.embed_text(request.question)
+                relevant_chunks = search_service.search_documents(
+                    request.question, query_embedding, top_k=15
+                )
+                
+                for chunk in rag_generator.answer_query_stream(request.question, relevant_chunks):
+                    full_response += chunk
+                    data = {"type": "content", "content": chunk}
+                    yield f"data: {json.dumps(data)}\n\n"
+                
+                # Send completion
+                yield f"data: [DONE]\n\n"
+                
+                # Mark as successful
+                query_success = True
+                
+            except Exception as e:
+                logger.error(f"Authenticated query error for {email}: {e}")
+                query_success = False
+                error_message = str(e)
+                
+                error_data = {"type": "error", "error": str(e)}
+                yield f"data: {json.dumps(error_data)}\n\n"
+        
+        # Create the streaming response
+        response = StreamingResponse(generate_authenticated_response(), media_type="text/event-stream")
+        
+        # Record the query AFTER streaming is set up but BEFORE returning
+        try:
+            response_time_ms = int((time.time() - start_time) * 1000)
+            
+            # # Use asyncio.create_task to record in background
+            # asyncio.create_task(record_query_async(
+            #     user_id=user_id,
+            #     email=email,
+            #     query_text=request.question,
+            #     response_time_ms=response_time_ms,
+            #     success=query_success,
+            #     error_message=error_message
+            # ))
+
+            background_tasks.add_task(
+            record_authenticated_query,
+            user_id, email, request.question, response_time_ms, True
+        )
+            
+        except Exception as e:
+            logger.error(f"Failed to create recording task: {e}")
+        
+        return response
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Authentication error: {e}")
+        raise HTTPException(status_code=500, detail="Authentication failed")
+
+
+async def record_authenticated_query(user_id: str, email: str, query_text: str, 
+                                         response_time_ms: int, success: bool, error_msg: str = None):
+    """Record authenticated query to database - ASYNC VERSION"""
+    try:
+        await usage_tracker.record_query(
+            user_id=user_id,
+            email=email,
+            query_text=query_text,
+            response_time_ms=response_time_ms,
+            success=success,
+            error_message=error_msg
+        )
+        logger.info(f"✅ Query recorded to database for user {email}")
+    except Exception as e:
+        logger.error(f"❌ Failed to record authenticated query: {e}")
+
+# # Helper function to record query asynchronously
+# async def record_query_async(user_id: str, email: str, query_text: str, 
+#                            response_time_ms: int, success: bool, error_message: str = None):
+#     """Record query to database asynchronously"""
+#     try:
+#         await usage_tracker.record_query(
+#             user_id=user_id,
+#             email=email,
+#             query_text=query_text,
+#             response_time_ms=response_time_ms,
+#             success=success,
+#             error_message=error_message
+#         )
+#         logger.info(f"✅ Query recorded to database for user {email}")
+        
+#     except Exception as e:
+#         logger.error(f"❌ Failed to record query to database: {e}")
+
+
+
+
+@app.get("/auth/usage", response_model=UsageResponse)
+async def get_user_usage(current_user: dict = Depends(get_current_user)):
+    """Get current user's usage statistics"""
+    try:
+        user_id = current_user["user_id"]
+        email = current_user["email"]
+        
+        can_query, usage_info = await usage_tracker.can_make_query(user_id, email)
+        
+        return UsageResponse(
+            daily_queries=usage_info.daily_queries,
+            daily_limit=usage_info.daily_limit,
+            remaining=usage_info.remaining,
+            plan=usage_info.plan,
+            total_queries=usage_info.total_queries
+        )
+        
+    except Exception as e:
+        logger.error(f"Usage check error: {e}")
+        raise HTTPException(status_code=500, detail="Failed to get usage information")
+
+@app.get("/auth/analytics")
+async def get_user_analytics(current_user: dict = Depends(get_current_user)):
+    """Get detailed user analytics"""
+    try:
+        user_id = current_user["user_id"]
+        analytics = await usage_tracker.get_user_analytics(user_id)
+        return analytics
+        
+    except Exception as e:
+        logger.error(f"Analytics error: {e}")
+        raise HTTPException(status_code=500, detail="Failed to get analytics")
+
+# ADMIN ENDPOINTS
 
 @app.get("/admin/visits")
 async def visit_statistics():
@@ -217,29 +474,26 @@ async def visit_statistics():
         "recent_visits": recent
     }
 
+@app.get("/admin/system-stats")
+async def get_system_stats(current_user: dict = Depends(get_current_user)):
+    """Get system-wide statistics (requires authentication)"""
+    try:
+        stats = await usage_tracker.get_system_stats()
+        return stats
+    except Exception as e:
+        logger.error(f"System stats error: {e}")
+        raise HTTPException(status_code=500, detail="Failed to get system statistics")
 
 @app.get("/status")
 def get_status():
     """Get system status"""
     return {
         "status": "running",
-        # "documents_loaded": len(doc_list),
-        # "total_chunks": sum(len(doc["embeddings"]) for doc in doc_list),
         "search_stats": search_service.get_stats(),
-        "rag_config": rag_generator.get_config_info()
+        "rag_config": rag_generator.get_config_info(),
+        "authentication": "enabled"
     }
 
-# @app.get("/documents")
-# def list_documents():
-#     """List all loaded documents"""
-#     docs_info = []
-#     for doc in doc_list:
-#         docs_info.append({
-#             "filename": doc["metadata"]["filename"],
-#             "pages": doc["metadata"].get("pages", 0),
-#             "chunks": len(doc["embeddings"])
-#         })
-#     return {"documents": docs_info}
 
 if __name__ == "__main__":
     import uvicorn
