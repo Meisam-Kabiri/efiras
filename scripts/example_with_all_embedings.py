@@ -11,7 +11,7 @@ from core.rag.embedding_service import EmbeddingService
 from core.rag.rag_generator import RAGGenerator
 from core.document_processing.readers.pymupdf_reader import PyMuPDFProcessor
 from core.document_processing.processor import block_processor
-from core.document_processing.chunker import RegulatoryChunkingSystem
+from core.document_processing.chunker.block_chunker import RegulatoryChunkingSystem
 
 def main():
     # File paths
@@ -45,7 +45,7 @@ def main():
         search_service.set_chunks(doc_list)  # Set chunks first
 
     # Step 3: Process query
-    query = "What monitoring elements must IFM implement for central administration delegation?"
+    query = "What is the exact minimum Common Equity Tier 1 capital ratio required under Basel III, and what additional capital conservation buffer must be maintained on top of this minimum? Please provide the specific percentages and the total effective minimum."
     # query = "According the Capital Requirements Directive (CRD), According to Article 111 (as replaced), who is responsible for supervising a parent credit institution on a consolidated basis if the parent is a parent credit institution in a Member State or an EU parent credit institution?"
     print(f"\nQuery: {query}")
     

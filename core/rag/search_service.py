@@ -223,23 +223,87 @@ class SearchService:
     #         results = searcher.search(parsed_query, limit=top_k)
     #         return [(int(r['id']), r.score) for r in results]
 
-    def rrf_combine(self, vector_results, bm25_results, k=0):
+    def rrf_combine(self, vector_results, bm25_results, query, k=0):
         """Reciprocal Rank Fusion combination"""
+        """Enhanced RRF with document name boosting"""
         scores, indices = vector_results
         combined = {}
-        
-        # Vector rankings
+
+        # Extract document names/abbreviations from query
+        doc_boost_keywords = self.extract_doc_keywords(query)
+
+        # Vector rankings with document boost
         for rank, idx in enumerate(indices):
             idx = int(idx)
-            if idx != -1:
-                combined[idx] = combined.get(idx, 0) + 1/(k + rank + 1)
-        
-        # BM25 rankings  
-        for rank, (idx, score) in enumerate(bm25_results):
-            combined[idx] = combined.get(idx, 0) + 1/(k + rank + 1)
-        
+            if idx != -1 and idx < len(self.chunks):
+                base_score = 1/(k + rank + 1)
+
+                # Apply document name boost
+                doc_boost = self.calculate_doc_boost(self.chunks[idx], doc_boost_keywords)
+                combined[idx] = combined.get(idx, 0) + (base_score * doc_boost)
+
+        # BM25 rankings with document boost
+        for rank, (idx, bm25_score) in enumerate(bm25_results):
+            if idx < len(self.chunks):
+                base_score = 1/(k + rank + 1)
+                doc_boost = self.calculate_doc_boost(self.chunks[idx], doc_boost_keywords)
+                combined[idx] = combined.get(idx, 0) + (base_score * doc_boost)
+
         return combined
-    
+
+    def extract_doc_keywords(self, query):
+      """Extract document name keywords from query"""
+      doc_patterns = {
+      'aifmd': ['aifmd', 'alternative_investment_fund_managers_directive', 'alternative investment fund managers directive'],
+      'aifmd_level_2': ['aifmd_level_2', 'aifmd level 2', 'alternative_investment_fund_managers_directive_level_2', 'alternative investment fund managers directive level 2'],
+      'basel_ii': ['basel_ii', 'basel ii', 'basel_2', 'basel 2', 'basel_ii_framework', 'basel ii framework', 'basel_ii_2006', 'basel ii 2006'],
+      'basel_iii': ['basel_iii', 'basel iii', 'basel_3', 'basel 3', 'basel_iii_framework', 'basel iii framework'],
+      'crd_v': ['crd_v', 'crd v', 'crd_5', 'crd 5', 'capital_requirements_directive_v', 'capital requirements directive v'],
+      'crr': ['crr', 'capital_requirements_regulation', 'capital requirements regulation'],
+      'dodd_frank': ['dodd_frank', 'dodd frank', 'dodd-frank', 'dodd_frank_wall_street_reform', 'dodd frank wall street reform', 'dodd_frank_consumer_protection_act',
+      'dodd frank consumer protection act'],
+      'dodd_frank_2': ['dodd_frank_2', 'dodd frank 2', 'dodd_frank_wall_street_reform_2', 'dodd frank wall street reform 2', 'dodd_frank_consumer_protection_act_2',
+      'dodd frank consumer protection act 2'],
+      'emir': ['emir', 'european_market_infrastructure_regulation', 'european market infrastructure regulation'],
+      'eu_taxonomy': ['eu_taxonomy', 'eu taxonomy', 'european_union_taxonomy_regulation', 'european union taxonomy regulation'],
+      '5amld': ['5amld', '5_amld', 'fifth_anti_money_laundering_directive', 'fifth anti money laundering directive'],
+      'fatf': ['fatf', 'financial_action_task_force', 'financial action task force', 'financial_action_task_force_recommendations_2012', 'financial action task force recommendations 2012'],
+      '4amld': ['4amld', '4_amld', 'fourth_anti_money_laundering_directive', 'fourth anti money laundering directive'],
+      'gdpr': ['gdpr', 'general_data_protection_regulation', 'general data protection regulation'],
+      'cssf_18_698': ['cssf_18_698', 'cssf 18 698', 'cssf_18/698', 'cssf 18/698', 'luxembourg_cssf_18_698', 'luxembourg cssf 18 698'],
+      'mifid_ii': ['mifid_ii', 'mifid ii', 'mifid_2', 'mifid 2', 'markets_in_financial_instruments_directive_ii', 'markets in financial instruments directive ii'],
+      'mifir': ['mifir', 'markets_in_financial_instruments_regulation', 'markets in financial instruments regulation'],
+      'psd2': ['psd2', 'psd_2', 'psd 2', 'payment_services_directive_2', 'payment services directive 2'],
+      'sftr': ['sftr', 'securities_financing_transactions_regulation', 'securities financing transactions regulation'],
+      'solvency_ii_level_2': ['solvency_ii_level_2', 'solvency ii level 2', 'solvency_ii_directive_level_2', 'solvency ii directive level 2'],
+      'solvency_ii': ['solvency_ii', 'solvency ii', 'solvency_ii_directive', 'solvency ii directive'],
+      'sfdr': ['sfdr', 'sustainable_finance_disclosure_regulation', 'sustainable finance disclosure regulation'],
+      'ucits': ['ucits', 'undertakings_for_collective_investment_in_transferable_securities', 'undertakings for collective investment in transferable securities']
+  }
+
+
+      query_lower = query.lower()
+      found_keywords = []
+
+      for doc_key, keywords in doc_patterns.items():
+          if any(kw in query_lower for kw in keywords):
+              found_keywords.append(doc_key)
+
+      return found_keywords
+
+    def calculate_doc_boost(self, chunk, boost_keywords):
+        """Calculate boost multiplier based on document match"""
+        if not boost_keywords:
+            return 1.0  # No boost
+
+        chunk_filename = chunk.get('filename', '').lower()
+
+        for keyword in boost_keywords:
+            if keyword in chunk_filename:
+                return 1.5  # 50% boost for document name match
+
+        return 1.0  # No boost
+
 
     async def hybrid_search(self, query, query_embedding, top_k=12):
         """Sync method with concurrent async calls"""               
@@ -255,7 +319,7 @@ class SearchService:
 
         
         # Rest is sync
-        combined = self.rrf_combine(vector_results, bm25_results)
+        combined = self.rrf_combine(vector_results, bm25_results, query)
         top_indices = sorted(combined.keys(), key=combined.get, reverse=True)[:top_k]
         
         top_chunks = [self.chunks[i] for i in top_indices if i < len(self.chunks)]
