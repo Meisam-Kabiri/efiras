@@ -254,33 +254,29 @@ class SearchService:
     def extract_doc_keywords(self, query):
       """Extract document name keywords from query"""
       doc_patterns = {
-      'aifmd': ['aifmd', 'alternative_investment_fund_managers_directive', 'alternative investment fund managers directive'],
-      'aifmd_level_2': ['aifmd_level_2', 'aifmd level 2', 'alternative_investment_fund_managers_directive_level_2', 'alternative investment fund managers directive level 2'],
-      'basel_ii': ['basel_ii', 'basel ii', 'basel_2', 'basel 2', 'basel_ii_framework', 'basel ii framework', 'basel_ii_2006', 'basel ii 2006'],
-      'basel_iii': ['basel_iii', 'basel iii', 'basel_3', 'basel 3', 'basel_iii_framework', 'basel iii framework'],
-      'crd_v': ['crd_v', 'crd v', 'crd_5', 'crd 5', 'capital_requirements_directive_v', 'capital requirements directive v'],
-      'crr': ['crr', 'capital_requirements_regulation', 'capital requirements regulation'],
-      'dodd_frank': ['dodd_frank', 'dodd frank', 'dodd-frank', 'dodd_frank_wall_street_reform', 'dodd frank wall street reform', 'dodd_frank_consumer_protection_act',
-      'dodd frank consumer protection act'],
-      'dodd_frank_2': ['dodd_frank_2', 'dodd frank 2', 'dodd_frank_wall_street_reform_2', 'dodd frank wall street reform 2', 'dodd_frank_consumer_protection_act_2',
-      'dodd frank consumer protection act 2'],
-      'emir': ['emir', 'european_market_infrastructure_regulation', 'european market infrastructure regulation'],
-      'eu_taxonomy': ['eu_taxonomy', 'eu taxonomy', 'european_union_taxonomy_regulation', 'european union taxonomy regulation'],
-      '5amld': ['5amld', '5_amld', 'fifth_anti_money_laundering_directive', 'fifth anti money laundering directive'],
-      'fatf': ['fatf', 'financial_action_task_force', 'financial action task force', 'financial_action_task_force_recommendations_2012', 'financial action task force recommendations 2012'],
-      '4amld': ['4amld', '4_amld', 'fourth_anti_money_laundering_directive', 'fourth anti money laundering directive'],
-      'gdpr': ['gdpr', 'general_data_protection_regulation', 'general data protection regulation'],
-      'cssf_18_698': ['cssf_18_698', 'cssf 18 698', 'cssf_18/698', 'cssf 18/698', 'luxembourg_cssf_18_698', 'luxembourg cssf 18 698'],
-      'mifid_ii': ['mifid_ii', 'mifid ii', 'mifid_2', 'mifid 2', 'markets_in_financial_instruments_directive_ii', 'markets in financial instruments directive ii'],
-      'mifir': ['mifir', 'markets_in_financial_instruments_regulation', 'markets in financial instruments regulation'],
-      'psd2': ['psd2', 'psd_2', 'psd 2', 'payment_services_directive_2', 'payment services directive 2'],
-      'sftr': ['sftr', 'securities_financing_transactions_regulation', 'securities financing transactions regulation'],
-      'solvency_ii_level_2': ['solvency_ii_level_2', 'solvency ii level 2', 'solvency_ii_directive_level_2', 'solvency ii directive level 2'],
-      'solvency_ii': ['solvency_ii', 'solvency ii', 'solvency_ii_directive', 'solvency ii directive'],
-      'sfdr': ['sfdr', 'sustainable_finance_disclosure_regulation', 'sustainable finance disclosure regulation'],
-      'ucits': ['ucits', 'undertakings_for_collective_investment_in_transferable_securities', 'undertakings for collective investment in transferable securities']
-  }
-
+      'aifmd': ['aifmd', 'alternative investment fund managers directive', 'alternative_investment_fund_managers_directive'],
+      'aifmd_level_2': ['aifmd level 2', 'aifmd_level_2', 'aifmd level ii', 'aifmd_level_ii'],
+      'basel_ii': ['basel ii', 'basel_ii', 'basel 2', 'basel_2'],
+      'basel_iii': ['basel iii', 'basel_iii', 'basel 3', 'basel_3'],
+      'crd_v': ['crd v', 'crd_v', 'crd 5', 'crd_5'],
+      'crr': ['crr', 'capital requirements regulation', 'capital_requirements_regulation'],
+      'dodd_frank': ['dodd frank', 'dodd_frank', 'dodd-frank'],
+      'emir': ['emir', 'european market infrastructure regulation', 'european_market_infrastructure_regulation'],
+      'eu_taxonomy': ['eu taxonomy', 'eu_taxonomy', 'european union taxonomy regulation', 'european_union_taxonomy_regulation'],
+      '5amld': ['5amld', '5_amld', 'fifth anti money laundering directive', 'fifth_anti_money_laundering_directive'],
+      '4amld': ['4amld', '4_amld', 'fourth anti money laundering directive', 'fourth_anti_money_laundering_directive'],
+      'fatf': ['fatf', 'financial action task force', 'financial_action_task_force'],
+      'gdpr': ['gdpr', 'general data protection regulation', 'general_data_protection_regulation'],
+      'cssf_18_698': ['cssf 18/698', 'cssf_18_698', 'cssf 18 698'],
+      'mifid_ii': ['mifid ii', 'mifid_ii', 'mifid 2', 'mifid_2'],
+      'mifir': ['mifir', 'markets in financial instruments regulation', 'markets_in_financial_instruments_regulation'],
+      'psd2': ['psd2', 'psd_2', 'psd 2', 'payment services directive 2', 'payment_services_directive_2'],
+      'sftr': ['sftr', 'securities financing transactions regulation', 'securities_financing_transactions_regulation'],
+      'solvency_ii': ['solvency ii', 'solvency_ii', 'solvency 2', 'solvency_2'],
+      'solvency_ii_level_2': ['solvency ii level 2', 'solvency_ii_level_2', 'solvency 2 level 2', 'solvency_2_level_2'],
+      'sfdr': ['sfdr', 'sustainable finance disclosure regulation', 'sustainable_finance_disclosure_regulation'],
+      'ucits': ['ucits', 'undertakings for collective investment in transferable securities', 'undertakings_for_collective_investment_in_transferable_securities']
+    }
 
       query_lower = query.lower()
       found_keywords = []
