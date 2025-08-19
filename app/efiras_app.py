@@ -14,7 +14,7 @@ from auth.firebase_user_tracker import usage_tracker, initialize_usage_tracker
 from endpoints import (
     set_services, home, health_check, query_documents_stream,
     authenticated_query_stream, get_user_usage, get_user_analytics,
-    visit_statistics, get_system_stats, get_status
+    visit_statistics, get_system_stats, get_status, delete_user_account
 )
 from pydantic_models import QueryRequest, AuthenticatedQueryRequest, UsageResponse
 
@@ -177,6 +177,10 @@ async def route_visit_stats():
 @app.get("/admin/system-stats")
 async def route_system_stats(current_user: dict = Depends(get_current_user)):
     return await get_system_stats(current_user)
+
+@app.delete("/auth/account")
+async def route_delete_account(current_user: dict = Depends(get_current_user)):
+    return await delete_user_account(current_user)
 
 @app.get("/status")
 def route_status():

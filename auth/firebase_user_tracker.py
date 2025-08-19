@@ -98,7 +98,7 @@ class AzurePostgresUsageTracker:
             await conn.execute("""
                 CREATE TABLE IF NOT EXISTS daily_usage (
                     id SERIAL PRIMARY KEY,
-                    user_id VARCHAR(255) REFERENCES users(user_id),
+                    user_id VARCHAR(255),
                     usage_date DATE DEFAULT CURRENT_DATE,
                     query_count INTEGER DEFAULT 0,
                     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -111,7 +111,7 @@ class AzurePostgresUsageTracker:
             await conn.execute("""
                 CREATE TABLE IF NOT EXISTS query_logs (
                     id SERIAL PRIMARY KEY,
-                    user_id VARCHAR(255) REFERENCES users(user_id),
+                    user_id VARCHAR(255),
                     query_type VARCHAR(100) DEFAULT 'chatbot',
                     query_text TEXT,
                     response_time_ms INTEGER,
@@ -138,13 +138,27 @@ class AzurePostgresUsageTracker:
         WHY: Create user record if they don't exist
         """
         async with self.connection_pool.acquire() as conn:
-            await conn.execute("""
-                INSERT INTO users (user_id, email, plan) 
-                VALUES ($1, $2, $3)
-                ON CONFLICT (user_id) DO UPDATE SET
-                    last_active = CURRENT_TIMESTAMP,
-                    email = EXCLUDED.email
-            """, user_id, email, plan)
+            try:
+                # Try to insert the user
+                await conn.execute("""
+                    INSERT INTO users (user_id, email, plan) 
+                    VALUES ($1, $2, $3)
+                    ON CONFLICT (user_id) DO UPDATE SET
+                        last_active = CURRENT_TIMESTAMP,
+                        email = EXCLUDED.email
+                """, user_id, email, plan)
+            except asyncpg.UniqueViolationError as e:
+                # Handle email uniqueness violation
+                if "users_email_key" in str(e):
+                    # Just update the timestamp, don't change user_id to avoid foreign key issues
+                    await conn.execute("""
+                        UPDATE users 
+                        SET last_active = CURRENT_TIMESTAMP
+                        WHERE email = $1
+                    """, email)
+                else:
+                    # Re-raise if it's a different uniqueness violation
+                    raise
     
     async def can_make_query(self, user_id: str, email: str) -> Tuple[bool, UsageInfo]:
         """
@@ -324,6 +338,32 @@ class AzurePostgresUsageTracker:
                 "premium_users": stats['premium_users']
             }
     
+    async def delete_user_account(self, user_id: str, email: str) -> bool:
+        """
+        WHAT: Completely delete user account and all related data
+        WHY: Handle frontend account deletion properly
+        RETURNS: True if deletion was successful
+        """
+        try:
+            async with self.connection_pool.acquire() as conn:
+                async with conn.transaction():
+                    # Delete user data (no foreign key constraints, so order doesn't matter)
+                    deleted_daily = await conn.execute("DELETE FROM daily_usage WHERE user_id = $1", user_id)
+                    deleted_logs = await conn.execute("DELETE FROM query_logs WHERE user_id = $1", user_id)
+                    deleted_user = await conn.execute("DELETE FROM users WHERE user_id = $1", user_id)
+                    
+                    # Also clean up by email in case of user_id mismatches
+                    await conn.execute("DELETE FROM daily_usage WHERE user_id IN (SELECT user_id FROM users WHERE email = $1)", email)
+                    await conn.execute("DELETE FROM query_logs WHERE user_id IN (SELECT user_id FROM users WHERE email = $1)", email)
+                    await conn.execute("DELETE FROM users WHERE email = $1", email)
+                    
+                    self.logger.info(f"✅ Deleted user account: {email} (user_id: {user_id})")
+                    return True
+                    
+        except Exception as e:
+            self.logger.error(f"❌ Failed to delete user account {email}: {e}")
+            return False
+
     async def close(self):
         """Close database connections"""
         if self.connection_pool:

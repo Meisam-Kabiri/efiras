@@ -212,6 +212,27 @@ async def get_system_stats(current_user: dict = Depends(get_current_user)):
         logger.error(f"System stats error: {e}")
         raise HTTPException(status_code=500, detail="Failed to get system statistics")
 
+async def delete_user_account(current_user: dict = Depends(get_current_user)):
+    """Delete user account and all related data"""
+    try:
+        user_id = current_user["user_id"]
+        email = current_user["email"]
+        
+        logger.info(f"Deleting account for user: {email}")
+        
+        success = await usage_tracker.delete_user_account(user_id, email)
+        
+        if success:
+            return {"message": "Account deleted successfully", "deleted": True}
+        else:
+            raise HTTPException(status_code=500, detail="Failed to delete account")
+            
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Account deletion error: {e}")
+        raise HTTPException(status_code=500, detail="Failed to delete account")
+
 def get_status():
     """Get system status"""
     return {
