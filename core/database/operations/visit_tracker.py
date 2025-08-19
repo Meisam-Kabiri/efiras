@@ -73,16 +73,14 @@ def is_bot(user_agent: str, headers: dict) -> bool:
     browser_headers = ['accept', 'accept-language', 'accept-encoding']
     missing_headers = sum(1 for header in browser_headers if header not in headers)
     
-    # If missing more than 1 essential browser header, likely a bot
-    if missing_headers > 1:
+    # If missing ALL essential browser headers, likely a bot (relaxed from >1)
+    if missing_headers >= 3:
         return True
     
-    # Check for suspicious header combinations
+    # Check for suspicious header combinations (only if accept header exists)
     accept_header = headers.get('accept', '').lower()
-    if accept_header and (
-        accept_header == '*/*' or  # Too generic
-        'text/html' not in accept_header  # Not requesting HTML (API bots)
-    ):
+    if accept_header and accept_header == '*/*' and missing_headers > 1:
+        # Only flag as bot if both conditions: generic accept AND missing other headers
         return True
     
     return False
@@ -104,12 +102,18 @@ def is_likely_real_user(user_agent: str, headers: dict) -> bool:
     
     has_real_browser = any(re.search(pattern, user_agent_lower) for pattern in real_browser_patterns)
     
-    # Check for common browser headers
+    # If it has a real browser pattern, be more lenient with headers
+    if has_real_browser:
+        return True
+    
+    # For non-standard browsers, check headers more carefully
     has_accept_language = 'accept-language' in headers
     has_accept_encoding = 'accept-encoding' in headers
     accepts_html = 'text/html' in headers.get('accept', '').lower()
     
-    return has_real_browser and has_accept_language and has_accept_encoding and accepts_html
+    # Allow if at least 2 out of 3 browser characteristics are present
+    browser_score = sum([has_accept_language, has_accept_encoding, accepts_html])
+    return browser_score >= 2
 
 def track_visit(request: Request):
     """Track a website visit with IP, user agent, and timestamp (real users only)"""
@@ -133,6 +137,7 @@ def track_visit(request: Request):
     # Additional validation for real users
     if not is_likely_real_user(user_agent, headers_dict):
         print(f"⚠️ Suspicious request, skipping tracking: {client_ip} - {user_agent[:100]}...")
+        print(f"   Headers: {list(headers_dict.keys())}")
         return
     
     # Get database connection
