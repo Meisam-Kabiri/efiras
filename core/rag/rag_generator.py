@@ -88,7 +88,7 @@ class RAGGenerator:
     
     # Constants
     DEFAULT_TEMPERATURE = 0.1
-    DEFAULT_MAX_TOKENS = 1200
+    DEFAULT_MAX_TOKENS = 4000
     DEFAULT_API_VERSION = "2024-02-01"
     DEFAULT_MODEL = "gpt-4o-mini"  #"gpt-4o-mini"  # "gpt-4" is 4o which is most expensive  # gpt-3.5-turbo # The cheapest model available
     
