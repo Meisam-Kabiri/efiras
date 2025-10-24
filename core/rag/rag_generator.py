@@ -74,10 +74,9 @@ no bullet points unless absolutely essential for clarity.
 """
 
 
-
-
 try:
     from .azure_search_backend import AzureSearchBackend
+
     AZURE_SEARCH_AVAILABLE = True
 except ImportError:
     AZURE_SEARCH_AVAILABLE = False
@@ -85,13 +84,13 @@ except ImportError:
 
 class RAGGenerator:
     """Unified RAG System focusing on retrieval and generation only"""
-    
+
     # Constants
     DEFAULT_TEMPERATURE = 0.1
     DEFAULT_MAX_TOKENS = 4000
     DEFAULT_API_VERSION = "2024-02-01"
-    DEFAULT_MODEL = "gpt-4o-mini"  #"gpt-4o-mini"  # "gpt-4" is 4o which is most expensive  # gpt-3.5-turbo # The cheapest model available
-    
+    DEFAULT_MODEL = "gpt-4o-mini"  # "gpt-4o-mini"  # "gpt-4" is 4o which is most expensive  # gpt-3.5-turbo # The cheapest model available
+
     def __init__(
         self,
         model: str = DEFAULT_MODEL,
@@ -100,9 +99,8 @@ class RAGGenerator:
         azure_api_key: Optional[str] = None,
         api_version: str = DEFAULT_API_VERSION,
     ):
-        
         """Initialize unified RAG system
-        
+
         Args:
             model: LLM model deployment name
             use_azure: Whether to use Azure OpenAI instead of OpenAI
@@ -110,56 +108,57 @@ class RAGGenerator:
             azure_api_key: Azure OpenAI API key
             api_version: Azure OpenAI API version
         """
-        
+
         load_dotenv()
-        
+
         self.use_azure = use_azure
         self.model = model
-        
+
         # Initialize LLM client
         if use_azure:
             self.azure_endpoint = azure_endpoint or os.getenv("AZURE_OPENAI_ENDPOINT")
             self.azure_api_key = azure_api_key or os.getenv("AZURE_OPENAI_API_KEY")
-            
+
             if not self.azure_endpoint or not self.azure_api_key:
-                raise ValueError("Azure OpenAI endpoint and API key are required. "
-                               "Set AZURE_OPENAI_ENDPOINT and AZURE_OPENAI_API_KEY environment variables "
-                               "or pass them as parameters.")
-            
+                raise ValueError(
+                    "Azure OpenAI endpoint and API key are required. "
+                    "Set AZURE_OPENAI_ENDPOINT and AZURE_OPENAI_API_KEY environment variables "
+                    "or pass them as parameters."
+                )
+
             self.client = AzureOpenAI(
                 azure_endpoint=self.azure_endpoint,
                 api_key=self.azure_api_key,
-                api_version=api_version
+                api_version=api_version,
             )
         else:
             api_key = os.getenv("GPT_API_KEY")
             if not api_key:
                 raise ValueError("GPT_API_KEY environment variable not set")
-            
+
             self.client = OpenAI(api_key=api_key)
-        
+
         print(f"   LLM Provider: {'Azure OpenAI' if use_azure else 'OpenAI'}")
 
     def _format_context(self, relevant_chunks: List[Dict[str, Any]]) -> str:
         """Format chunks into context string for LLM."""
         context_parts = []
         for i, chunk in enumerate(relevant_chunks, 1):
-            header = chunk.get('header_identifier', 'N/A')
-            page = chunk.get('page', 'N/A')
-            filename = chunk.get('filename', 'N/A')
-            content = chunk.get('content', '')
-            context_parts.append(f"[Source {i} - {filename} - Page {page} - {header}]\n{content}")
+            header = chunk.get("header_identifier", "N/A")
+            page = chunk.get("page", "N/A")
+            filename = chunk.get("filename", "N/A")
+            content = chunk.get("content", "")
+            context_parts.append(
+                f"[Source {i} - {filename} - Page {page} - {header}]\n{content}"
+            )
         return "\n\n".join(context_parts)
 
     def _build_messages(self, query: str, context: str) -> List[Dict[str, str]]:
         """Build messages for LLM API call."""
         return [
+            {"role": "system", "content": SYSTEM_PROMPT},
             {
-                "role": "system",
-                "content": SYSTEM_PROMPT
-            },
-            {
-                "role": "user", 
+                "role": "user",
                 "content": f"""Context:\n{context}
 
 Question: {query}
@@ -172,27 +171,29 @@ CRITICAL CITATION REQUIREMENTS:
 - NEVER cite a number that doesn't appear in your Sources section
 - NEVER use the original source numbers from the context in your citations
 
-Please provide a comprehensive answer with proper citations."""
-            }
+Please provide a comprehensive answer with proper citations.""",
+            },
         ]
 
-    def _generate_response_sync(self, query: str, relevant_chunks: List[Dict[str, Any]]) -> str:
+    def _generate_response_sync(
+        self, query: str, relevant_chunks: List[Dict[str, Any]]
+    ) -> str:
         """Generate non-streaming response."""
         if not relevant_chunks:
             return "No relevant information found."
-        
+
         context = self._format_context(relevant_chunks)
         messages = self._build_messages(query, context)
-        
+
         try:
             response = self.client.chat.completions.create(
                 model=self.model,
                 messages=messages,
                 temperature=self.DEFAULT_TEMPERATURE,
                 max_tokens=self.DEFAULT_MAX_TOKENS,
-                stream=True
+                stream=True,
             )
-            
+
             full_response = ""
             for part in response:
                 if part.choices[0].delta.content:
@@ -201,33 +202,35 @@ Please provide a comprehensive answer with proper citations."""
                     full_response += content
             print()
             return full_response
-                
+
         except Exception as e:
             provider = "Azure OpenAI" if self.use_azure else "OpenAI"
             return f"Error generating response with {provider}: {e}"
 
-    def _generate_response_stream(self, query: str, relevant_chunks: List[Dict[str, Any]]) -> Generator[str, None, None]:
+    def _generate_response_stream(
+        self, query: str, relevant_chunks: List[Dict[str, Any]]
+    ) -> Generator[str, None, None]:
         """Generate streaming response."""
         if not relevant_chunks:
             yield "No relevant information found."
             return
-        
+
         context = self._format_context(relevant_chunks)
         messages = self._build_messages(query, context)
-        
+
         try:
             response = self.client.chat.completions.create(
                 model=self.model,
                 messages=messages,
                 temperature=self.DEFAULT_TEMPERATURE,
                 max_tokens=self.DEFAULT_MAX_TOKENS,
-                stream=True
+                stream=True,
             )
-            
+
             for part in response:
                 if part.choices[0].delta.content:
                     yield part.choices[0].delta.content
-                
+
         except Exception as e:
             provider = "Azure OpenAI" if self.use_azure else "OpenAI"
             yield f"Error generating response with {provider}: {e}"
@@ -235,23 +238,25 @@ Please provide a comprehensive answer with proper citations."""
     def answer_query(self, query: str, relevant_chunks: List[Dict[str, Any]]) -> str:
         """Answer query using RAG with enhanced context."""
         return self._generate_response_sync(query, relevant_chunks)
-  
-    def answer_query_stream(self, query: str, relevant_chunks: List[Dict[str, Any]]) -> Generator[str, None, None]:
+
+    def answer_query_stream(
+        self, query: str, relevant_chunks: List[Dict[str, Any]]
+    ) -> Generator[str, None, None]:
         """Stream answer using RAG with enhanced context."""
         return self._generate_response_stream(query, relevant_chunks)
 
     def stats(self) -> Dict[str, Any]:
         """Get database statistics"""
         return {"message": "Stats method needs implementation"}
-    
+
     def get_config_info(self) -> Dict[str, Any]:
         """Get configuration info for debugging"""
         config = {
             "llm_provider": "Azure OpenAI" if self.use_azure else "OpenAI",
             "model": self.model,
         }
-        
+
         if self.use_azure:
-            config["azure_endpoint"] = getattr(self, 'azure_endpoint', 'N/A')
-        
+            config["azure_endpoint"] = getattr(self, "azure_endpoint", "N/A")
+
         return config

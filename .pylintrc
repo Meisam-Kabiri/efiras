@@ -1,0 +1,2 @@
+[MESSAGES CONTROL]
+disable=possibly-used-before-assignment, used-before-assignment, missing_function-docstring
