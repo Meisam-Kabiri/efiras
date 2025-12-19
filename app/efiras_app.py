@@ -13,21 +13,21 @@ from pathlib import Path
 from typing import Any, Dict, Optional
 
 import requests
-from config import (ALLOW_CREDENTIALS, ALLOWED_HEADERS, ALLOWED_METHODS,
-                    ALLOWED_ORIGINS, API_DESCRIPTION, API_TITLE, API_VERSION,
-                    DEFAULT_HOST, DEFAULT_PORT, INDEX_DIR, LOG_FORMAT,
-                    LOG_LEVEL, REQUEST_TIMEOUT_SECONDS, REQUIRED_INDEX_FILES)
-from endpoints import (authenticated_query_stream, clear_session,
-                       delete_user_account, get_status, get_system_stats,
-                       get_user_analytics, get_user_usage, health_check, home,
-                       query_documents_stream, set_services, visit_statistics)
+from app.config import (ALLOW_CREDENTIALS, ALLOWED_HEADERS, ALLOWED_METHODS,
+                        ALLOWED_ORIGINS, API_DESCRIPTION, API_TITLE, API_VERSION,
+                        DEFAULT_HOST, DEFAULT_PORT, INDEX_DIR, LOG_FORMAT,
+                        LOG_LEVEL, REQUEST_TIMEOUT_SECONDS, REQUIRED_INDEX_FILES)
+from app.endpoints import (authenticated_query_stream, clear_session,
+                           delete_user_account, get_status, get_system_stats,
+                           get_user_analytics, get_user_usage, health_check, home,
+                           query_documents_stream, set_services, visit_statistics, warmup)
 from fastapi import BackgroundTasks, Depends, FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse
-from pydantic_models import (AccountDeletionResponse, APIInfoResponse,
-                             AuthenticatedQueryRequest, QueryRequest,
-                             SessionClearResponse, StatusResponse,
-                             UsageResponse)
+from app.pydantic_models import (AccountDeletionResponse, APIInfoResponse,
+                                 AuthenticatedQueryRequest, QueryRequest,
+                                 SessionClearResponse, StatusResponse,
+                                 UsageResponse)
 
 from auth.auth_middleware import get_current_user
 from auth.firebase_user_tracker import initialize_usage_tracker, usage_tracker
@@ -47,27 +47,30 @@ rag_generator: Optional[RAGGenerator] = None
 
 async def startup() -> None:
     """
-    Initialize all application services on startup.
-
-    This function:
-    - Loads ML models (embeddings, RAG generator)
-    - Downloads required index files from remote storage
-    - Initializes search indexes
-    - Sets up authentication services
-
-    Raises:
-        Exception: If any critical service fails to initialize
+    Initialize lightweight application services on startup.
+    Heavy index loading moved to warmup endpoint to avoid Cloud Run timeout.
     """
-    global embedding_service, search_service, rag_generator
+    global embedding_service
 
     try:
-        logger.info("Loading ML models...")
+        logger.info("Starting lightweight initialization...")
+        # Only load lightweight services at startup
         embedding_service = EmbeddingService()
-        search_service = SearchService(index_dir=INDEX_DIR)
-        rag_generator = RAGGenerator()
-        logger.info("Models loaded successfully")
+        logger.info("Lightweight initialization complete")
+        
+    except Exception as e:
+        logger.error(f"Startup failed: {e}")
+        raise
 
-        logger.info("Starting RAG system initialization...")
+
+async def load_heavy_indexes():
+    """
+    Load heavy indexes (FAISS, BM25, chunks) - called via /warmup endpoint
+    """
+    global embedding_service, search_service, rag_generator
+    
+    try:
+        logger.info("Starting heavy index loading...")
 
         # Create indexes directory
         Path(INDEX_DIR).mkdir(exist_ok=True, parents=True)
@@ -78,45 +81,41 @@ async def startup() -> None:
             if not file_path.exists():
                 logger.info(f"Downloading {file_info['path']}...")
                 try:
-                    response = requests.get(
-                        file_info["url"], timeout=REQUEST_TIMEOUT_SECONDS
-                    )
-                    response.raise_for_status()
+                    import httpx
+                    async with httpx.AsyncClient(timeout=REQUEST_TIMEOUT_SECONDS) as client:
+                        response = await client.get(file_info["url"])
+                        response.raise_for_status()
 
-                    with open(file_path, "wb") as f:
-                        f.write(response.content)
+                        with open(file_path, "wb") as f:
+                            f.write(response.content)
+                    logger.info(f"Downloaded {file_info['path']}")
 
-                    file_size_mb = file_path.stat().st_size / 1024 / 1024
-                    logger.info(
-                        f"Downloaded {file_info['path']} ({file_size_mb:.1f}MB)"
-                    )
-                except requests.RequestException as e:
+                except Exception as e:
                     logger.error(f"Failed to download {file_info['path']}: {e}")
                     raise
-            else:
-                logger.info(f"{file_info['path']} already exists, skipping download")
 
-        logger.info("File check/download complete")
-
-        logger.info("Loading search indexes...")
-        success = search_service.load_indexes()
-        if success:
-            logger.info("All indexes loaded successfully")
-        else:
-            logger.error("Failed to load some indexes")
-            raise RuntimeError("Index loading failed")
-
+        # Now load the heavy services
+        logger.info("Loading search service and RAG generator...")
+        search_service = SearchService(index_dir=INDEX_DIR)
+        search_service.load_indexes()  # Load FAISS, BM25, and chunks from disk
+        rag_generator = RAGGenerator()
+        logger.info("RAG generator loaded successfully")
+        
+        # Initialize authentication services (skip if DB unavailable)
         logger.info("Initializing authentication services...")
-        await initialize_usage_tracker()
-        logger.info("Authentication services initialized")
+        try:
+            await initialize_usage_tracker()
+            logger.info("Authentication services initialized")
+        except Exception as db_error:
+            logger.warning(f"Database unavailable, skipping auth services: {db_error}")
+            logger.info("App will work in read-only mode")
 
         # Set services in endpoints module
         set_services(embedding_service, search_service, rag_generator)
-
-        logger.info("EFIRAS backend started successfully")
-
+        logger.info("Heavy indexes loaded successfully")
+        
     except Exception as e:
-        logger.error(f"Startup failed: {e}", exc_info=True)
+        logger.error(f"Heavy index loading failed: {e}", exc_info=True)
         raise
 
 
@@ -179,6 +178,15 @@ def route_home(request: Request) -> APIInfoResponse:
 def route_health_check() -> StatusResponse:
     """Health check endpoint for monitoring and load balancers."""
     return health_check()
+
+
+@app.post("/warmup", tags=["admin"], summary="Warmup Indexes")
+async def route_warmup():
+    """
+    Warmup endpoint to load heavy indexes after deployment.
+    Call this endpoint after deploying to Cloud Run to load FAISS, BM25, and chunks.
+    """
+    return await warmup()
 
 
 @app.post("/query-stream", tags=["query"], summary="Public Query Stream")
@@ -296,4 +304,8 @@ if __name__ == "__main__":
 
     port = int(os.environ.get("PORT", DEFAULT_PORT))
     logger.info(f"Starting EFIRAS API server on {DEFAULT_HOST}:{port}")
-    uvicorn.run("efiras_app:app", host=DEFAULT_HOST, port=port)
+    uvicorn.run("app.efiras_app:app", host=DEFAULT_HOST, port=port)
+
+
+#TODO: Use Langfuse = Datadog + analytics + versioning for LLM apps.
+#TODO: Use Docling 

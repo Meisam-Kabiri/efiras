@@ -9,7 +9,7 @@ import logging
 from datetime import datetime
 from typing import Any, Dict, Optional
 
-from config import MAX_QUERY_LENGTH
+from app.config import MAX_QUERY_LENGTH
 from fastapi import HTTPException, Request
 
 from auth.firebase_user_tracker import usage_tracker

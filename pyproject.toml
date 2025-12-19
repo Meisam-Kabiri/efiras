@@ -1,0 +1,27 @@
+[build-system]
+requires = ["setuptools>=65.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "efiras_backend"
+version = "1.0.0"
+description = "EFIRAS Backend API - Regulatory AI Assistant"
+readme = "README.md"
+requires-python = ">=3.10"
+authors = [
+    {name = "Meisam Kabiri"},
+]
+
+# Dependencies are in requirements.txt
+dependencies = []
+
+[tool.setuptools]
+package-dir = {"" = "."}
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["app", "app.*", "auth", "auth.*", "core", "core.*", "utils", "utils.*"]
+exclude = ["tests*", "*.egg-info", "data*", "logs*", "temps*"]
+
+[tool.setuptools.package-data]
+"*" = ["*.json", "*.yaml", "*.yml"]

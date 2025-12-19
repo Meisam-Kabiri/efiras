@@ -7,7 +7,7 @@ from firebase_admin import auth, credentials
 
 # STEP 1: Initialize Firebase Admin SDK
 
-cred = credentials.Certificate("auth/firebase-service-account.json")
+cred = credentials.Certificate("secrets/firebase-service-account.json")
 firebase_admin.initialize_app(cred)
 
 

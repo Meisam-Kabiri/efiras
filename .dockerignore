@@ -1,0 +1,43 @@
+# Exclude large data files from Docker build
+data/
+*.pdf
+*.index
+*.pkl
+*_processed*
+model_cache/
+models/
+training_data/
+htmlcov/
+.coverage
+coverage.xml
+__pycache__/
+*.pyc
+*.pyo
+logs/
+temps/
+build/
+.git/
+.pytest_cache/
+*.egg-info/
+.env*
+env.yaml
+env-*.yaml
+
+# Documentation files
+*.md
+CLAUDE.md
+LICENSE
+VERTEX_AI_MIGRATION.md
+DEPLOYMENT.md
+
+# Test files
+tests/
+*test*.py
+pytest.ini
+
+# Cache and temporary files
+.claude
+current_versions.txt
+
+# Include Firebase file (needed for auth)
+!secrets/firebase-service-account.json

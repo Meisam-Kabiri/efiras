@@ -49,31 +49,13 @@ class EmbeddingService:
 
         # Set final model name for clarity
         self.final_model = self._determine_final_model()
+        self.device = device
 
         print(f"🎯 Final embedding model: {self.final_model}")
 
-        if use_local:
-            from sentence_transformers import SentenceTransformer
-
-            try:
-                # Try loading from cache first
-                self.local_model = SentenceTransformer(
-                    local_model,
-                    cache_folder="./model_cache",
-                    local_files_only=True,
-                    device=device,
-                )
-                print(f"✅ Loaded cached model: {local_model}")
-            except:
-                # If not cached, download it
-                print(f"📥 Downloading model: {local_model}")
-                self.local_model = SentenceTransformer(
-                    local_model,
-                    cache_folder="./model_cache",
-                    local_files_only=False,
-                    device=device,
-                )
-                print(f"✅ Model downloaded and ready: {local_model}")
+        # Lazy loading: don't load model in __init__, wait until first use
+        self.local_model = None
+        self._model_loaded = False
 
         # Initialize online client if needed
         if not use_local:
@@ -113,6 +95,33 @@ class EmbeddingService:
         else:
             return f"openai_{self.online_model}"
 
+    def _ensure_model_loaded(self):
+        """Lazy load the embedding model when first needed"""
+        if self.use_local and not self._model_loaded:
+            from sentence_transformers import SentenceTransformer
+
+            try:
+                # Try loading from cache first
+                self.local_model = SentenceTransformer(
+                    self.local_model_name,
+                    cache_folder="./model_cache",
+                    local_files_only=True,
+                    device=self.device,
+                )
+                print(f"✅ Loaded cached model: {self.local_model_name}")
+            except:
+                # If not cached, download it
+                print(f"📥 Downloading model: {self.local_model_name}")
+                self.local_model = SentenceTransformer(
+                    self.local_model_name,
+                    cache_folder="./model_cache",
+                    local_files_only=False,
+                    device=self.device,
+                )
+                print(f"✅ Model downloaded and ready: {self.local_model_name}")
+
+            self._model_loaded = True
+
     def enrich_text_with_headers(
         self, chunk: Dict[str, Any], filename: str = None
     ) -> str:
@@ -136,6 +145,7 @@ class EmbeddingService:
     def embed_text(self, text: str) -> List[float]:
         """Generate embedding for a single text"""
         if self.use_local:
+            self._ensure_model_loaded()  # Lazy load model on first use
             try:
                 return self.local_model.encode(text).tolist()
             except Exception as e:

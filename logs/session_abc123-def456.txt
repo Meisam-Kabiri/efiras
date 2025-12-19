@@ -1,0 +1,13 @@
+USER: What are the capital requirements for Basel III?
+AI: Basel III introduces a more stringent framework for capital requirements compared to its predecessor, Basel II. The primary objective of Basel III is to enhance the banking sector's ability to absorb shocks arising from financial and economic stress, thereby promoting stability in the financial system.
+
+Under Basel III, banks are required to maintain a minimum Common Equity Tier 1 (CET1) capital ratio of 4.5% of risk-weighted assets (RWAs). Additionally, the total capital ratio must be at least 8% of RWAs, which includes Tier 1 and Tier 2 capital. Furthermore, Basel III introduces a capital conservation buffer of 2.5%, which effectively raises the CET1 requirement to 7% during normal economic conditions. This buffer is designed to ensure that banks retain capital during periods of economic growth, which can then be drawn down in times of stress.
+
+Moreover, Basel III emphasizes the importance of liquidity and leverage ratios. Banks must maintain a Liquidity Coverage Ratio (LCR) of at least 100%, ensuring they have sufficient high-quality liquid assets to cover short-term obligations. The framework also introduces a leverage ratio requirement, set at a minimum of 3%, to prevent excessive leverage in the banking system.
+
+In summary, Basel III significantly tightens capital requirements, focusing on higher quality capital, additional buffers, and enhanced liquidity measures to safeguard against future financial crises.
+
+Sources:
+1. Basel_III_Framework_(Basel_III).pdf - Page 5
+2. Basel_III_Framework_(Basel_III).pdf - Page 130
+

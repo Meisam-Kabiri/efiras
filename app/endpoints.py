@@ -12,16 +12,16 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any, Dict, Optional
 
-from config import (API_VERSION, DEFAULT_TOP_K_AUTHENTICATED,
-                    DEFAULT_TOP_K_PUBLIC, LOGS_DIR)
+from app.config import (API_VERSION, DEFAULT_TOP_K_AUTHENTICATED,
+                        DEFAULT_TOP_K_PUBLIC, LOGS_DIR)
 from fastapi import BackgroundTasks, Depends, HTTPException, Request
 from fastapi.responses import StreamingResponse
-from pydantic_models import (AccountDeletionResponse, APIInfoResponse,
-                             AuthenticatedQueryRequest, QueryRequest,
-                             SessionClearResponse, StatusResponse,
-                             UsageResponse, UserContext)
-from services import (check_rate_limit, record_anonymous_query,
-                      record_authenticated_query)
+from app.pydantic_models import (AccountDeletionResponse, APIInfoResponse,
+                                 AuthenticatedQueryRequest, QueryRequest,
+                                 SessionClearResponse, StatusResponse,
+                                 UsageResponse, UserContext)
+from app.services import (check_rate_limit, record_anonymous_query,
+                          record_authenticated_query)
 
 from auth.auth_middleware import get_current_user
 from auth.firebase_user_tracker import usage_tracker
@@ -86,6 +86,66 @@ def health_check() -> StatusResponse:
     )
 
 
+async def warmup() -> Dict[str, Any]:
+    """
+    Warmup endpoint to load heavy indexes after deployment.
+    Call this endpoint after deploying to Cloud Run to load FAISS, BM25, and chunks.
+    
+    Returns:
+        Status of index loading operation
+    """
+    from app.efiras_app import load_heavy_indexes
+    
+    global search_service, rag_generator
+    
+    # Check if already loaded
+    if search_service is not None and rag_generator is not None:
+        return {
+            "status": "already_loaded",
+            "message": "Indexes are already loaded and ready",
+            "timestamp": datetime.now().isoformat()
+        }
+    
+    try:
+        logger.info("Warmup endpoint called - loading heavy indexes...")
+        start_time = time.time()
+        
+        # Load heavy indexes
+        await load_heavy_indexes()
+        
+        load_time = time.time() - start_time
+        logger.info(f"Warmup completed in {load_time:.2f} seconds")
+        
+        return {
+            "status": "success",
+            "message": "Heavy indexes loaded successfully",
+            "load_time_seconds": round(load_time, 2),
+            "timestamp": datetime.now().isoformat()
+        }
+        
+    except Exception as e:
+        logger.error(f"Warmup failed: {e}", exc_info=True)
+        return {
+            "status": "error", 
+            "message": f"Failed to load indexes: {str(e)}",
+            "timestamp": datetime.now().isoformat()
+        }
+
+
+async def ensure_indexes_loaded():
+    """
+    Ensure indexes are loaded before processing queries.
+    Auto-loads indexes if not already loaded (lazy loading).
+    """
+    global search_service, rag_generator
+
+    if search_service is None or rag_generator is None:
+        logger.info("Indexes not loaded, performing lazy loading...")
+        from app.efiras_app import load_heavy_indexes
+        await load_heavy_indexes()
+        logger.info("Lazy loading completed")
+
+
 async def query_documents_stream(
     request: QueryRequest, http_request: Request, background_tasks: BackgroundTasks
 ) -> StreamingResponse:
@@ -108,6 +168,9 @@ async def query_documents_stream(
     """
     check_rate_limit(http_request)
     logger.info(f"Public query received: {request.question[:50]}...")
+    
+    # Ensure indexes are loaded before processing
+    await ensure_indexes_loaded()
 
     if request.session_id:
         logger.debug(f"Anonymous session ID: {request.session_id}")
@@ -176,6 +239,9 @@ async def authenticated_query_stream(
     start_time = time.time()
     user_id = current_user["user_id"]
     email = current_user["email"]
+    
+    # Ensure indexes are loaded before processing
+    await ensure_indexes_loaded()
 
     if request.session_id:
         logger.debug(f"Authenticated session ID: {request.session_id}, User: {email}")

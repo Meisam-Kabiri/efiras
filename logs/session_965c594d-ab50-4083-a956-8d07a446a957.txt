@@ -1,0 +1,14 @@
+USER: What monitoring elements must IFM implement for central administration delegation?
+AI: Investment Fund Managers (IFMs) that delegate central administration functions must implement a robust control and monitoring system to ensure compliance and effective oversight. The monitoring elements required for such delegation include several critical aspects.
+
+Firstly, IFMs must monitor the delivery of the net asset value (NAV) to ensure it is timely and accurate. This includes tracking any errors in the NAV calculation, which is essential for maintaining investor trust and regulatory compliance (1). Additionally, IFMs are responsible for monitoring adherence to the investment policy and restrictions, ensuring that all delegated activities align with the established guidelines (1).
+
+Another important element is the oversight of transactions that may not have been accounted for within the usual time limits. This monitoring helps to identify any operational inefficiencies or compliance issues that could arise from delays (1). Furthermore, IFMs must control the fees and commissions associated with the undertakings for collective investment (UCIs), ensuring that these costs are transparent and justified (1).
+
+The reconciliation of the number of units in circulation is also a vital monitoring task. This ensures that the records maintained by the delegate accurately reflect the actual units held by investors, which is crucial for maintaining the integrity of the fund's operations (1).
+
+In summary, the monitoring elements that IFMs must implement when delegating central administration functions encompass the timely delivery of NAV, accuracy in NAV calculations, compliance with investment policies, timely transaction accounting, oversight of fees and commissions, and reconciliation of units in circulation. These measures are essential for effective governance and risk management in the context of delegated functions.
+
+Sources:
+1. Luxembourg_CSSF_18_698(CSSF_18_698).pdf - Page 73 - Part II > Sub-chapter 6 > Section 6.4.3 > Sub-section 6.4.3.2
+
