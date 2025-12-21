@@ -37,7 +37,7 @@ INDEX_DIR = "data/indexes"
 LOGS_DIR = "logs"
 
 # Remote Resources
-BASE_URL = "https://efiras-indexes.s3.us-east-1.amazonaws.com/indexes"
+BASE_URL = "https://storage.googleapis.com/efiras-faiss-index/indexes"
 REQUIRED_INDEX_FILES = [
     {
         "url": f"{BASE_URL}/bm25_tokenized.pkl",
