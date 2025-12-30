@@ -6,7 +6,6 @@ from fastapi import Depends, HTTPException, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 
 from auth.firebase_admin_config import verify_firebase_token
-from auth.firebase_user_tracker import usage_tracker
 
 # STEP 1: Set up HTTP Bearer token security
 security = HTTPBearer()
@@ -41,15 +40,6 @@ async def get_current_user(
         # Verify token with Firebase
         user_info = await verify_firebase_token(token)
 
-        # Automatically ensure user exists in database
-        try:
-            await usage_tracker.ensure_user_exists(
-                user_info["user_id"], user_info["email"]
-            )
-        except Exception as db_error:
-            # Log but don't fail authentication if database user creation fails
-            print(f"Warning: Failed to create user in database: {db_error}")
-
         return user_info
 
     except Exception as e:
@@ -75,14 +65,6 @@ async def get_current_user_optional(
     try:
         token = credentials.credentials
         user_info = await verify_firebase_token(token)
-
-        # Automatically ensure user exists in database
-        try:
-            await usage_tracker.ensure_user_exists(
-                user_info["user_id"], user_info["email"]
-            )
-        except Exception as db_error:
-            print(f"Warning: Failed to create user in database: {db_error}")
 
         return user_info
     except:

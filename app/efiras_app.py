@@ -12,28 +12,53 @@ from contextlib import asynccontextmanager
 from pathlib import Path
 from typing import Any, Dict, Optional
 
+
+
+
 import requests
-from config import (ALLOW_CREDENTIALS, ALLOWED_HEADERS, ALLOWED_METHODS,
-                    ALLOWED_ORIGINS, API_DESCRIPTION, API_TITLE, API_VERSION,
-                    DEFAULT_HOST, DEFAULT_PORT, INDEX_DIR, LOG_FORMAT,
-                    LOG_LEVEL, REQUEST_TIMEOUT_SECONDS, REQUIRED_INDEX_FILES)
-from endpoints import (authenticated_query_stream, clear_session,
-                       delete_user_account, get_status, get_system_stats,
-                       get_user_analytics, get_user_usage, health_check, home,
-                       query_documents_stream, set_services, visit_statistics)
-from fastapi import BackgroundTasks, Depends, FastAPI, Request
+from config import (
+    ALLOW_CREDENTIALS,
+    ALLOWED_HEADERS,
+    ALLOWED_METHODS,
+    ALLOWED_ORIGINS,
+    API_DESCRIPTION,
+    API_TITLE,
+    API_VERSION,
+    DEFAULT_HOST,
+    DEFAULT_PORT,
+    INDEX_DIR,
+    LOG_FORMAT,
+    LOG_LEVEL,
+    REQUEST_TIMEOUT_SECONDS,
+    REQUIRED_INDEX_FILES,
+)
+from endpoints import (
+    authenticated_query_stream,
+    get_status,
+    health_check,
+    home,
+    query_documents_stream,
+    set_services,
+)
+from fastapi import Depends, FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse
-from pydantic_models import (AccountDeletionResponse, APIInfoResponse,
-                             AuthenticatedQueryRequest, QueryRequest,
-                             SessionClearResponse, StatusResponse,
-                             UsageResponse)
+from pydantic_models import (
+    APIInfoResponse,
+    AuthenticatedQueryRequest,
+    QueryRequest,
+    StatusResponse,
+)
 
 from auth.auth_middleware import get_current_user
-from auth.firebase_user_tracker import initialize_usage_tracker, usage_tracker
 from core.rag.embedding_service import EmbeddingService
 from core.rag.rag_generator import RAGGenerator
 from core.rag.search_service import SearchService
+
+from slowapi.errors import RateLimitExceeded
+from app.rate_limit import limiter, custom_rate_limit_handler
+
+
 
 # Configure logging
 logging.basicConfig(level=getattr(logging, LOG_LEVEL), format=LOG_FORMAT)
@@ -53,7 +78,6 @@ async def startup() -> None:
     - Loads ML models (embeddings, RAG generator)
     - Downloads required index files from remote storage
     - Initializes search indexes
-    - Sets up authentication services
 
     Raises:
         Exception: If any critical service fails to initialize
@@ -106,10 +130,6 @@ async def startup() -> None:
             logger.error("Failed to load some indexes")
             raise RuntimeError("Index loading failed")
 
-        logger.info("Initializing authentication services...")
-        await initialize_usage_tracker()
-        logger.info("Authentication services initialized")
-
         # Set services in endpoints module
         set_services(embedding_service, search_service, rag_generator)
 
@@ -124,17 +144,10 @@ async def shutdown() -> None:
     """
     Cleanup resources when application shuts down.
 
-    This function:
-    - Closes database connections
-    - Releases authentication service resources
-    - Performs any necessary cleanup operations
+    This function performs any necessary cleanup operations.
     """
     try:
         logger.info("Running shutdown tasks...")
-
-        await usage_tracker.close()
-        logger.info("Authentication services closed")
-
         logger.info("Shutdown completed successfully")
 
     except Exception as e:
@@ -154,6 +167,11 @@ app = FastAPI(
     title=API_TITLE, description=API_DESCRIPTION, version=API_VERSION, lifespan=lifespan
 )
 
+# Register limiter with app
+app.state.limiter = limiter
+app.add_exception_handler(RateLimitExceeded, custom_rate_limit_handler)
+
+
 # Configure CORS middleware
 app.add_middleware(
     CORSMiddleware,
@@ -165,12 +183,10 @@ app.add_middleware(
 
 
 # Route registration
-@app.get(
-    "/", tags=["general"], response_model=APIInfoResponse, summary="API Information"
-)
-def route_home(request: Request) -> APIInfoResponse:
+@app.get("/", tags=["general"], response_model=APIInfoResponse, summary="API Information")
+def route_home() -> APIInfoResponse:
     """Root endpoint with basic API information."""
-    return home(request)
+    return home()
 
 
 @app.get(
@@ -182,113 +198,41 @@ def route_health_check() -> StatusResponse:
 
 
 @app.post("/query-stream", tags=["query"], summary="Public Query Stream")
-async def route_query_stream(
-    request: QueryRequest, http_request: Request, background_tasks: BackgroundTasks
+@limiter.limit("10/hour;15/day")
+async def public_query(
+    query_request: QueryRequest, request: Request
 ) -> StreamingResponse:
     """
     Public query endpoint with rate limiting.
 
     Stream responses for document queries without authentication.
     """
-    return await query_documents_stream(request, http_request, background_tasks)
+    return await query_documents_stream(query_request)
 
 
-@app.post(
-    "/auth/query-stream",
+@app.post("/auth/query-stream",
     tags=["query", "authenticated"],
     summary="Authenticated Query Stream",
 )
-async def route_auth_query_stream(
-    request: AuthenticatedQueryRequest,
-    background_tasks: BackgroundTasks,
+@limiter.limit("15/hour;30/day")
+async def auth_query(
+    query_request: AuthenticatedQueryRequest,
+    request: Request,
     current_user: dict = Depends(get_current_user),
 ) -> StreamingResponse:
     """
-    Authenticated query endpoint with usage tracking.
+    Authenticated query endpoint with rate limiting.
 
-    Requires valid authentication token and tracks query usage against user limits.
+    Requires valid authentication token. Higher rate limits than public endpoint.
     """
-    return await authenticated_query_stream(request, background_tasks, current_user)
+    return await authenticated_query_stream(query_request, current_user)
 
-
-@app.get(
-    "/auth/usage",
-    response_model=UsageResponse,
-    tags=["authenticated"],
-    summary="Get User Usage",
-)
-async def route_user_usage(
-    current_user: dict = Depends(get_current_user),
-) -> UsageResponse:
-    """Get current user's usage statistics and remaining quota."""
-    return await get_user_usage(current_user)
-
-
-@app.get("/auth/analytics", tags=["authenticated"], summary="Get User Analytics")
-async def route_user_analytics(
-    current_user: dict = Depends(get_current_user),
-) -> Dict[str, Any]:
-    """Get detailed analytics for the authenticated user."""
-    return await get_user_analytics(current_user)
-
-
-@app.get("/admin/visits", tags=["admin"], summary="Get Visit Statistics")
-async def route_visit_stats() -> Dict[str, Any]:
-    """Get website visit statistics (admin endpoint)."""
-    return await visit_statistics()
-
-
-@app.get(
-    "/admin/system-stats",
-    tags=["admin", "authenticated"],
-    summary="Get System Statistics",
-)
-async def route_system_stats(
-    current_user: dict = Depends(get_current_user),
-) -> Dict[str, Any]:
-    """Get system-wide statistics (requires authentication)."""
-    return await get_system_stats(current_user)
-
-
-@app.delete(
-    "/auth/account",
-    response_model=AccountDeletionResponse,
-    tags=["authenticated"],
-    summary="Delete User Account",
-)
-async def route_delete_account(
-    current_user: dict = Depends(get_current_user),
-) -> AccountDeletionResponse:
-    """Delete user account and all associated data."""
-    return await delete_user_account(current_user)
 
 
 @app.get("/status", tags=["general"], summary="Get System Status")
 def route_status() -> Dict[str, Any]:
     """Get detailed system status and configuration."""
     return get_status()
-
-
-@app.delete(
-    "/session/clear",
-    response_model=SessionClearResponse,
-    tags=["session"],
-    summary="Clear Session (DELETE)",
-)
-async def route_clear_session_delete(session_id: str) -> SessionClearResponse:
-    """Clear session data (DELETE method)."""
-    return await clear_session(session_id)
-
-
-@app.post(
-    "/session/clear",
-    response_model=SessionClearResponse,
-    tags=["session"],
-    summary="Clear Session (POST)",
-)
-async def route_clear_session_post(session_id: str) -> SessionClearResponse:
-    """Clear session data (POST method)."""
-    return await clear_session(session_id)
 
 
 if __name__ == "__main__":
