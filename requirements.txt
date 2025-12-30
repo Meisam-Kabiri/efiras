@@ -22,3 +22,5 @@ SQLAlchemy==2.0.41
 psycopg2-binary==2.9.10
 firebase_admin==7.1.0
 asyncpg==0.30.0
+slowapi==0.1.9
+redis==7.1.0
