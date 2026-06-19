@@ -67,8 +67,7 @@ def main():
         print(
             "\n🎯 Creating fixed-size MNRL embedding dataset with correct hierarchy..."
         )
-        from training.embedding_dataset_preparation import \
-            AdaptiveMNRLDatasetBuilder
+        from training.embedding_dataset_preparation import AdaptiveMNRLDatasetBuilder
 
         # Available processed files
         processed_files = [

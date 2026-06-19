@@ -11,8 +11,7 @@ from sentence_transformers import SentenceTransformer
 from sklearn.cluster import KMeans
 from sklearn.metrics.pairwise import cosine_similarity
 
-from utils.text_utils import (extract_paragraphs, extract_sentences,
-                              remove_newlines)
+from utils.text_utils import extract_paragraphs, extract_sentences, remove_newlines
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)

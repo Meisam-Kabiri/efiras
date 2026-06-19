@@ -6,12 +6,12 @@ Fine-tune Sentence Transformers for Regulatory Document Embeddings
 import json
 import logging
 import random
+
 # from torch.utils.data import DataLoader  # No need as we defiend owr own custom class
 from typing import Dict, List, Tuple
 
 import torch
-from sentence_transformers import (InputExample, SentenceTransformer,
-                                   evaluation, losses)
+from sentence_transformers import InputExample, SentenceTransformer, evaluation, losses
 
 # Set up logging
 logging.basicConfig(level=logging.INFO)

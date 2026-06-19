@@ -3,8 +3,7 @@ import os
 import sys
 from pathlib import Path
 
-from core.document_processing.chunker.block_chunker import \
-    RegulatoryChunkingSystem
+from core.document_processing.chunker.block_chunker import RegulatoryChunkingSystem
 from core.document_processing.processor.block_processor import BlockProcessor
 from core.document_processing.readers.pymupdf_reader import PyMuPDFProcessor
 from core.rag.embedding_service import EmbeddingService
@@ -13,7 +12,6 @@ from core.rag.search_service import SearchService
 
 # Add src directory to Python path
 # sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(__file__))))
-
 
 
 def create_local_embeddings_for_all_pdf_in_directory(path: str):

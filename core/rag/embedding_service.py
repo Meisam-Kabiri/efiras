@@ -285,8 +285,7 @@ if __name__ == "__main__":
     from document_chunker.block_chunker import RegulatoryChunkingSystem
     from document_processing.block_processor import block_processor
 
-    from core.document_processing.readers.pymupdf_reader import \
-        PyMuPDFProcessor
+    from core.document_processing.readers.pymupdf_reader import PyMuPDFProcessor
 
     input_pdf = "data/raw/regulatory_documents/lu/Lux_cssf18_698eng.pdf"
     output_dir = Path("data/data_processed")

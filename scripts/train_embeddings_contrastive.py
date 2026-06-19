@@ -39,8 +39,7 @@ def main():
 
     # Create contrastive pairs
     print("🔄 Creating contrastive pairs...")
-    from training.embedding_dataset_preparation import \
-        AdaptiveMNRLDatasetBuilder
+    from training.embedding_dataset_preparation import AdaptiveMNRLDatasetBuilder
 
     builder = AdaptiveMNRLDatasetBuilder()
     positive_pairs, negative_pairs = builder.create_contrastive_positive_negative_pairs(

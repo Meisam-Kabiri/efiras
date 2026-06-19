@@ -5,9 +5,11 @@ import re
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Union
 
-from core.document_processing.readers.base import (DocumentProcessor,
-                                                   ProcessorConfig,
-                                                   ProcessorType)
+from core.document_processing.readers.base import (
+    DocumentProcessor,
+    ProcessorConfig,
+    ProcessorType,
+)
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)

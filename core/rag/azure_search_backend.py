@@ -67,11 +67,20 @@ class AzureSearchBackend:
 
         # Create index schema
         from azure.search.documents.indexes.models import (
-            HnswAlgorithmConfiguration, SearchableField, SearchField,
-            SearchFieldDataType, SearchIndex, SemanticConfiguration,
-            SemanticField, SemanticPrioritizedFields, SemanticSearch,
-            SimpleField, VectorSearch, VectorSearchAlgorithmKind,
-            VectorSearchProfile)
+            HnswAlgorithmConfiguration,
+            SearchableField,
+            SearchField,
+            SearchFieldDataType,
+            SearchIndex,
+            SemanticConfiguration,
+            SemanticField,
+            SemanticPrioritizedFields,
+            SemanticSearch,
+            SimpleField,
+            VectorSearch,
+            VectorSearchAlgorithmKind,
+            VectorSearchProfile,
+        )
 
         # Define fields
         fields = [

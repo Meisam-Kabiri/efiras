@@ -126,7 +126,8 @@ class SearchService:
                 chunk["doc_metadata"] = doc.get("metadata", {})
                 all_embedded_chunks.append(chunk)
 
-        self.chunks = all_embedded_chunks
+        # Note: self.chunks is already set (embedding-stripped) by set_chunks() above.
+        # all_embedded_chunks (with "embedding") is only used below to build FAISS/BM25.
 
         # Build FAISS
         embeddings = np.array([c["embedding"] for c in all_embedded_chunks]).astype(

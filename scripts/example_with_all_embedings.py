@@ -6,8 +6,7 @@ from pathlib import Path
 # Add src directory to Python path
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(__file__))))
 
-from core.document_processing.chunker.block_chunker import \
-    RegulatoryChunkingSystem
+from core.document_processing.chunker.block_chunker import RegulatoryChunkingSystem
 from core.document_processing.processor import block_processor
 from core.document_processing.readers.pymupdf_reader import PyMuPDFProcessor
 from core.rag.embedding_service import EmbeddingService

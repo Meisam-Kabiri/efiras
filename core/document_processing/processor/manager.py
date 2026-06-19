@@ -1,10 +1,8 @@
-from core.document_processing.readers.azure_reader import \
-    AzureDocumentProcessor
+from core.document_processing.readers.azure_reader import AzureDocumentProcessor
 from core.document_processing.readers.base import *
 from core.document_processing.readers.pdfminer_reader import PDFMinerProcessor
 from core.document_processing.readers.pymupdf_reader import PyMuPDFProcessor
-from core.document_processing.readers.unstructured_reader import \
-    UnstructuredProcessor
+from core.document_processing.readers.unstructured_reader import UnstructuredProcessor
 
 
 class DocumentProcessorManager:

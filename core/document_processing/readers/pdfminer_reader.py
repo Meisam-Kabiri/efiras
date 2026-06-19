@@ -1,9 +1,11 @@
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Union
 
-from core.document_processing.readers.base import (DocumentProcessor,
-                                                   ProcessorConfig,
-                                                   ProcessorType)
+from core.document_processing.readers.base import (
+    DocumentProcessor,
+    ProcessorConfig,
+    ProcessorType,
+)
 
 
 class PDFMinerProcessor(DocumentProcessor):
@@ -28,8 +30,7 @@ class PDFMinerProcessor(DocumentProcessor):
             from pdfminer.converter import TextConverter
             from pdfminer.high_level import extract_text
             from pdfminer.layout import LAParams
-            from pdfminer.pdfinterp import (PDFPageInterpreter,
-                                            PDFResourceManager)
+            from pdfminer.pdfinterp import PDFPageInterpreter, PDFResourceManager
             from pdfminer.pdfpage import PDFPage
 
             # Extract full text
