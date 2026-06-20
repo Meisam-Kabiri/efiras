@@ -1,67 +1,41 @@
 #!/usr/bin/env python3
 """
-Add website_visits table to track who opens the website
-Usage: python website_visits_table.py
+Create the website_visits table in the local SQLite analytics database.
+Usage: python website_visit_table.py
 """
 
-import os
 import sys
-from datetime import datetime
-from pathlib import Path
 
-# Add the current directory to Python path
-sys.path.append(str(Path(__file__).parent))
-
-from dotenv import load_dotenv
-from sqlalchemy import Column, DateTime, Integer, String, create_engine
-from sqlalchemy.ext.declarative import declarative_base
-
-# Load environment variables
-load_dotenv()
-
-Base = declarative_base()
-
-
-class WebsiteVisit(Base):
-    __tablename__ = "website_visits"
-
-    id = Column(Integer, primary_key=True, autoincrement=True)
-    ip_address = Column(String(45), nullable=False)  # IPv6 can be up to 45 chars
-    user_agent = Column(String(500), nullable=True)  # Browser info
-    visit_time = Column(DateTime, default=datetime.utcnow, nullable=False)
+from core.database.operations.visit_tracker import VISITS_DB_PATH, get_connection
 
 
 def create_website_visits_table():
-    """Create the website_visits table"""
-
-    # Get database URL from environment
-    database_url = os.getenv("DATABASE_URL")
-    if not database_url:
-        raise ValueError("DATABASE_URL not found in environment variables")
-
-    # Create engine
-    engine = create_engine(database_url)
-
-    # Create the table
-    Base.metadata.create_all(engine, tables=[WebsiteVisit.__table__])
-    print("✅ website_visits table created successfully!")
+    """Create the website_visits table if it doesn't already exist."""
+    conn = get_connection()
+    try:
+        conn.execute(
+            """
+            CREATE TABLE IF NOT EXISTS website_visits (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                ip_address TEXT NOT NULL,
+                user_agent TEXT,
+                visit_time TEXT NOT NULL
+            )
+            """
+        )
+        conn.commit()
+    finally:
+        conn.close()
 
 
 def main():
-    print("🗄️  Creating website_visits table...")
-
+    print(f"Creating website_visits table in {VISITS_DB_PATH} ...")
     try:
         create_website_visits_table()
-
-        print("\n📋 New table created:")
-        print("   - website_visits (id, ip_address, user_agent, visit_time)")
-
-        print("\n🎉 Website visit tracking table ready!")
-
+        print("website_visits table ready (id, ip_address, user_agent, visit_time)")
     except Exception as e:
-        print(f"❌ Failed to create website_visits table: {e}")
+        print(f"Failed to create website_visits table: {e}")
         return 1
-
     return 0
 
 

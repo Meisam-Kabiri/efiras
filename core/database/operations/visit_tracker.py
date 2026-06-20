@@ -1,13 +1,26 @@
 """
-Simple website visit tracker for FastAPI with bot detection
+Simple website visit tracker for FastAPI with bot detection.
+
+Stores visits in a local SQLite file rather than Postgres - this is
+low-volume analytics data, not query-critical, so it doesn't need a
+managed database. Note: on Cloud Run each instance has its own ephemeral
+filesystem, so visit counts are per-instance and not durable across
+restarts/scale-events unless min-instances=1.
 """
 
 import os
 import re
+import sqlite3
 from datetime import datetime, timezone
 
 from fastapi import Request
-from sqlalchemy import create_engine, text
+
+VISITS_DB_PATH = os.getenv("VISITS_DB_PATH", "data/visits.db")
+
+
+def get_connection() -> sqlite3.Connection:
+    os.makedirs(os.path.dirname(VISITS_DB_PATH) or ".", exist_ok=True)
+    return sqlite3.connect(VISITS_DB_PATH)
 
 
 def is_bot(user_agent: str, headers: dict) -> bool:
@@ -211,31 +224,26 @@ def track_visit(request: Request):
         print(f"   Headers: {list(headers_dict.keys())}")
         return
 
-    # Get database connection
-    database_url = os.getenv("DATABASE_URL")
-    if not database_url:
-        print("❌ DATABASE_URL not found - cannot track visit")
-        return
-
     try:
-        engine = create_engine(database_url)
-
-        # Insert visit record
-        with engine.connect() as conn:
+        conn = get_connection()
+        try:
             conn.execute(
-                text(
-                    """
-                    INSERT INTO website_visits (ip_address, user_agent, visit_time) 
-                    VALUES (:ip, :agent, :time)
                 """
-                ),
-                {
-                    "ip": client_ip,
-                    "agent": user_agent,
-                    "time": datetime.now(timezone.utc),
-                },
+                CREATE TABLE IF NOT EXISTS website_visits (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    ip_address TEXT NOT NULL,
+                    user_agent TEXT,
+                    visit_time TEXT NOT NULL
+                )
+                """
+            )
+            conn.execute(
+                "INSERT INTO website_visits (ip_address, user_agent, visit_time) VALUES (?, ?, ?)",
+                (client_ip, user_agent, datetime.now(timezone.utc).isoformat()),
             )
             conn.commit()
+        finally:
+            conn.close()
 
         print(f"✅ Real user visit tracked: {client_ip} - {user_agent[:50]}...")
 
@@ -246,37 +254,28 @@ def track_visit(request: Request):
 def get_visit_stats():
     """Get basic visit statistics"""
 
-    database_url = os.getenv("DATABASE_URL")
-    if not database_url:
-        return {}
-
     try:
-        engine = create_engine(database_url)
+        conn = get_connection()
+        try:
+            total_visits = conn.execute(
+                "SELECT COUNT(*) FROM website_visits"
+            ).fetchone()[0]
 
-        with engine.connect() as conn:
-            # Total visits
-            total_result = conn.execute(text("SELECT COUNT(*) FROM website_visits"))
-            total_visits = total_result.scalar()
+            unique_visitors = conn.execute(
+                "SELECT COUNT(DISTINCT ip_address) FROM website_visits"
+            ).fetchone()[0]
 
-            # Unique IPs
-            unique_result = conn.execute(
-                text("SELECT COUNT(DISTINCT ip_address) FROM website_visits")
-            )
-            unique_visitors = unique_result.scalar()
-
-            # Today's visits
-            today_result = conn.execute(
-                text(
-                    "SELECT COUNT(*) FROM website_visits WHERE DATE(visit_time) = CURRENT_DATE"
-                )
-            )
-            today_visits = today_result.scalar()
+            today_visits = conn.execute(
+                "SELECT COUNT(*) FROM website_visits WHERE DATE(visit_time) = DATE('now')"
+            ).fetchone()[0]
 
             return {
                 "total_visits": total_visits,
                 "unique_visitors": unique_visitors,
                 "today_visits": today_visits,
             }
+        finally:
+            conn.close()
 
     except Exception as e:
         print(f"❌ Failed to get visit stats: {e}")
@@ -286,30 +285,25 @@ def get_visit_stats():
 def get_recent_visits(limit=20):
     """Get recent visits for admin view"""
 
-    database_url = os.getenv("DATABASE_URL")
-    if not database_url:
-        return []
-
     try:
-        engine = create_engine(database_url)
-
-        with engine.connect() as conn:
-            result = conn.execute(
-                text(
-                    """
-                    SELECT ip_address, user_agent, visit_time 
-                    FROM website_visits 
-                    ORDER BY visit_time DESC 
-                    LIMIT :limit
+        conn = get_connection()
+        try:
+            rows = conn.execute(
                 """
-                ),
-                {"limit": limit},
-            )
+                SELECT ip_address, user_agent, visit_time
+                FROM website_visits
+                ORDER BY visit_time DESC
+                LIMIT ?
+                """,
+                (limit,),
+            ).fetchall()
 
             return [
-                {"ip": row[0], "user_agent": row[1], "visit_time": row[2].isoformat()}
-                for row in result
+                {"ip": row[0], "user_agent": row[1], "visit_time": row[2]}
+                for row in rows
             ]
+        finally:
+            conn.close()
 
     except Exception as e:
         print(f"❌ Failed to get recent visits: {e}")

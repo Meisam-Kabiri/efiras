@@ -1,15 +1,10 @@
 import json
 import os
-import pickle
-from typing import Any, Dict, List, Optional
+import sqlite3
+from typing import Any, Dict, Iterable, List, Optional
 
 import faiss
 import numpy as np
-from rank_bm25 import BM25Okapi
-from whoosh import scoring
-from whoosh.fields import ID, TEXT, Schema
-from whoosh.index import create_in, open_dir
-from whoosh.qparser import QueryParser
 
 
 def better_tokenize(text):
@@ -23,48 +18,45 @@ def better_tokenize(text):
     return [token.strip(".,") for token in tokens if len(token) > 2]
 
 
+# Columns stored on the "chunks" table, in addition to the FTS5-indexed "content".
+CHUNK_COLUMNS = [
+    "content",
+    "page",
+    "bbox",
+    "is_diff_format",
+    "headers",
+    "header_identifier",
+    "is_hierarchical",
+    "is_title",
+    "merged_from",
+    "enriched_headers",
+    "chunk_id",
+    "doc_id",
+    "filename",
+    "doc_metadata",
+]
+
+# Fields that are stored as JSON text and need decoding back into Python objects.
+JSON_COLUMNS = {"bbox", "doc_metadata"}
+BOOL_COLUMNS = {"is_diff_format", "is_hierarchical", "is_title"}
+
+
 class SearchService:
     def __init__(
         self,
         index_dir="data/indexes",
-        # Azure Search parameters
-        use_azure_search: bool = False,
-        azure_search_endpoint: Optional[str] = None,
-        azure_search_key: Optional[str] = None,
-        azure_search_index: str = "documents",
         documents_list: List[Dict] = None,
     ):
         """Initialize HybridSearch with optional index directory"""
         self.index_dir = index_dir
         self.faiss_index = None
-        self.whoosh_index = None
+        self.conn: Optional[sqlite3.Connection] = None
+        self.num_chunks = 0
+        # Only populated transiently while building indexes (see build_indexes());
+        # query-time chunk lookups go through self.conn instead.
         self.chunks = []
-        self.tokenized_cache = None
         if documents_list:
             self.chunks = self.set_chunks(documents_list)
-            if self.use_azure_search:
-                self.add_embedings_to_azure(documents_list)
-
-        # Add Azure Search option
-        self.use_azure_search = use_azure_search
-        if use_azure_search:
-            try:
-                from core.rag.azure_search_backend import AzureSearchBackend
-
-                AZURE_SEARCH_AVAILABLE = True
-            except ImportError:
-                AZURE_SEARCH_AVAILABLE = False
-            self.azure_backend = AzureSearchBackend(
-                endpoint=azure_search_endpoint,
-                index_name=azure_search_index,
-                api_key=azure_search_key,
-            )
-
-    def add_embedings_to_azure(self, document_list):
-        print(f"Uploading {len(document_list)} chunks to Azure Search...")
-        self.azure_backend.add_documents(document_list)
-        print("✅ Azure Search upload complete")
-        return  # Don't build FAISS/Whoosh if using Azure
 
     def set_chunks(self, documents_list):
         """Set chunks data without building indexes"""
@@ -98,7 +90,8 @@ class SearchService:
         print(f"✅ Set {len(self.chunks)} chunks")
 
     def build_indexes(self, documents_list):
-        """Build FAISS and Whoosh indexes"""
+        """Build the FAISS vector index. Chunk content/metadata is written to
+        SQLite (with an FTS5 BM25 index) by save_indexes()."""
         """
         Each document in documents_list is a dictionary with:
           - "metadata": contains fields like "filename", "number of pages"
@@ -127,7 +120,7 @@ class SearchService:
                 all_embedded_chunks.append(chunk)
 
         # Note: self.chunks is already set (embedding-stripped) by set_chunks() above.
-        # all_embedded_chunks (with "embedding") is only used below to build FAISS/BM25.
+        # all_embedded_chunks (with "embedding") is only used below to build FAISS.
 
         # Build FAISS
         embeddings = np.array([c["embedding"] for c in all_embedded_chunks]).astype(
@@ -155,25 +148,6 @@ class SearchService:
 
         self.faiss_index.add(embeddings)
 
-        # Build BM25 (your proven approach, just cache it)
-        if not self.tokenized_cache:
-            self.tokenized_cache = [
-                better_tokenize(c["content"]) for c in all_embedded_chunks
-            ]
-        self.bm25 = BM25Okapi(self.tokenized_cache)
-
-        # # Build Whoosh
-        # os.makedirs(self.index_dir + "/whoosh", exist_ok=True)
-        # schema = Schema(id=ID(stored=True), content=TEXT())
-        # self.whoosh_index = create_in(self.index_dir + "/whoosh", schema)
-
-        # writer = self.whoosh_index.writer()
-        # for i, chunk in enumerate(all_embedded_chunks):
-        #     writer.add_document(id=str(i), content=chunk["content"])
-        # writer.commit()
-
-        # print(f"✅ Indexes built for {len(all_embedded_chunks)} chunks")
-
     def vector_search(self, query_embedding, top_k=100):
         """Fast vector search using FAISS"""
         if self.faiss_index is None:
@@ -185,53 +159,56 @@ class SearchService:
         return scores[0], indices[0]
 
     def bm25_search(self, query, top_k=100):
-        """Fast BM25 search using BM25Okapi"""
+        """BM25 search via SQLite FTS5 (ranking computed in SQL, nothing held in RAM)"""
+        if self.conn is None:
+            raise ValueError("Chunk database not loaded. Call load_indexes() first.")
 
-        # Check if BM25 is available (either built fresh or loaded from disk)
-        if self.bm25 is None:
-            # Try to rebuild from tokenized cache if available
-            if hasattr(self, "tokenized_cache") and self.tokenized_cache:
-                from rank_bm25 import BM25Okapi
-
-                self.bm25 = BM25Okapi(self.tokenized_cache)
-                print("📝 Rebuilt BM25 from cached tokens")
-            else:
-                raise ValueError(
-                    "BM25 index not available. Call build_indexes() first or ensure tokenized cache is loaded."
-                )
-
-        # Tokenize query using YOUR proven tokenization
         query_tokens = better_tokenize(query)
+        if not query_tokens:
+            return []
 
-        # Get BM25 scores for all documents
-        bm25_scores = self.bm25.get_scores(query_tokens)
+        # Quote each token so FTS5 query syntax characters in content don't break parsing
+        match_query = " OR ".join(f'"{t}"' for t in query_tokens)
 
-        # Get top_k results with scores
-        scored_indices = [(i, score) for i, score in enumerate(bm25_scores)]
-        scored_indices.sort(
-            key=lambda x: x[1], reverse=True
-        )  # Sort by score descending
+        rows = self.conn.execute(
+            """
+            SELECT rowid, bm25(chunks_fts) AS score
+            FROM chunks_fts
+            WHERE chunks_fts MATCH ?
+            ORDER BY score
+            LIMIT ?
+            """,
+            (match_query, top_k),
+        ).fetchall()
 
-        return scored_indices[:top_k]  # Return (index, score) tuples
+        # FTS5's bm25() is lower-is-better; negate so higher score = better match
+        return [(row["rowid"], -row["score"]) for row in rows]
 
-    # async def bm25_search(self, query, top_k=100):
-    #     """Fast BM25 search using Whoosh"""
-    #     if self.whoosh_index is None:
-    #         raise ValueError("Whoosh index not built. Call build_indexes() first.")
+    def get_chunks_by_ids(self, ids: Iterable[int]) -> Dict[int, Dict[str, Any]]:
+        """Batch-fetch chunk content/metadata from SQLite for a set of global ids."""
+        ids = list({int(i) for i in ids})
+        if not ids or self.conn is None:
+            return {}
 
-    #     with self.whoosh_index.searcher(weighting=scoring.BM25F()) as searcher:
-    #         parser = QueryParser("content", self.whoosh_index.schema)
-    #         try:
-    #             parsed_query = parser.parse(query)
-    #         except:
-    #             # Fallback for malformed queries
-    #             from whoosh.query import Every
-    #             parsed_query = Every()
+        placeholders = ",".join("?" * len(ids))
+        rows = self.conn.execute(
+            f"SELECT * FROM chunks WHERE id IN ({placeholders})", ids
+        ).fetchall()
+        return {row["id"]: self._row_to_chunk(row) for row in rows}
 
-    #         results = searcher.search(parsed_query, limit=top_k)
-    #         return [(int(r['id']), r.score) for r in results]
+    @staticmethod
+    def _row_to_chunk(row: sqlite3.Row) -> Dict[str, Any]:
+        chunk = {"id": row["id"]}
+        for col in CHUNK_COLUMNS:
+            value = row[col]
+            if col in JSON_COLUMNS:
+                value = json.loads(value) if value else ({} if col == "doc_metadata" else None)
+            elif col in BOOL_COLUMNS:
+                value = bool(value)
+            chunk[col] = value
+        return chunk
 
-    def rrf_combine(self, vector_results, bm25_results, query, k=0):
+    def rrf_combine(self, vector_results, bm25_results, query, chunks_lookup, k=0):
         """Reciprocal Rank Fusion combination"""
         """Enhanced RRF with document name boosting"""
         scores, indices = vector_results
@@ -243,21 +220,21 @@ class SearchService:
         # Vector rankings with document boost
         for rank, idx in enumerate(indices):
             idx = int(idx)
-            if idx != -1 and idx < len(self.chunks):
+            if idx != -1 and idx in chunks_lookup:
                 base_score = 1 / (k + rank + 1)
 
                 # Apply document name boost
                 doc_boost = self.calculate_doc_boost(
-                    self.chunks[idx], doc_boost_keywords
+                    chunks_lookup[idx], doc_boost_keywords
                 )
                 combined[idx] = combined.get(idx, 0) + (base_score * doc_boost)
 
         # BM25 rankings with document boost
         for rank, (idx, bm25_score) in enumerate(bm25_results):
-            if idx < len(self.chunks):
+            if idx in chunks_lookup:
                 base_score = 1 / (k + rank + 1)
                 doc_boost = self.calculate_doc_boost(
-                    self.chunks[idx], doc_boost_keywords
+                    chunks_lookup[idx], doc_boost_keywords
                 )
                 combined[idx] = combined.get(idx, 0) + (base_score * doc_boost)
 
@@ -385,11 +362,17 @@ class SearchService:
         vector_results = self.vector_search(query_embedding, 100)
         bm25_results = self.bm25_search(query, 100)
 
+        # Fetch candidate chunk data once, in a single batched SQLite query
+        _, vector_indices = vector_results
+        candidate_ids = {int(idx) for idx in vector_indices if int(idx) != -1}
+        candidate_ids.update(idx for idx, _ in bm25_results)
+        chunks_lookup = self.get_chunks_by_ids(candidate_ids)
+
         # Combine results using RRF
-        combined = self.rrf_combine(vector_results, bm25_results, query)
+        combined = self.rrf_combine(vector_results, bm25_results, query, chunks_lookup)
         top_indices = sorted(combined.keys(), key=combined.get, reverse=True)[:top_k]
 
-        top_chunks = [self.chunks[i] for i in top_indices if i < len(self.chunks)]
+        top_chunks = [chunks_lookup[i] for i in top_indices if i in chunks_lookup]
 
         return top_chunks
 
@@ -412,28 +395,18 @@ class SearchService:
         bm25_results = self.bm25_search(query, 15)
 
         # Step 2: Combine candidates and remove duplicates
-        candidate_indices = set()
+        _, vector_indices = vector_results
+        candidate_ids = {int(idx) for idx in vector_indices if int(idx) != -1}
+        candidate_ids.update(idx for idx, _ in bm25_results)
 
-        # Add vector search indices
-        vector_scores, vector_indices = vector_results
-        for idx in vector_indices:
-            if idx != -1 and idx < len(self.chunks):
-                candidate_indices.add(idx)
-
-        # Add BM25 indices
-        for idx, score in bm25_results:
-            if idx < len(self.chunks):
-                candidate_indices.add(idx)
-
-        # Convert to list of chunks
-        candidate_chunks = [(i, self.chunks[i]) for i in candidate_indices]
-
-        # Step 3: Re-rank using cross-encoder
-        if len(candidate_chunks) == 0:
+        chunks_lookup = self.get_chunks_by_ids(candidate_ids)
+        if not chunks_lookup:
             return []
 
-        # Prepare query-chunk pairs for cross-encoder
-        pairs = [(query, chunk["content"]) for idx, chunk in candidate_chunks]
+        candidate_chunks = list(chunks_lookup.items())  # [(id, chunk), ...]
+
+        # Step 3: Re-rank using cross-encoder
+        pairs = [(query, chunk["content"]) for _, chunk in candidate_chunks]
         scores = self.cross_encoder.predict(pairs)
 
         # Step 4: Sort by cross-encoder scores and return top_k
@@ -446,57 +419,64 @@ class SearchService:
         return top_chunks
 
     def search_documents(self, query, query_embedding, top_k=5):
-        if self.use_azure_search:
-            azure_results = self.azure_backend.search(
-                query_embedding=query_embedding, query_text=query, top_k=top_k
-            )
+        return self.hybrid_search(query, query_embedding, top_k)
 
-            # # Convert to match your local format if needed
-            # top_content = [doc["content"] for doc in azure_results]
-            # top_indices = [i for i in range(len(azure_results))]  # Sequential indices
-            return azure_results
-
-        top_chunks = self.hybrid_search(query, query_embedding, top_k)
-        return top_chunks
-
-    def save_indexes(
-        self, faiss_path=None, bm25_path=None, chunks_path=None, whoosh_path=None
-    ):
-        """Save indexes to disk for persistence"""
-        os.makedirs(self.index_dir + "/whoosh", exist_ok=True)
+    def save_indexes(self, faiss_path=None, db_path=None):
+        """Save indexes to disk for persistence: FAISS for vectors, SQLite
+        (with an FTS5 BM25 index) for chunk content/metadata."""
         faiss_path = faiss_path or os.path.join(self.index_dir, "faiss.index")
-        bm25_path = bm25_path or os.path.join(self.index_dir, "bm25_tokenized.pkl")
-        faiss_path = faiss_path or os.path.join(
-            self.index_dir + "/whoosh", "faiss.index"
-        )
-        chunks_path = os.path.join(self.index_dir, "chunks_metadata.json")
+        db_path = db_path or os.path.join(self.index_dir, "chunks.db")
 
         if self.faiss_index is not None:
             faiss.write_index(self.faiss_index, faiss_path)
             print(f"✅ FAISS index saved to {faiss_path}")
 
-        # Save BM25 tokenized cache
-        if self.tokenized_cache:
-            with open(bm25_path, "wb") as f:
-                pickle.dump(self.tokenized_cache, f)
-            print(f"✅ BM25 tokenized cache saved to {bm25_path}")
-
         if self.chunks:
-            with open(chunks_path, "w") as f:
-                json.dump(self.chunks, f)
-            print(f"✅ Chunks metadata saved to {chunks_path}")
+            self._write_chunks_db(db_path)
+            print(f"✅ Chunks database saved to {db_path}")
 
-        if self.whoosh_index is not None:
-            print(f"✅ Whoosh index already saved to {whoosh_path}")
+    def _write_chunks_db(self, db_path):
+        """(Re)build the chunks.db SQLite file from self.chunks. The row id is
+        the chunk's position in self.chunks, which matches the FAISS vector
+        order and is the index used everywhere at query time."""
+        if os.path.exists(db_path):
+            os.remove(db_path)
 
-    def load_indexes(
-        self, faiss_path=None, bm25_path=None, whoosh_path=None, chunks_data=None
-    ):
+        conn = sqlite3.connect(db_path)
+        try:
+            columns_sql = ", ".join(f"{col} TEXT" for col in CHUNK_COLUMNS)
+            conn.execute(f"CREATE TABLE chunks (id INTEGER PRIMARY KEY, {columns_sql})")
+            conn.execute(
+                "CREATE VIRTUAL TABLE chunks_fts USING fts5("
+                "content, content='chunks', content_rowid='id')"
+            )
+
+            def row_values(chunk_id, chunk):
+                values = []
+                for col in CHUNK_COLUMNS:
+                    value = chunk.get(col)
+                    if col in JSON_COLUMNS:
+                        value = json.dumps(value) if value is not None else None
+                    values.append(value)
+                return (chunk_id, *values)
+
+            conn.executemany(
+                f"INSERT INTO chunks (id, {', '.join(CHUNK_COLUMNS)}) "
+                f"VALUES (?, {', '.join('?' * len(CHUNK_COLUMNS))})",
+                (row_values(i, chunk) for i, chunk in enumerate(self.chunks)),
+            )
+            conn.execute(
+                "INSERT INTO chunks_fts (rowid, content) SELECT id, content FROM chunks"
+            )
+            conn.commit()
+        finally:
+            conn.close()
+
+    def load_indexes(self, faiss_path=None, db_path=None):
         """Load indexes from disk"""
 
         faiss_path = faiss_path or os.path.join(self.index_dir, "faiss.index")
-        bm25_path = os.path.join(self.index_dir, "bm25_tokenized.pkl")
-        chunks_path = os.path.join(self.index_dir, "chunks_metadata.json")
+        db_path = db_path or os.path.join(self.index_dir, "chunks.db")
 
         success = True
         try:
@@ -512,38 +492,20 @@ class SearchService:
                 print(f"⚠️ FAISS index not found at {faiss_path}")
                 success = False
 
-            # Load BM25 tokenized cache and rebuild BM25
-            if os.path.exists(bm25_path):
-                with open(bm25_path, "rb") as f:
-                    self.tokenized_cache = pickle.load(f)
-
-                # Rebuild BM25 from cached tokens
-                from rank_bm25 import BM25Okapi
-
-                self.bm25 = BM25Okapi(self.tokenized_cache)
-                print(
-                    f"✅ BM25 index rebuilt from cached tokens ({len(self.tokenized_cache)} docs)"
+            # Open the chunks database (read-only; content stays on disk, nothing
+            # is loaded into RAM up front)
+            if os.path.exists(db_path):
+                self.conn = sqlite3.connect(
+                    f"file:{db_path}?mode=ro", uri=True, check_same_thread=False
                 )
+                self.conn.row_factory = sqlite3.Row
+                self.num_chunks = self.conn.execute(
+                    "SELECT COUNT(*) FROM chunks"
+                ).fetchone()[0]
+                print(f"✅ Chunks database loaded from {db_path} ({self.num_chunks} chunks)")
             else:
-                print(f"⚠️ BM25 tokenized cache not found at {bm25_path}")
+                print(f"⚠️ Chunks database not found at {db_path}")
                 success = False
-
-            # # Load Whoosh index
-            # if os.path.exists(whoosh_path):
-            #     self.whoosh_index = open_dir(whoosh_path)
-            #     print(f"✅ Whoosh index loaded from {whoosh_path}")
-            # else:
-            #   print(f"⚠️ Whoosh index not found at {whoosh_path}")
-            #   success = False
-
-            # Load chunks metadata
-            if os.path.exists(chunks_path):
-                with open(chunks_path, "r") as f:
-                    self.chunks = json.load(f)
-                print(f"✅ Loaded {len(self.chunks)} chunks metadata")
-            else:
-                print(f"⚠️ Chunks metadata not found at {chunks_path}")
-                # success = False
 
             return success
         except Exception as e:
@@ -553,11 +515,10 @@ class SearchService:
     def get_stats(self):
         """Get index statistics"""
         stats = {
-            "num_chunks": len(self.chunks),
+            "num_chunks": self.num_chunks,
             "faiss_index_type": (
                 type(self.faiss_index).__name__ if self.faiss_index else None
             ),
-            "whoosh_index_exists": self.whoosh_index is not None,
             "index_directory": self.index_dir,
         }
         return stats
@@ -590,12 +551,9 @@ if __name__ == "__main__":
     model = SentenceTransformer("BAAI/bge-large-en-v1.5", device="cpu")
     query_embed = model.encode(query)
 
-    # results, indices = asyncio.run(search.hybrid_search(query, query_embed, top_k=5))
-    # or
-    results, indices = search.search_documents(query, query_embed, top_k=5)
+    results = search.search_documents(query, query_embed, top_k=5)
 
     print("Search Results:")
-    print(f"Indices: {indices}")
     for i, result in enumerate(results):
         print(f"{i+1}. {result['content'][:100]}...")
 

@@ -74,14 +74,6 @@ no bullet points unless absolutely essential for clarity.
 """
 
 
-try:
-    from .azure_search_backend import AzureSearchBackend
-
-    AZURE_SEARCH_AVAILABLE = True
-except ImportError:
-    AZURE_SEARCH_AVAILABLE = False
-
-
 class RAGGenerator:
     """Unified RAG System focusing on retrieval and generation only"""
 

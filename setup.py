@@ -11,8 +11,6 @@ setup(
     install_requires=[
         "fastapi",
         "uvicorn",
-        "sqlalchemy",
-        "psycopg2-binary",
         "python-dotenv",
     ],
     # Python version requirement

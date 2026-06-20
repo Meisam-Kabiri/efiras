@@ -15,6 +15,7 @@ models/
 data/indexes/
 data/data_processed/
 data/knowledge_graph/
+data/visits.db
 model_cache/
 extraction_result.json
 *.log

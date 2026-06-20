@@ -39,15 +39,8 @@ LOGS_DIR = "logs"
 # Remote Resources
 BASE_URL = "https://storage.googleapis.com/efiras-faiss-index/indexes"
 REQUIRED_INDEX_FILES = [
-    {
-        "url": f"{BASE_URL}/bm25_tokenized.pkl",
-        "path": f"{INDEX_DIR}/bm25_tokenized.pkl",
-    },
     {"url": f"{BASE_URL}/faiss.index", "path": f"{INDEX_DIR}/faiss.index"},
-    {
-        "url": f"{BASE_URL}/chunks_metadata.json",
-        "path": f"{INDEX_DIR}/chunks_metadata.json",
-    },
+    {"url": f"{BASE_URL}/chunks.db", "path": f"{INDEX_DIR}/chunks.db"},
 ]
 
 # Chunk Size Configuration

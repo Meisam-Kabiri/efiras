@@ -1,0 +1,30 @@
+services:
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    command: redis-server --save 60 1 --loglevel warning
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  api:
+    build: .
+    ports:
+      - "8080:8080"
+    env_file:
+      - .env
+    volumes:
+      - ./data/indexes:/srv/data/indexes:ro
+      - ./auth/firebase-service-account.json:/srv/auth/firebase-service-account.json:ro
+      - ./data/visits.db:/srv/data/visits.db
+    depends_on:
+      redis:
+        condition: service_healthy
+
+volumes:
+  redis_data:
