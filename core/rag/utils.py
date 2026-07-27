@@ -13,7 +13,10 @@ from nltk.corpus import stopwords
 from nltk.tokenize import word_tokenize
 from openai import OpenAI
 from rank_bm25 import BM25Okapi
-from sentence_transformers import SentenceTransformer
+try:
+    from sentence_transformers import SentenceTransformer
+except ImportError:
+    SentenceTransformer = None
 from sklearn.metrics.pairwise import cosine_similarity
 
 # import torch

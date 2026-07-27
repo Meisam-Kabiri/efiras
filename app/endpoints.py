@@ -11,11 +11,7 @@ import time
 from datetime import datetime
 from typing import Any, Dict, Optional
 
-from config import (
-    API_VERSION,
-    DEFAULT_TOP_K_AUTHENTICATED,
-    DEFAULT_TOP_K_PUBLIC,
-)
+from config import API_VERSION
 from fastapi import Depends, HTTPException, Request
 from fastapi.responses import StreamingResponse
 from pydantic_models import (
@@ -26,6 +22,7 @@ from pydantic_models import (
 )
 
 from auth.auth_middleware import get_current_user
+from core.rag import agent as _agent
 from core.rag.embedding_service import EmbeddingService
 from core.rag.rag_generator import RAGGenerator
 from core.rag.search_service import SearchService
@@ -102,18 +99,22 @@ async def query_documents_stream(
 
     def generate_response():
         try:
-            start_time = time.time()
-            query_embedding = embedding_service.embed_text(request.question)
-            logger.debug(f"Embedding generated in {time.time() - start_time:.2f}s")
-
-            start_time = time.time()
-            relevant_chunks = search_service.search_documents(
-                request.question, query_embedding, top_k=DEFAULT_TOP_K_PUBLIC
+            route_result, relevant_chunks, short_circuit = _agent.run(
+                request.question, embedding_service, search_service
             )
-            logger.debug(f"Search completed in {time.time() - start_time:.2f}s")
+            logger.info(
+                f"Route: kind={route_result.get('kind')} scope={route_result.get('scope')} "
+                f"docs={route_result.get('documents')} chunks={len(relevant_chunks)}"
+            )
+
+            if short_circuit is not None:
+                yield f"data: {json.dumps({'type': 'content', 'content': short_circuit})}\n\n"
+                yield f"data: [DONE]\n\n"
+                return
 
             for chunk in rag_generator.answer_query_stream(
-                request.question, relevant_chunks
+                route_result.get("expanded_query") or request.question,
+                relevant_chunks,
             ):
                 data = {"type": "content", "content": chunk}
                 yield f"data: {json.dumps(data)}\n\n"
@@ -153,13 +154,22 @@ async def authenticated_query_stream(
 
     def generate_authenticated_response():
         try:
-            query_embedding = embedding_service.embed_text(request.question)
-            relevant_chunks = search_service.search_documents(
-                request.question, query_embedding, top_k=DEFAULT_TOP_K_AUTHENTICATED
+            route_result, relevant_chunks, short_circuit = _agent.run(
+                request.question, embedding_service, search_service
+            )
+            logger.info(
+                f"Auth route [{email}]: kind={route_result.get('kind')} "
+                f"scope={route_result.get('scope')} chunks={len(relevant_chunks)}"
             )
 
+            if short_circuit is not None:
+                yield f"data: {json.dumps({'type': 'content', 'content': short_circuit})}\n\n"
+                yield f"data: [DONE]\n\n"
+                return
+
             for chunk in rag_generator.answer_query_stream(
-                request.question, relevant_chunks
+                route_result.get("expanded_query") or request.question,
+                relevant_chunks,
             ):
                 data = {"type": "content", "content": chunk}
                 yield f"data: {json.dumps(data)}\n\n"

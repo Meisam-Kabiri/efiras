@@ -86,7 +86,8 @@ async def startup() -> None:
 
     try:
         logger.info("Loading ML models...")
-        embedding_service = EmbeddingService()
+        from app.config import USE_LOCAL_EMBEDDINGS, EMBEDDING_MODEL
+        embedding_service = EmbeddingService(use_local=USE_LOCAL_EMBEDDINGS, online_model=EMBEDDING_MODEL)
         search_service = SearchService(index_dir=INDEX_DIR)
         rag_generator = RAGGenerator()
         logger.info("Models loaded successfully")

@@ -88,9 +88,9 @@ class EmbeddingService:
                     azure_endpoint=endpoint, api_key=api_key, api_version=api_version
                 )
             else:
-                api_key = os.getenv("GPT_API_KEY")
-                if not api_key:
-                    raise ValueError("GPT_API_KEY environment variable not set")
+                api_key = os.getenv("OPENAI_API_KEY") or os.getenv("GPT_API_KEY")
+                if not api_key or api_key == "your_openai_api_key_here":
+                    raise ValueError("OPENAI_API_KEY or GPT_API_KEY environment variable not set in .env")
                 self.client = OpenAI(api_key=api_key)
         else:
             self.client = None

@@ -27,3 +27,11 @@ secrets/
 *.env
 env.yaml
 env-*.yaml
+
+# Regulatory pipeline outputs and indexes
+data/regulatory_indexes/
+data/regulatory_pipeline/
+regulatory_chunker/chunks_output/
+regulatory_chunker/html_cache/
+regulatory_chunker/flat_cache/
+regulatory_chunker/L_2016119EN*

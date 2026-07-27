@@ -19,7 +19,6 @@ DEFAULT_HOST = "0.0.0.0"
 REQUEST_TIMEOUT_SECONDS = 300
 
 # CORS Configuration
-# TODO: Replace with specific origins for production
 ALLOWED_ORIGINS: List[str] = os.getenv("ALLOWED_ORIGINS", "*").split(",")
 ALLOW_CREDENTIALS = True
 ALLOWED_METHODS = ["GET", "POST", "DELETE", "OPTIONS"]
@@ -32,20 +31,32 @@ DEFAULT_TOP_K_AUTHENTICATED = 15
 # Rate Limiting
 RATE_LIMIT_ENABLED = True
 
-# File Paths
-INDEX_DIR = "data/indexes"
+# File Paths & Index Configuration
+INDEX_DIR = os.getenv("INDEX_DIR", "data/regulatory_indexes")
+FAISS_FILENAME = os.getenv("FAISS_FILENAME", "regulatory_faiss.bin")
+DB_FILENAME = os.getenv("DB_FILENAME", "regulatory_chunks.db")
+USE_LOCAL_EMBEDDINGS = os.getenv("USE_LOCAL_EMBEDDINGS", "false").lower() == "true"
+EMBEDDING_MODEL = os.getenv("EMBEDDING_MODEL", "text-embedding-3-small")
 LOGS_DIR = "logs"
 
 # Remote Resources
 BASE_URL = "https://storage.googleapis.com/efiras-faiss-index/indexes"
 REQUIRED_INDEX_FILES = [
-    {"url": f"{BASE_URL}/faiss.index", "path": f"{INDEX_DIR}/faiss.index"},
-    {"url": f"{BASE_URL}/chunks.db", "path": f"{INDEX_DIR}/chunks.db"},
+    {
+        "filename": FAISS_FILENAME,
+        "path": os.path.join(INDEX_DIR, FAISS_FILENAME),
+        "url": f"{BASE_URL}/{FAISS_FILENAME}",
+    },
+    {
+        "filename": DB_FILENAME,
+        "path": os.path.join(INDEX_DIR, DB_FILENAME),
+        "url": f"{BASE_URL}/{DB_FILENAME}",
+    },
 ]
 
 # Chunk Size Configuration
 DEFAULT_CHUNK_SIZE = 1500
-MAX_QUERY_LENGTH = 1000
+MAX_QUERY_LENGTH = 10000
 
 # Logging Configuration
 LOG_LEVEL = os.getenv("LOG_LEVEL", "INFO")

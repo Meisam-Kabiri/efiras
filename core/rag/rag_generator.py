@@ -124,9 +124,9 @@ class RAGGenerator:
                 api_version=api_version,
             )
         else:
-            api_key = os.getenv("GPT_API_KEY")
+            api_key = os.getenv("OPENAI_API_KEY") or os.getenv("GPT_API_KEY")
             if not api_key:
-                raise ValueError("GPT_API_KEY environment variable not set")
+                raise ValueError("OPENAI_API_KEY or GPT_API_KEY environment variable not set in .env")
 
             self.client = OpenAI(api_key=api_key)
 

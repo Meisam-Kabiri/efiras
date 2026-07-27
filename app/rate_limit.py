@@ -6,7 +6,7 @@ from firebase_admin import auth as firebase_auth  # type: ignore
 from slowapi import Limiter
 from slowapi.util import get_remote_address
 
-redis_url = os.getenv("REDIS_EFIRAS_URL", "redis://localhost:6379")
+redis_url = os.getenv("REDIS_EFIRAS_URL", "memory://")
 # redis_client = Redis.from_url(redis_url, decode_responses=True)
 
 
@@ -37,6 +37,7 @@ limiter = Limiter(
     key_func=get_user_or_ip,  # ✅ Automatically uses UID if authenticated, IP if not
     default_limits=["30 per day", "10 per hour"],
     storage_uri=redis_url,
+    key_prefix="efiras",  # Namespace keys so efiras can safely share Redis with other apps
 )
 
 

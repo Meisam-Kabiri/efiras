@@ -1,0 +1,34 @@
+# Exclude git & cache
+.git
+.gitignore
+__pycache__
+*.pyc
+*.pyo
+.pytest_cache
+.vscode
+.claude
+htmlcov
+model_cache
+
+# Exclude offline pipeline data & raw files (Only data/regulatory_indexes/ is copied!)
+data/regulatory_pipeline/
+data/legacy_pipeline/
+data/raw/
+data/data_processed/
+*.pdf
+*.html
+*.json
+
+# Exclude offline scripts, tests, scratch files, and documentation
+tests/
+scripts/
+scratch/
+temps/
+training_data/
+*.md
+docs/
+
+# Exclude unused environment files
+env.yaml
+requirements-docker.txt
+setup.py

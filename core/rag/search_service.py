@@ -1,5 +1,6 @@
 import json
 import os
+import re
 import sqlite3
 from typing import Any, Dict, Iterable, List, Optional
 
@@ -356,8 +357,8 @@ class SearchService:
 
         return 1.0  # No boost
 
-    def hybrid_search(self, query, query_embedding, top_k=12):
-        """Hybrid search combining vector and BM25 results"""
+    def hybrid_search(self, query, query_embedding, top_k=12, expand_articles=True, doc_filter=None):
+        """Hybrid search combining vector and BM25 results with optional document filtering"""
         # Get results from both search methods
         vector_results = self.vector_search(query_embedding, 100)
         bm25_results = self.bm25_search(query, 100)
@@ -368,13 +369,94 @@ class SearchService:
         candidate_ids.update(idx for idx, _ in bm25_results)
         chunks_lookup = self.get_chunks_by_ids(candidate_ids)
 
+        # Apply hard document filtering if doc_filter is provided
+        if doc_filter:
+            doc_filter_norms = [
+                re.sub(r"[^a-z0-9]", "", str(d).lower()) for d in doc_filter if str(d).strip()
+            ]
+            filtered_lookup = {}
+            for cid, chunk in chunks_lookup.items():
+                chunk_doc_id = re.sub(r"[^a-z0-9]", "", str(chunk.get("doc_id", "")).lower())
+                chunk_filename = re.sub(r"[^a-z0-9]", "", str(chunk.get("filename", "")).lower())
+
+                if any(
+                    df in chunk_doc_id or df in chunk_filename or chunk_doc_id in df
+                    for df in doc_filter_norms
+                ):
+                    filtered_lookup[cid] = chunk
+
+            # Only restrict if matches found; fallback to candidate pool if no match
+            if filtered_lookup:
+                chunks_lookup = filtered_lookup
+
         # Combine results using RRF
         combined = self.rrf_combine(vector_results, bm25_results, query, chunks_lookup)
         top_indices = sorted(combined.keys(), key=combined.get, reverse=True)[:top_k]
 
         top_chunks = [chunks_lookup[i] for i in top_indices if i in chunks_lookup]
 
+        if expand_articles:
+            top_chunks = self.expand_chunks_to_articles(top_chunks)
+
         return top_chunks
+
+    def expand_chunks_to_articles(
+        self, chunks: List[Dict[str, Any]], max_article_tokens: int = 3000
+    ) -> List[Dict[str, Any]]:
+        """
+        Expands retrieved chunks to their full parent Article / Provision level
+        using SQLite queries to fetch all sibling paragraphs in order.
+        """
+        if not chunks or self.conn is None:
+            return chunks
+
+        expanded_results = []
+        seen_keys = set()
+
+        for chunk in chunks:
+            doc_id = chunk.get("doc_id") or chunk.get("filename")
+            headers = chunk.get("headers") or ""
+            header_identifier = chunk.get("header_identifier") or chunk.get("citation") or ""
+
+            target_header = headers or header_identifier
+            if not doc_id or not target_header:
+                expanded_results.append(chunk)
+                continue
+
+            article_key = (doc_id, target_header)
+            if article_key in seen_keys:
+                continue
+            seen_keys.add(article_key)
+
+            # Query all sibling chunks belonging to this document and header in SQLite
+            try:
+                rows = self.conn.execute(
+                    "SELECT * FROM chunks WHERE doc_id = ? AND (headers = ? OR header_identifier = ?) ORDER BY id",
+                    (doc_id, target_header, target_header),
+                ).fetchall()
+            except Exception:
+                rows = []
+
+            if not rows or len(rows) <= 1:
+                expanded_results.append(chunk)
+                continue
+
+            sibling_chunks = [self._row_to_chunk(row) for row in rows]
+            merged_text = "\n\n".join(
+                c.get("content", "") for c in sibling_chunks if c.get("content")
+            )
+            approx_tokens = len(merged_text.split()) * 1.3
+
+            if approx_tokens <= max_article_tokens:
+                expanded_chunk = dict(chunk)
+                expanded_chunk["content"] = merged_text
+                expanded_chunk["is_expanded"] = True
+                expanded_chunk["sibling_count"] = len(sibling_chunks)
+                expanded_results.append(expanded_chunk)
+            else:
+                expanded_results.append(chunk)
+
+        return expanded_results
 
     def hybrid_search_with_cross_encoder(self, query, query_embedding, top_k=8):
         """Hybrid search with cross-encoder re-ranking"""
@@ -418,8 +500,16 @@ class SearchService:
 
         return top_chunks
 
-    def search_documents(self, query, query_embedding, top_k=5):
-        return self.hybrid_search(query, query_embedding, top_k)
+    def search_documents(
+        self, query, query_embedding, top_k=5, expand_articles=True, doc_filter=None
+    ):
+        return self.hybrid_search(
+            query,
+            query_embedding,
+            top_k=top_k,
+            expand_articles=expand_articles,
+            doc_filter=doc_filter,
+        )
 
     def save_indexes(self, faiss_path=None, db_path=None):
         """Save indexes to disk for persistence: FAISS for vectors, SQLite
@@ -475,10 +565,24 @@ class SearchService:
     def load_indexes(self, faiss_path=None, db_path=None):
         """Load indexes from disk"""
 
-        faiss_path = faiss_path or os.path.join(self.index_dir, "faiss.index")
-        db_path = db_path or os.path.join(self.index_dir, "chunks.db")
+        if not faiss_path:
+            env_faiss = os.getenv("FAISS_PATH") or os.getenv("FAISS_FILENAME")
+            if env_faiss:
+                faiss_path = env_faiss if os.path.isabs(env_faiss) else os.path.join(self.index_dir, env_faiss)
+            else:
+                reg_faiss = os.path.join(self.index_dir, "regulatory_faiss.bin")
+                faiss_path = reg_faiss if os.path.exists(reg_faiss) else os.path.join(self.index_dir, "faiss.index")
+
+        if not db_path:
+            env_db = os.getenv("DB_PATH") or os.getenv("DB_FILENAME")
+            if env_db:
+                db_path = env_db if os.path.isabs(env_db) else os.path.join(self.index_dir, env_db)
+            else:
+                reg_db = os.path.join(self.index_dir, "regulatory_chunks.db")
+                db_path = reg_db if os.path.exists(reg_db) else os.path.join(self.index_dir, "chunks.db")
 
         success = True
+
         try:
             # Load FAISS index
             if os.path.exists(faiss_path):

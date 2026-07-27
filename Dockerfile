@@ -2,21 +2,23 @@ FROM python:3.11-slim
 
 WORKDIR /srv
 
-# System deps needed by faiss/torch/pymupdf wheels
+# System deps needed by wheels
 RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential \
     && rm -rf /var/lib/apt/lists/*
 
-COPY requirements.txt .
+# Use ultra-lightweight production requirements (~150MB, no PyTorch/Transformers)
+COPY requirements-prod.txt requirements.txt
 RUN pip install --no-cache-dir -r requirements.txt
 
+# Copy application source code
 COPY app/ app/
 COPY core/ core/
 COPY auth/ auth/
-COPY data/indexes/faiss.index data/indexes/chunks.db data/indexes/
 
-# "config", "endpoints", etc. are imported bare (e.g. `from config import ...`)
-# inside app/efiras_app.py, so app/ itself must be on the path alongside the repo root.
+# Copy ONLY the pre-built indexes (regulatory_faiss.bin & regulatory_chunks.db)
+COPY data/regulatory_indexes/ data/regulatory_indexes/
+
 ENV PYTHONPATH=/srv:/srv/app
 ENV PORT=8080
 EXPOSE 8080
