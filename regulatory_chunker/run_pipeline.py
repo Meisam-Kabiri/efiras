@@ -31,62 +31,14 @@ def run_chunking():
     print("\n=======================================================")
     print("  STEP 1: CHUNKING REGULATORY FRAMEWORK DOCUMENTS")
     print("=======================================================")
-    chunker = RegulatoryChunker()
-    repo = RegulatoryRepository()
-    out_dir = repo.chunks_dir
-    out_dir.mkdir(parents=True, exist_ok=True)
-
-    for doc_id, name, url, fmt in BUCKET_A:
-        out_file = out_dir / f"{doc_id.lower()}_chunks.json"
-        print(f"[{doc_id}] Chunking HTML: {name}...")
-        html_cache_file = Path(__file__).parent / "html_cache" / f"{doc_id.lower()}.html"
-        try:
-            chunker_inst = EurLexChunker(
-                doc_id=doc_id,
-                source=str(html_cache_file) if html_cache_file.exists() else url,
-                cache_file=html_cache_file,
-                verbose=False,
-            )
-            chunks = chunker_inst.run(out_file=str(out_file))
-            print(f"  -> Saved {len(chunks)} chunks to {out_file}")
-        except Exception as e:
-            print(f"  -> Error: {e}")
-
-    for doc_id, name, url, fmt in BUCKET_B:
-        if doc_id == "DODD_FRANK_P2":
-            continue
-        out_file = out_dir / f"{doc_id.lower()}_chunks.json"
-        
-        # Smart candidate matching for Bucket B HTML cache names (e.g. fatf_2012.html, basel_iii.html)
-        html_candidates = [
-            f"{doc_id.lower()}.html",
-            f"{doc_id.lower().replace('fatf2012', 'fatf_2012')}.html",
-            f"{doc_id.lower().replace('basel3', 'basel_iii')}.html",
-        ]
-        html_cache_file = None
-        for cand in html_candidates:
-            p = Path(__file__).parent / "html_cache" / cand
-            if p.exists():
-                html_cache_file = p
-                break
-
-        pdf_cache = Path(__file__).parent / "flat_cache" / f"{doc_id.lower()}.pdf"
-
-        print(f"[{doc_id}] Chunking PDF/HTML: {name}...")
-        try:
-            if html_cache_file and html_cache_file.exists():
-                from regulatory_chunker.tree_chunker import TreeChunker
-                parser = TreeChunker(doc_id=doc_id)
-                chunks = parser.chunk(html_cache_file.read_text(encoding="utf-8"))
-            elif pdf_cache.exists():
-                chunks = chunker.chunk(doc_id=doc_id, source=str(pdf_cache), fmt="pdf")
-            else:
-                print(f"[{doc_id}] Neither HTML nor PDF cache found, skipping.")
-                continue
-            out_file.write_text(json.dumps(chunks, indent=2, ensure_ascii=False), encoding="utf-8")
-            print(f"  -> Saved {len(chunks)} chunks to {out_file}")
-        except Exception as e:
-            print(f"  -> Error: {e}")
+    try:
+        from regulatory_chunker.scripts.chunk_all_html import chunk_bucket_a, chunk_bucket_b
+        chunk_bucket_a()
+        chunk_bucket_b()
+    except ImportError:
+        from scripts.chunk_all_html import chunk_bucket_a, chunk_bucket_b
+        chunk_bucket_a()
+        chunk_bucket_b()
 
 
 def run_embedding():
