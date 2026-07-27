@@ -56,12 +56,25 @@ def run_chunking():
         if doc_id == "DODD_FRANK_P2":
             continue
         out_file = out_dir / f"{doc_id.lower()}_chunks.json"
-        html_cache_file = Path(__file__).parent / "html_cache" / f"{doc_id.lower()}.html"
+        
+        # Smart candidate matching for Bucket B HTML cache names (e.g. fatf_2012.html, basel_iii.html)
+        html_candidates = [
+            f"{doc_id.lower()}.html",
+            f"{doc_id.lower().replace('fatf2012', 'fatf_2012')}.html",
+            f"{doc_id.lower().replace('basel3', 'basel_iii')}.html",
+        ]
+        html_cache_file = None
+        for cand in html_candidates:
+            p = Path(__file__).parent / "html_cache" / cand
+            if p.exists():
+                html_cache_file = p
+                break
+
         pdf_cache = Path(__file__).parent / "flat_cache" / f"{doc_id.lower()}.pdf"
 
-        print(f"[{doc_id}] Chunking PDF: {name}...")
+        print(f"[{doc_id}] Chunking PDF/HTML: {name}...")
         try:
-            if html_cache_file.exists():
+            if html_cache_file and html_cache_file.exists():
                 from regulatory_chunker.tree_chunker import TreeChunker
                 parser = TreeChunker(doc_id=doc_id)
                 chunks = parser.chunk(html_cache_file.read_text(encoding="utf-8"))
