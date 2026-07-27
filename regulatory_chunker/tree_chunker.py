@@ -42,9 +42,12 @@ class TreeChunker:
     def _parse_id(self, div_id: str) -> Tuple[Optional[str], str]:
         if not div_id:
             return None, ""
-        last = div_id.split(".")[-1]
-        prefix, _, label = last.partition("_")
-        return self.levels.get(prefix), label
+        for prefix_key, level_name in self.levels.items():
+            pattern = rf"(?:^|[\.\-_]){prefix_key}_([A-Za-z0-9\-\.]+)"
+            match = re.search(pattern, div_id)
+            if match:
+                return level_name, match.group(1)
+        return None, ""
 
     HEADING_CLASSES = {
         "heading",
