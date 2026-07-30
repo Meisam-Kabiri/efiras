@@ -5,9 +5,10 @@ OpenAI API Embedding generator for regulatory framework chunks.
 
 import os
 import json
+import time
 from pathlib import Path
 from typing import List, Dict, Any, Optional
-from openai import OpenAI
+from openai import OpenAI, RateLimitError
 
 try:
     from dotenv import load_dotenv
@@ -94,6 +95,22 @@ class RegulatoryEmbedder:
             self._client = OpenAI(api_key=key)
         return self._client
 
+    def _embed_batch_with_retry(self, batch: List[str], max_retries: int = 5):
+        """
+        Calls the OpenAI embeddings endpoint, retrying with exponential backoff
+        on 429 rate-limit errors (the API's own retry-after hint is honored when present).
+        """
+        for attempt in range(max_retries):
+            try:
+                return self.client.embeddings.create(model=self.model, input=batch)
+            except RateLimitError as e:
+                if attempt == max_retries - 1:
+                    raise
+                wait = getattr(getattr(e, "response", None), "headers", {}).get("retry-after")
+                wait = float(wait) if wait else min(2 ** attempt, 30)
+                print(f"Rate limited, retrying in {wait:.1f}s (attempt {attempt + 1}/{max_retries})...")
+                time.sleep(wait)
+
     def embed_document(self, doc_id: str, batch_size: int = 100) -> List[Dict[str, Any]]:
         """
         Embeds all chunks for a given document ID using OpenAI API (text-embedding-3-small).
@@ -112,7 +129,7 @@ class RegulatoryEmbedder:
         all_embeddings = []
         for i in range(0, len(enriched_texts), batch_size):
             batch = enriched_texts[i : i + batch_size]
-            response = self.client.embeddings.create(model=self.model, input=batch)
+            response = self._embed_batch_with_retry(batch)
             all_embeddings.extend([item.embedding for item in response.data])
 
         payload = [
