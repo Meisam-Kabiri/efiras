@@ -135,6 +135,8 @@ class EmbeddingService:
 
     def embed_text(self, text: str) -> List[float]:
         """Generate embedding for a single text"""
+        # Truncate text to stay safely under OpenAI 8191 token limit (~30,000 chars)
+        text = text[:28000] if text else ""
         if self.use_local:
             try:
                 return self.local_model.encode(text).tolist()

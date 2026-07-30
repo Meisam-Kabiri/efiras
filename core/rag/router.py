@@ -66,8 +66,9 @@ Rules:
     "strict"   — question explicitly names ONE regulation (e.g. "under GDPR…"). Put that doc in documents[].
     "narrowed" — question clearly covers a small group of regulations (2–4 docs). List them.
     "broad"    — genuinely vague or multi-regulation. Set documents to [].
-- expanded_query: rewrite the question with full regulatory terms, article synonyms, and key concepts.
-  Keep the same meaning but add useful vocabulary for retrieval. Omit if kind != "question".
+- expanded_query: rewrite the question using formal legal CONCEPT SYNONYMS and KEY CONCEPTS only.
+  CRITICAL RULE: DO NOT guess, invent, or output specific Article or Section numbers (e.g., do NOT output 'Article 22' or 'Article 13'). 
+  Allow the database vector and BM25 search engines to discover the exact Articles from the indexed documents. Omit if kind != "question".
 - sub_queries: split ONLY if the question is clearly multi-part (e.g. "compare X and Y", "what are the
   obligations under X AND the penalties under Y?"). Each sub_query is a complete standalone question.
   Empty list otherwise.

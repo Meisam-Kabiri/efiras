@@ -27,7 +27,7 @@ class QueryRequest(BaseModel):
         ...,
         description="User's question to query the document database",
         min_length=1,
-        max_length=10000,
+        max_length=30000,
         examples=["What are the capital requirements for Basel III?"],
     )
     session_id: Optional[str] = Field(
@@ -69,7 +69,7 @@ class AuthenticatedQueryRequest(BaseModel):
         ...,
         description="User's question to query the document database",
         min_length=1,
-        max_length=10000,
+        max_length=30000,
         examples=["What are the liquidity coverage requirements?"],
     )
     document_filter: Optional[str] = Field(

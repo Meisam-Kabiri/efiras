@@ -113,7 +113,7 @@ async def query_documents_stream(
                 return
 
             for chunk in rag_generator.answer_query_stream(
-                route_result.get("expanded_query") or request.question,
+                request.question,
                 relevant_chunks,
             ):
                 data = {"type": "content", "content": chunk}
@@ -168,7 +168,7 @@ async def authenticated_query_stream(
                 return
 
             for chunk in rag_generator.answer_query_stream(
-                route_result.get("expanded_query") or request.question,
+                request.question,
                 relevant_chunks,
             ):
                 data = {"type": "content", "content": chunk}
