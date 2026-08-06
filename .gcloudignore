@@ -1,0 +1,29 @@
+# .gcloudignore for Cloud Build source uploads
+.gcloudignore
+.git
+.gitignore
+
+# Python cache & virtualenv
+__pycache__/
+*.pyc
+*.pyo
+.pytest_cache/
+.venv/
+env/
+venv/
+.vscode/
+.claude/
+
+# Exclude offline pipeline data (Keep data/regulatory_indexes/!)
+data/raw/
+data/data_processed/
+data/regulatory_pipeline/
+data/legacy_pipeline/
+
+# Exclude offline scripts & tests
+tests/
+scripts/
+scratch/
+temps/
+training_data/
+docs/
