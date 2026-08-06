@@ -2,12 +2,22 @@
 # WHAT: Connects your FastAPI backend to Firebase
 # WHY: Lets your backend verify user tokens and get user info
 
+import os
+import json
 import firebase_admin
 from firebase_admin import auth, credentials
 
 # STEP 1: Initialize Firebase Admin SDK
+firebase_json_env = os.getenv("FIREBASE_SERVICE_ACCOUNT_JSON")
 
-cred = credentials.Certificate("auth/firebase-service-account.json")
+if firebase_json_env:
+    # Read directly from GCP Secret Manager environment variable
+    cred_dict = json.loads(firebase_json_env)
+    cred = credentials.Certificate(cred_dict)
+else:
+    # Fallback: Read from local file on your laptop (used by local build_and_push.sh)
+    cred = credentials.Certificate("auth/firebase-service-account.json")
+
 firebase_admin.initialize_app(cred)
 
 
