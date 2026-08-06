@@ -29,7 +29,6 @@ env.yaml
 env-*.yaml
 
 # Regulatory pipeline outputs and indexes
-data/regulatory_indexes/
 data/regulatory_pipeline/
 regulatory_chunker/chunks_output/
 regulatory_chunker/html_cache/
