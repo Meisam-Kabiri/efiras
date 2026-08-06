@@ -1,0 +1,56 @@
+name: Build & Deploy Backend to Cloud Run
+
+on:
+  push:
+    branches:
+      - master
+      - main
+  workflow_dispatch:
+
+env:
+  PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
+  REGION: us-central1
+  SERVICE_NAME: rag-api
+  REPO_NAME: rag-api
+
+jobs:
+  deploy:
+    name: Build & Deploy via Google Cloud Build & Cloud Run
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.GCP_SA_KEY }}
+
+      - name: Set up Cloud SDK
+        uses: google-github-actions/setup-gcloud@v2
+
+      - name: Submit Build to Google Cloud Build
+        run: |
+          IMAGE_TAG="${{ github.sha }}"
+          FULL_IMAGE="${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPO_NAME }}/${{ env.SERVICE_NAME }}:${IMAGE_TAG}"
+          LATEST_IMAGE="${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPO_NAME }}/${{ env.SERVICE_NAME }}:latest"
+          
+          echo "Submitting build to Google Cloud Build for ${FULL_IMAGE}..."
+          gcloud builds submit \
+            --tag="${FULL_IMAGE}" \
+            --project="${{ env.PROJECT_ID }}"
+            
+          echo "Tagging latest image tag..."
+          gcloud container images add-tag "${FULL_IMAGE}" "${LATEST_IMAGE}" --quiet || true
+
+      - name: Deploy to Cloud Run
+        run: |
+          IMAGE_TAG="${{ github.sha }}"
+          FULL_IMAGE="${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPO_NAME }}/${{ env.SERVICE_NAME }}:${IMAGE_TAG}"
+          
+          echo "Deploying ${FULL_IMAGE} to Cloud Run..."
+          gcloud run deploy ${{ env.SERVICE_NAME }} \
+            --image="${FULL_IMAGE}" \
+            --region="${env.REGION}" \
+            --project="${env.PROJECT_ID}"
