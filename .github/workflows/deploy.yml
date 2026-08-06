@@ -52,5 +52,5 @@ jobs:
           echo "Deploying ${FULL_IMAGE} to Cloud Run..."
           gcloud run deploy ${{ env.SERVICE_NAME }} \
             --image="${FULL_IMAGE}" \
-            --region="${env.REGION}" \
-            --project="${env.PROJECT_ID}"
+            --region="${{ env.REGION }}" \
+            --project="${{ env.PROJECT_ID }}"
