@@ -110,7 +110,7 @@ class RAGGenerator:
     DEFAULT_TEMPERATURE = 0.1
     DEFAULT_MAX_TOKENS = 4000
     DEFAULT_API_VERSION = "2024-02-01"
-    DEFAULT_MODEL = "gpt-4o-mini"  # "gpt-4o-mini"  # "gpt-4" is 4o which is most expensive  # gpt-3.5-turbo # The cheapest model available
+    DEFAULT_MODEL = "gpt-4.1"  # answer model; follows "only use the sources" rules better than gpt-4o-mini (~13x cost, ~$0.05 per answer). Router stays on gpt-4o-mini.
 
     def __init__(
         self,
