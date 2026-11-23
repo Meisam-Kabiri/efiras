@@ -35,7 +35,9 @@ from buckets_config import BUCKET_A
 from fetch_chunk import EurLexChunker
 from tree_chunker import TreeChunker
 from chunks_to_markdown import chunks_to_markdown
-from run_bucket_b_pipeline import DOCS as BUCKET_B_DOCS
+# Bucket B is chunked by bucket_b_chunker (no LLM; reads the HTML already in html_cache/).
+# Importing run_bucket_b_pipeline here would pull in the Claude PDF-to-HTML code.
+import bucket_b_chunker
 
 CHUNKS_DIR = Path("chunks_output")
 HTML_DIR = Path("html_cache")
@@ -62,8 +64,8 @@ def chunk_bucket_a():
 
 
 def chunk_bucket_b():
-    for _pdf_path, doc_id, html_out in BUCKET_B_DOCS:
-        html_file = Path(html_out)
+    for doc_id, html_name in bucket_b_chunker.DOCS.items():
+        html_file = HTML_DIR / html_name
         if not html_file.exists():
             print(f"skip {doc_id}: {html_file} doesn't exist yet (run scripts/run_bucket_b_pipeline.py first)")
             continue
@@ -71,20 +73,11 @@ def chunk_bucket_b():
         out_file = CHUNKS_DIR / f"{doc_id.lower()}_chunks.json"
         review_file = CHUNKS_DIR / f"{doc_id.lower()}_review.md"
         if out_file.exists():
-            print(f"skip {doc_id}: {out_file} already exists")
+            print(f"skip {doc_id}: {out_file} already exists (delete it to re-chunk)")
             continue
 
-        html = html_file.read_text(encoding="utf-8")
-        # levels discovered from this document's own id prefixes, same
-        # approach used to validate the CSSF run earlier -- Bucket B HTML
-        # is LLM-generated per document, so its type vocabulary isn't
-        # known ahead of time the way EurLexChunker's DEFAULT_LEVELS is
-        prefixes = set(re.findall(r'id="([a-z0-9]+)_', html))
-        levels = {p: p for p in prefixes}
-
         print(f"\nchunking {doc_id} (Bucket B: {html_file})")
-        chunker = TreeChunker(doc_id=doc_id, levels=levels)
-        chunks = chunker.chunk(html)
+        chunks = bucket_b_chunker.chunk_document(doc_id, html_file.read_text(encoding="utf-8"))
         out_file.parent.mkdir(parents=True, exist_ok=True)
         out_file.write_text(json.dumps(chunks, indent=2, ensure_ascii=False), encoding="utf-8")
         chunks_to_markdown(chunks, str(review_file))

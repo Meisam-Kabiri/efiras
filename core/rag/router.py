@@ -10,35 +10,38 @@ from core.rag.llm import call_llm
 
 ROUTER_MODEL = "gpt-4o-mini"
 
-# All 23 documents in the corpus. Keys match the router's output.
-DOC_KEY_TO_FILENAME: Dict[str, str] = {
-    "aifmd":            "Alternative_Investment_Fund_Managers_Directive_(AIFMD).pdf",
-    "aifmd_level_2":    "Alternative_Investment_Fund_Managers_Directive_Level_2_(AIFMD_Level_2).pdf",
-    "basel_ii":         "Basel_II_Framework_(Basel_II_2006).pdf",
-    "basel_iii":        "Basel_III_Framework_(Basel_III).pdf",
-    "crd_v":            "Capital_Requirements_Directive_V_(CRD_V).pdf",
-    "crr":              "Capital_Requirements_Regulation_(CRR).pdf",
-    "dodd_frank":       "Dodd_Frank_Wall_Street_Reform_and_Consumer_Protection_Act_(Dodd_Frank).pdf",
-    "dodd_frank_2":     "Dodd_Frank_Wall_Street_Reform_and_Consumer_Protection_Act_2_(Dodd_Frank_Act).pdf",
-    "emir":             "European_Market_Infrastructure_Regulation_(EMIR).pdf",
-    "eu_taxonomy":      "European_Union_Taxonomy_Regulation_(EU_Taxonomy).pdf",
-    "5amld":            "Fifth_Anti_Money_Laundering_Directive_(5AMLD).pdf",
-    "fatf":             "Financial_Action_Task_Force_Recommendations_2012_(FATF).pdf",
-    "4amld":            "Fourth_Anti_Money_Laundering_Directive_(4AMLD).pdf",
-    "gdpr":             "General_Data_Protection_Regulation_(GDPR).pdf",
-    "cssf_18_698":      "Luxembourg_CSSF_18_698(CSSF_18_698).pdf",
-    "mifid_ii":         "Markets_in_Financial_Instruments_Directive_II_(MiFID_II).pdf",
-    "mifir":            "Markets_in_Financial_Instruments_Regulation_(MiFIR).pdf",
-    "psd2":             "Payment_Services_Directive_2_(PSD2).pdf",
-    "sftr":             "Securities_Financing_Transactions_Regulation_(SFTR).pdf",
-    "solvency_ii":      "Solvency_II_Directive_(Solvency_II).pdf",
-    "solvency_ii_level_2": "Solvency_II_Directive_Level_2_(Solvency_II_Level_2).pdf",
-    "sfdr":             "Sustainable_Finance_Disclosure_Regulation_(SFDR).pdf",
-    "ucits":            "Undertakings_for_Collective_Investment_in_Transferable_Securities_(UCITS).pdf",
+# All 23 documents in the index. Keys match the router's output; values are
+# (doc_id exactly as stored in regulatory_chunks.db, human-readable name).
+# The doc_id must match the database exactly, or the document filter in
+# search_service silently matches nothing.
+DOC_KEYS: Dict[str, tuple] = {
+    "aifmd":            ("AIFMD", "Alternative Investment Fund Managers Directive (AIFMD)"),
+    "aifmd_level_2":    ("AIFMD_L2", "AIFMD Level 2 Delegated Regulation"),
+    "amlr":             ("AMLR", "Anti-Money Laundering Regulation (AMLR)"),
+    "4amld":            ("4AMLD", "Fourth Anti-Money Laundering Directive (4AMLD)"),
+    "5amld":            ("5AMLD", "Fifth Anti-Money Laundering Directive (5AMLD)"),
+    "basel_iii":        ("BASEL3", "Basel III: International regulatory framework for banks (Basel Committee)"),
+    "crd_v":            ("CRD5", "Capital Requirements Directive (CRD V)"),
+    "crr":              ("CRR", "Capital Requirements Regulation (CRR), the EU law implementing Basel III"),
+    "cssf_18_698":      ("CSSF_18_698", "Luxembourg CSSF Circular 18/698 (investment fund managers)"),
+    "dora":             ("DORA", "Digital Operational Resilience Act (DORA)"),
+    "emir":             ("EMIR", "European Market Infrastructure Regulation (EMIR)"),
+    "eu_taxonomy":      ("EUTAXONOMY", "EU Taxonomy Regulation"),
+    "fatf":             ("FATF2012", "FATF Recommendations 2012"),
+    "gdpr":             ("GDPR", "General Data Protection Regulation (GDPR)"),
+    "mar":              ("MAR", "Market Abuse Regulation (MAR)"),
+    "mifid_ii":         ("MIFID2", "Markets in Financial Instruments Directive II (MiFID II)"),
+    "mifid_ii_level_2": ("MIFID2_L2", "MiFID II Level 2 Delegated Regulation"),
+    "mifir":            ("MIFIR", "Markets in Financial Instruments Regulation (MiFIR)"),
+    "psd2":             ("PSD2", "Payment Services Directive 2 (PSD2)"),
+    "sfdr":             ("SFDR", "Sustainable Finance Disclosure Regulation (SFDR)"),
+    "sftr":             ("SFTR", "Securities Financing Transactions Regulation (SFTR)"),
+    "solvency_ii":      ("SOLVENCY2", "Solvency II Directive"),
+    "ucits":            ("UCITS", "UCITS Directive"),
 }
 
 _DOC_LIST_TEXT = "\n".join(
-    f"  - {key}: {fname}" for key, fname in DOC_KEY_TO_FILENAME.items()
+    f"  - {key}: {name}" for key, (_doc_id, name) in DOC_KEYS.items()
 )
 
 _SYSTEM_PROMPT = f"""You are a routing assistant for a financial-regulation question-answering system.
@@ -98,6 +101,12 @@ def route(question: str) -> Dict[str, Any]:
     return result
 
 
-def resolve_filenames(doc_keys: List[str]) -> List[str]:
-    """Convert router doc keys to actual filenames. Unrecognised keys are dropped."""
-    return [DOC_KEY_TO_FILENAME[k] for k in doc_keys if k in DOC_KEY_TO_FILENAME]
+def resolve_doc_ids(doc_keys: List[str]) -> List[str]:
+    """Convert router doc keys to database doc_ids. Unrecognised keys are dropped."""
+    return [DOC_KEYS[k][0] for k in doc_keys if k in DOC_KEYS]
+
+
+def doc_names(doc_ids: List[str]) -> List[str]:
+    """Human-readable names for database doc_ids (falls back to the id)."""
+    by_id = {doc_id: name for doc_id, name in DOC_KEYS.values()}
+    return [by_id.get(d, d) for d in doc_ids]

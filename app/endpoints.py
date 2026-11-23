@@ -115,6 +115,7 @@ async def query_documents_stream(
             for chunk in rag_generator.answer_query_stream(
                 request.question,
                 relevant_chunks,
+                target_documents=route_result.get("doc_names"),
             ):
                 data = {"type": "content", "content": chunk}
                 yield f"data: {json.dumps(data)}\n\n"
@@ -170,6 +171,7 @@ async def authenticated_query_stream(
             for chunk in rag_generator.answer_query_stream(
                 request.question,
                 relevant_chunks,
+                target_documents=route_result.get("doc_names"),
             ):
                 data = {"type": "content", "content": chunk}
                 yield f"data: {json.dumps(data)}\n\n"

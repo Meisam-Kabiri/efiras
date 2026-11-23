@@ -50,8 +50,12 @@ def run(
     sub_queries = route_result.get("sub_queries", [])
 
     doc_filter: Optional[List[str]] = (
-        _router.resolve_filenames(doc_keys) if doc_keys else None
-    )
+        _router.resolve_doc_ids(doc_keys) if doc_keys else None
+    ) or None
+    # Recorded so the answer step can tell the model which documents the
+    # question is about (and say so when they don't contain the answer).
+    route_result["doc_ids"] = doc_filter or []
+    route_result["doc_names"] = _router.doc_names(doc_filter or [])
     top_k = _TOP_K.get(scope, 40)
 
     # Use expanded query for retrieval; fall back to original.

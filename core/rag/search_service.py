@@ -149,18 +149,41 @@ class SearchService:
 
         self.faiss_index.add(embeddings)
 
-    def vector_search(self, query_embedding, top_k=100):
-        """Fast vector search using FAISS"""
+    def ids_for_docs(self, doc_ids: List[str]) -> List[int]:
+        """Row ids (== FAISS positions) of every chunk belonging to doc_ids (exact match)."""
+        if not doc_ids or self.conn is None:
+            return []
+        placeholders = ",".join("?" * len(doc_ids))
+        rows = self.conn.execute(
+            f"SELECT id FROM chunks WHERE doc_id IN ({placeholders})", list(doc_ids)
+        ).fetchall()
+        return [row["id"] for row in rows]
+
+    def vector_search(self, query_embedding, top_k=100, allowed_ids=None):
+        """Fast vector search using FAISS. With allowed_ids, only those vectors
+        are searched (and every IVF list is probed so none are missed)."""
         if self.faiss_index is None:
             raise ValueError("FAISS index not built. Call build_indexes() first.")
 
         query_emb = np.array([query_embedding]).astype("float32")
         faiss.normalize_L2(query_emb)
-        scores, indices = self.faiss_index.search(query_emb, top_k)
+
+        if allowed_ids:
+            selector = faiss.IDSelectorBatch(np.array(allowed_ids, dtype="int64"))
+            if hasattr(self.faiss_index, "nlist"):
+                params = faiss.SearchParametersIVF(sel=selector, nprobe=self.faiss_index.nlist)
+            else:
+                params = faiss.SearchParameters(sel=selector)
+            scores, indices = self.faiss_index.search(
+                query_emb, min(top_k, len(allowed_ids)), params=params
+            )
+        else:
+            scores, indices = self.faiss_index.search(query_emb, top_k)
         return scores[0], indices[0]
 
-    def bm25_search(self, query, top_k=100):
-        """BM25 search via SQLite FTS5 (ranking computed in SQL, nothing held in RAM)"""
+    def bm25_search(self, query, top_k=100, doc_ids=None):
+        """BM25 search via SQLite FTS5 (ranking computed in SQL, nothing held in RAM).
+        With doc_ids, only chunks of those documents are ranked."""
         if self.conn is None:
             raise ValueError("Chunk database not loaded. Call load_indexes() first.")
 
@@ -171,15 +194,24 @@ class SearchService:
         # Quote each token so FTS5 query syntax characters in content don't break parsing
         match_query = " OR ".join(f'"{t}"' for t in query_tokens)
 
+        doc_clause, doc_params = "", []
+        if doc_ids:
+            doc_clause = (
+                "AND rowid IN (SELECT id FROM chunks WHERE doc_id IN ("
+                + ",".join("?" * len(doc_ids))
+                + "))"
+            )
+            doc_params = list(doc_ids)
+
         rows = self.conn.execute(
-            """
+            f"""
             SELECT rowid, bm25(chunks_fts) AS score
             FROM chunks_fts
-            WHERE chunks_fts MATCH ?
+            WHERE chunks_fts MATCH ? {doc_clause}
             ORDER BY score
             LIMIT ?
             """,
-            (match_query, top_k),
+            (match_query, *doc_params, top_k),
         ).fetchall()
 
         # FTS5's bm25() is lower-is-better; negate so higher score = better match
@@ -358,36 +390,26 @@ class SearchService:
         return 1.0  # No boost
 
     def hybrid_search(self, query, query_embedding, top_k=12, expand_articles=True, doc_filter=None):
-        """Hybrid search combining vector and BM25 results with optional document filtering"""
-        # Get results from both search methods
-        vector_results = self.vector_search(query_embedding, 100)
-        bm25_results = self.bm25_search(query, 100)
+        """Hybrid search combining vector and BM25 results.
+
+        doc_filter is a list of database doc_ids (e.g. ["BASEL3"]). When given,
+        both searches run only over those documents' chunks, so a small
+        document is never crowded out by the rest of the corpus. If none of
+        the ids exist in the index, the search falls back to all documents.
+        """
+        allowed_ids = self.ids_for_docs(doc_filter) if doc_filter else []
+        if doc_filter and not allowed_ids:
+            print(f"⚠️ doc_filter {doc_filter} matches no indexed document; searching all documents")
+            doc_filter = None
+
+        vector_results = self.vector_search(query_embedding, 100, allowed_ids=allowed_ids or None)
+        bm25_results = self.bm25_search(query, 100, doc_ids=doc_filter)
 
         # Fetch candidate chunk data once, in a single batched SQLite query
         _, vector_indices = vector_results
         candidate_ids = {int(idx) for idx in vector_indices if int(idx) != -1}
         candidate_ids.update(idx for idx, _ in bm25_results)
         chunks_lookup = self.get_chunks_by_ids(candidate_ids)
-
-        # Apply hard document filtering if doc_filter is provided
-        if doc_filter:
-            doc_filter_norms = [
-                re.sub(r"[^a-z0-9]", "", str(d).lower()) for d in doc_filter if str(d).strip()
-            ]
-            filtered_lookup = {}
-            for cid, chunk in chunks_lookup.items():
-                chunk_doc_id = re.sub(r"[^a-z0-9]", "", str(chunk.get("doc_id", "")).lower())
-                chunk_filename = re.sub(r"[^a-z0-9]", "", str(chunk.get("filename", "")).lower())
-
-                if any(
-                    df in chunk_doc_id or df in chunk_filename or chunk_doc_id in df
-                    for df in doc_filter_norms
-                ):
-                    filtered_lookup[cid] = chunk
-
-            # Only restrict if matches found; fallback to candidate pool if no match
-            if filtered_lookup:
-                chunks_lookup = filtered_lookup
 
         # Combine results using RRF
         combined = self.rrf_combine(vector_results, bm25_results, query, chunks_lookup)

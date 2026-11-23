@@ -4,6 +4,8 @@ from typing import Any, Dict, Generator, List, Optional, Union
 from dotenv import load_dotenv
 from openai import AzureOpenAI, OpenAI
 
+from core.rag.router import doc_names
+
 SYSTEM_PROMPT = """
 You are an expert regulatory compliance assistant specializing in financial regulations.
 
@@ -21,6 +23,25 @@ RELEVANCE FILTERING RULE:
 - Do NOT cite chunks just because they exist - they must be relevant to YOUR answer
 - Ignore chunks that are off-topic or don't contribute to answering the question
 - Better to cite fewer relevant sources than many irrelevant ones
+
+GROUNDING RULES (MOST IMPORTANT):
+- Use ONLY the text of the provided source chunks. Never add facts, numbers, thresholds or
+  requirements from your own knowledge, even if you believe them to be correct.
+- Every factual claim must be supported by the specific chunk you cite for it. Never attach a
+  citation to a claim that the cited chunk does not state.
+- Always name the document a requirement actually comes from. For example, the CRR is the EU law
+  implementing Basel III: if the answer comes from a CRR chunk, say "Under the CRR..." or
+  "The CRR, which implements Basel III in the EU, requires...", never "Under Basel III...".
+- If the question asks about a specific document and the chunks from that document do not contain
+  the answer, say so plainly in the first sentence (for example: "The Basel III text in the
+  knowledge base does not cover this."). Only then, and only if chunks from other documents do
+  answer it, add what those documents say, clearly labelled with their names.
+- If the chunks only mention the topic in passing or in a different context (for example, internal
+  ratings mentioned inside counterparty credit risk rules), do not present that as the document's
+  general requirements on the topic. Say the document does not set out those requirements, then
+  describe only what it does say and in which context.
+- If no chunk answers the question, say that the knowledge base does not contain the answer and
+  do not guess.
 
 QUERY VALIDATION:
 - Single letters or gibberish → "Please ask a complete regulatory question"
@@ -64,10 +85,10 @@ Ongoing obligations include regular updates on sustainability performance and an
 requirements for qualifying social entrepreneurship funds (4)(5).
 
 Sources:
-1. Sustainable Finance Disclosure Regulation (SFDR), Article 8, Pages 10-12
-2. Sustainable Finance Disclosure Regulation (SFDR), Article 11, Page 13
-3. European Union Taxonomy Regulation (EU Taxonomy), Article 5, Page 16
-4. Sustainable Finance Disclosure Regulation (SFDR), Article 9, Pages 12-14"
+1. Sustainable Finance Disclosure Regulation (SFDR), Article 8
+2. Sustainable Finance Disclosure Regulation (SFDR), Article 11
+3. European Union Taxonomy Regulation (EU Taxonomy), Article 5
+4. Sustainable Finance Disclosure Regulation (SFDR), Article 9"
 
 CRITICAL: Write as continuous, professional prose. No bold formatting, no markdown headers, 
 no bullet points unless absolutely essential for clarity.
@@ -136,17 +157,31 @@ class RAGGenerator:
         """Format chunks into context string for LLM."""
         context_parts = []
         for i, chunk in enumerate(relevant_chunks, 1):
-            header = chunk.get("header_identifier", "N/A")
-            page = chunk.get("page", "N/A")
-            filename = chunk.get("filename", "N/A")
+            header = chunk.get("header_identifier") or "N/A"
+            section = chunk.get("headers") or ""
+            page = chunk.get("page")
+            doc_id = chunk.get("doc_id") or chunk.get("filename") or "N/A"
+            document = doc_names([doc_id])[0]
             content = chunk.get("content", "")
-            context_parts.append(
-                f"[Source {i} - {filename} - Page {page} - {header}]\n{content}"
-            )
+            label = f"[Source {i} - Document: {document} - Citation: {header}"
+            if section:
+                label += f" - Section: {section}"
+            if page:
+                label += f" - Page {page}"
+            label += "]"
+            context_parts.append(f"{label}\n{content}")
         return "\n\n".join(context_parts)
 
-    def _build_messages(self, query: str, context: str) -> List[Dict[str, str]]:
+    def _build_messages(
+        self, query: str, context: str, target_documents: Optional[List[str]] = None
+    ) -> List[Dict[str, str]]:
         """Build messages for LLM API call."""
+        scope_note = ""
+        if target_documents:
+            scope_note = (
+                "\nThe question is about: " + "; ".join(target_documents) + ". "
+                "If the sources from that document do not contain the answer, say so first.\n"
+            )
         return [
             {"role": "system", "content": SYSTEM_PROMPT},
             {
@@ -154,7 +189,7 @@ class RAGGenerator:
                 "content": f"""Context:\n{context}
 
 Question: {query}
-
+{scope_note}
 CRITICAL CITATION REQUIREMENTS:
 - You will see sources numbered [Source 1], [Source 2], etc. in the context
 - In your answer, you MUST renumber them starting from 1 for only the sources you actually use
@@ -163,19 +198,22 @@ CRITICAL CITATION REQUIREMENTS:
 - NEVER cite a number that doesn't appear in your Sources section
 - NEVER use the original source numbers from the context in your citations
 
-Please provide a comprehensive answer with proper citations.""",
+Please provide a comprehensive answer using only the sources above, with proper citations.""",
             },
         ]
 
     def _generate_response_sync(
-        self, query: str, relevant_chunks: List[Dict[str, Any]]
+        self,
+        query: str,
+        relevant_chunks: List[Dict[str, Any]],
+        target_documents: Optional[List[str]] = None,
     ) -> str:
         """Generate non-streaming response."""
         if not relevant_chunks:
             return "No relevant information found."
 
         context = self._format_context(relevant_chunks)
-        messages = self._build_messages(query, context)
+        messages = self._build_messages(query, context, target_documents)
 
         try:
             response = self.client.chat.completions.create(
@@ -200,7 +238,10 @@ Please provide a comprehensive answer with proper citations.""",
             return f"Error generating response with {provider}: {e}"
 
     def _generate_response_stream(
-        self, query: str, relevant_chunks: List[Dict[str, Any]]
+        self,
+        query: str,
+        relevant_chunks: List[Dict[str, Any]],
+        target_documents: Optional[List[str]] = None,
     ) -> Generator[str, None, None]:
         """Generate streaming response."""
         if not relevant_chunks:
@@ -208,7 +249,7 @@ Please provide a comprehensive answer with proper citations.""",
             return
 
         context = self._format_context(relevant_chunks)
-        messages = self._build_messages(query, context)
+        messages = self._build_messages(query, context, target_documents)
 
         try:
             response = self.client.chat.completions.create(
@@ -227,15 +268,23 @@ Please provide a comprehensive answer with proper citations.""",
             provider = "Azure OpenAI" if self.use_azure else "OpenAI"
             yield f"Error generating response with {provider}: {e}"
 
-    def answer_query(self, query: str, relevant_chunks: List[Dict[str, Any]]) -> str:
+    def answer_query(
+        self,
+        query: str,
+        relevant_chunks: List[Dict[str, Any]],
+        target_documents: Optional[List[str]] = None,
+    ) -> str:
         """Answer query using RAG with enhanced context."""
-        return self._generate_response_sync(query, relevant_chunks)
+        return self._generate_response_sync(query, relevant_chunks, target_documents)
 
     def answer_query_stream(
-        self, query: str, relevant_chunks: List[Dict[str, Any]]
+        self,
+        query: str,
+        relevant_chunks: List[Dict[str, Any]],
+        target_documents: Optional[List[str]] = None,
     ) -> Generator[str, None, None]:
         """Stream answer using RAG with enhanced context."""
-        return self._generate_response_stream(query, relevant_chunks)
+        return self._generate_response_stream(query, relevant_chunks, target_documents)
 
     def stats(self) -> Dict[str, Any]:
         """Get database statistics"""
