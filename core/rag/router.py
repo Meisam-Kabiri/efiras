@@ -56,7 +56,7 @@ Your job: analyse the user's question and return a JSON object with these fields
   "scope": "strict" | "narrowed" | "broad",
   "documents": ["<doc_key>", ...],
   "expanded_query": "<rewritten query with synonyms / full terms>",
-  "sub_queries": ["<sub_query_1>", ...]
+  "sub_queries": [{{"query": "<sub_query_1>", "documents": ["<doc_key>", ...]}}, ...]
 }}
 
 Rules:
@@ -70,10 +70,13 @@ Rules:
     "narrowed" — question clearly covers a small group of regulations (2–4 docs). List them.
     "broad"    — genuinely vague or multi-regulation. Set documents to [].
 - expanded_query: rewrite the question using formal legal CONCEPT SYNONYMS and KEY CONCEPTS only.
-  CRITICAL RULE: DO NOT guess, invent, or output specific Article or Section numbers (e.g., do NOT output 'Article 22' or 'Article 13'). 
+  CRITICAL RULE: DO NOT guess or invent Article or Section numbers that the user did not write (e.g., do NOT add 'Article 22').
+  If the user's question itself names an Article, Recommendation or Section number, KEEP that exact number in expanded_query.
   Allow the database vector and BM25 search engines to discover the exact Articles from the indexed documents. Omit if kind != "question".
 - sub_queries: split ONLY if the question is clearly multi-part (e.g. "compare X and Y", "what are the
-  obligations under X AND the penalties under Y?"). Each sub_query is a complete standalone question.
+  obligations under X AND the penalties under Y?"). Each sub_query is a complete standalone question,
+  and its "documents" lists only the doc keys THAT part is about (e.g. comparing Basel III and the CRR:
+  one sub_query with ["basel_iii"], one with ["crr"]). Use [] if a part is not about a specific document.
   Empty list otherwise.
 
 Respond with valid JSON only. No markdown, no explanation."""
@@ -98,7 +101,25 @@ def route(question: str) -> Dict[str, Any]:
     result.setdefault("documents", [])
     result.setdefault("expanded_query", question)
     result.setdefault("sub_queries", [])
+    result["sub_queries"] = _normalise_sub_queries(result.get("sub_queries"))
     return result
+
+
+def _normalise_sub_queries(raw: Any) -> List[Dict[str, Any]]:
+    """Accept both the new form ({"query", "documents"}) and plain strings."""
+    if not isinstance(raw, list):
+        return []
+    normalised = []
+    for item in raw:
+        if isinstance(item, str) and item.strip():
+            normalised.append({"query": item.strip(), "documents": []})
+        elif isinstance(item, dict) and str(item.get("query", "")).strip():
+            docs = item.get("documents") or []
+            normalised.append({
+                "query": str(item["query"]).strip(),
+                "documents": [d for d in docs if isinstance(d, str)] if isinstance(docs, list) else [],
+            })
+    return normalised
 
 
 def resolve_doc_ids(doc_keys: List[str]) -> List[str]:

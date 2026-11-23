@@ -15,8 +15,11 @@ def better_tokenize(text):
     text = re.sub(r"\n+", " ", text)  # Remove newlines
     text = re.sub(r"\s+", " ", text)  # Multiple spaces to single
     # Don't split "non-compliance" - keep as one term
-    tokens = text.lower().split()
-    return [token.strip(".,") for token in tokens if len(token) > 2]
+    tokens = [token.strip(".,;:?!\"'") for token in text.lower().split()]
+    # Drop short words ("of", "an"), but keep anything with a digit, so short
+    # article numbers like "92" or "5(1)" stay searchable. (Only the query is
+    # tokenized here; the FTS5 index keeps numbers on its own.)
+    return [token for token in tokens if len(token) > 2 or any(ch.isdigit() for ch in token)]
 
 
 # Columns stored on the "chunks" table, in addition to the FTS5-indexed "content".

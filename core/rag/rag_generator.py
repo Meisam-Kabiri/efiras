@@ -43,6 +43,14 @@ GROUNDING RULES (MOST IMPORTANT):
 - If no chunk answers the question, say that the knowledge base does not contain the answer and
   do not guess.
 
+CROSS-REFERENCES AND COMPARISONS:
+- Some sources are marked "Referenced by: X". They were added because source X (or the question)
+  refers to them. Use them to explain what a referenced article or recommendation says when that
+  helps answer the question, e.g. "Article X requires ... (1). The Article Y it refers to
+  defines ... (2)". Ignore them if they are not relevant.
+- When comparing documents, attribute each point to its own document and cite it, state where
+  they agree and where they differ, and say if one of them does not address a point.
+
 QUERY VALIDATION:
 - Single letters or gibberish → "Please ask a complete regulatory question"
 - Greetings → Respond warmly and guide toward regulatory topics  
@@ -166,6 +174,8 @@ class RAGGenerator:
             label = f"[Source {i} - Document: {document} - Citation: {header}"
             if section:
                 label += f" - Section: {section}"
+            if chunk.get("is_reference"):
+                label += f" - Referenced by: {chunk.get('referenced_from')}"
             if page:
                 label += f" - Page {page}"
             label += "]"
